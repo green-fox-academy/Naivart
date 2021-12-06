@@ -28,6 +28,7 @@ namespace Naivart
         {
             services.AddTransient<KingdomService>();
             services.AddControllersWithViews();
+            services.AddTransient<PlayerService>();
             ConfigureDb(services);
         }
 

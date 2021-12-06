@@ -111,6 +111,7 @@ namespace Naivart.Migrations
             modelBuilder.Entity("Naivart.Models.Entities.Location", b =>
                 {
                     b.Navigation("Kingdom");
+                    b.ToTable("Players");
                 });
 #pragma warning restore 612, 618
         }

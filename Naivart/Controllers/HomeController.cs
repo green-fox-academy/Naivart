@@ -10,9 +10,10 @@ namespace Naivart.Controllers
     public class HomeController : Controller
     {
         public KingdomService KingdomService { get; set; }
-
-        public HomeController(KingdomService kingdomService)
+        public PlayerService PlayerService { get; set; }
+        public HomeController(KingdomService kingdomService, PlayerService playerService)
         {
+            PlayerService = playerService;
             KingdomService = kingdomService;
         }
 
