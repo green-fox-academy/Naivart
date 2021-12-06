@@ -26,6 +26,7 @@ namespace Naivart
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient<KingdomService>();
             services.AddControllersWithViews();
             services.AddTransient<PlayerService>();
             ConfigureDb(services);

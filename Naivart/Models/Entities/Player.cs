@@ -9,5 +9,6 @@ namespace Naivart.Models.Entities
         public string Username { get; set; }
         public string Password { get; set; }
         public long KingdomId { get; set; }
+        public Kingdom Kingdom { get; set; }
     }
 }
