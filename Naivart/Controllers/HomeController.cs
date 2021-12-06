@@ -9,10 +9,10 @@ namespace Naivart.Controllers
 {
     public class HomeController : Controller
     {
-        public Service Service { get; set; }
-        public HomeController(Service service)
+        public PlayerService PlayerService { get; set; }
+        public HomeController(PlayerService playerService)
         {
-            Service = service;
+            PlayerService = playerService;
         }
         public IActionResult Index()
         {
