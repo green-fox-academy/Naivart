@@ -9,11 +9,13 @@ namespace Naivart.Controllers
 {
     public class HomeController : Controller
     {
-        public Service Service { get; set; }
-        public HomeController(Service service)
+        public KingdomService KingdomService { get; set; }
+
+        public HomeController(KingdomService kingdomService)
         {
-            Service = service;
+            KingdomService = kingdomService;
         }
+
         public IActionResult Index()
         {
             return View();

@@ -1,0 +1,5 @@
+1) go to the appsettings.json: database=naivart; password=<your_password>
+
+2) go to the project directory via command line: dotnet ef migrations add init
+
+						 dotnet ef database update
