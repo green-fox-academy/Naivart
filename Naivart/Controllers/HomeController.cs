@@ -23,13 +23,16 @@ namespace Naivart.Controllers
             string token = LoginService.Authenticate(player);
             if (token == "")
             {
-                return StatusCode(400);
+                var emptyInput = new StatusForError(){ error = "Field username and/or field password was empty!" };
+                return StatusCode(400, emptyInput);
             }
             else if (token is null)
             {
-                return StatusCode(401);
+                var wrongLogin = new StatusForError() { error = "Username and/or password was incorrect!" };
+                return StatusCode(401, wrongLogin);
             }
-            return Ok();
+            var correctLogin = new TokenWithStatus() { status = "ok", token = token};
+            return Ok(correctLogin);
 
         }
     }
