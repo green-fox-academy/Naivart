@@ -1,22 +1,20 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Naivart.Models;
 using Naivart.Models.APIModels;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Naivart.Services
 {
     public class LoginService
     {
-        private readonly string key;
-
-        public LoginService()
+        private readonly AppSettings _appSettings;
+        public LoginService(IOptions<AppSettings> appSettings)
         {
-            this.key = "Santa123Doktor456BigShock789Komin987";
+            _appSettings = appSettings.Value;
         }
 
         public string Authenticate(PlayerLogin player)
@@ -31,7 +29,7 @@ namespace Naivart.Services
             else if (LoginPasswordCheck(username, password))
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var tokenKey = Encoding.ASCII.GetBytes(key);
+                var tokenKey = Encoding.ASCII.GetBytes(_appSettings.key);
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new Claim[]

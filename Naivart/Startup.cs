@@ -8,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Naivart.Database;
+using Naivart.Models;
+using Naivart.Services;
 using System;
 using System.Text;
 
@@ -26,7 +28,14 @@ namespace Naivart
         {
             services.AddControllersWithViews();
 
-            var key = "Santa123Doktor456BigShock789Komin987";
+            services.AddTransient<LoginService>();
+
+            var appSettingSection = AppConfig.GetSection("AppSettings");
+            services.Configure<AppSettings>(appSettingSection);
+
+            var appSettings = appSettingSection.Get<AppSettings>();
+            var key = Encoding.ASCII.GetBytes(appSettings.key);
+
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -38,7 +47,7 @@ namespace Naivart
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = false,
                     ValidateAudience = false
 
