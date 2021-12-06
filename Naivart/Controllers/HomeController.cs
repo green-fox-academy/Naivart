@@ -1,22 +1,36 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Naivart.Models.APIModels;
 using Naivart.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Naivart.Controllers
 {
+    [Route("")]
     public class HomeController : Controller
     {
-        public Service Service { get; set; }
-        public HomeController(Service service)
+        public LoginService LoginService { get; set; }
+        public HomeController(LoginService service)
         {
-            Service = service;
+            LoginService = service;
         }
         public IActionResult Index()
         {
             return View();
+        }
+
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] PlayerLogin player)
+        {
+            string token = LoginService.Authenticate(player);
+            if (token == "")
+            {
+                return StatusCode(400);
+            }
+            else if (token is null)
+            {
+                return StatusCode(401);
+            }
+            return Ok();
+
         }
     }
 }
