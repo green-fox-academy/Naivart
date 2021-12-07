@@ -24,7 +24,6 @@ namespace Naivart.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<long?>("LocationId")
-                        .IsRequired()
                         .HasColumnType("bigint");
 
                     b.Property<string>("Name")
@@ -78,16 +77,14 @@ namespace Naivart.Migrations
                     b.HasIndex("KingdomId")
                         .IsUnique();
 
-                    b.ToTable("Player");
+                    b.ToTable("Players");
                 });
 
             modelBuilder.Entity("Naivart.Models.Entities.Kingdom", b =>
                 {
                     b.HasOne("Naivart.Models.Entities.Location", "Location")
                         .WithOne("Kingdom")
-                        .HasForeignKey("Naivart.Models.Entities.Kingdom", "LocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Naivart.Models.Entities.Kingdom", "LocationId");
 
                     b.Navigation("Location");
                 });
@@ -111,7 +108,6 @@ namespace Naivart.Migrations
             modelBuilder.Entity("Naivart.Models.Entities.Location", b =>
                 {
                     b.Navigation("Kingdom");
-                    b.ToTable("Players");
                 });
 #pragma warning restore 612, 618
         }

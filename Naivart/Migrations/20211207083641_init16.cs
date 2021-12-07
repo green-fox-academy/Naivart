@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Naivart.Migrations
 {
-    public partial class init : Migration
+    public partial class init16 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -34,7 +34,7 @@ namespace Naivart.Migrations
                     Name = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Population = table.Column<int>(type: "int", nullable: false),
-                    LocationId = table.Column<long>(type: "bigint", nullable: false)
+                    LocationId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -44,12 +44,12 @@ namespace Naivart.Migrations
                         column: x => x.LocationId,
                         principalTable: "Locations",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Player",
+                name: "Players",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -62,9 +62,9 @@ namespace Naivart.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Player", x => x.Id);
+                    table.PrimaryKey("PK_Players", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Player_Kingdoms_KingdomId",
+                        name: "FK_Players_Kingdoms_KingdomId",
                         column: x => x.KingdomId,
                         principalTable: "Kingdoms",
                         principalColumn: "Id",
@@ -79,8 +79,8 @@ namespace Naivart.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Player_KingdomId",
-                table: "Player",
+                name: "IX_Players_KingdomId",
+                table: "Players",
                 column: "KingdomId",
                 unique: true);
         }
@@ -88,7 +88,7 @@ namespace Naivart.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Player");
+                name: "Players");
 
             migrationBuilder.DropTable(
                 name: "Kingdoms");

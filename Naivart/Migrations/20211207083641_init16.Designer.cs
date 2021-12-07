@@ -9,8 +9,8 @@ using Naivart.Database;
 namespace Naivart.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211206160225_init")]
-    partial class init
+    [Migration("20211207083641_init16")]
+    partial class init16
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -26,7 +26,6 @@ namespace Naivart.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<long?>("LocationId")
-                        .IsRequired()
                         .HasColumnType("bigint");
 
                     b.Property<string>("Name")
@@ -80,16 +79,14 @@ namespace Naivart.Migrations
                     b.HasIndex("KingdomId")
                         .IsUnique();
 
-                    b.ToTable("Player");
+                    b.ToTable("Players");
                 });
 
             modelBuilder.Entity("Naivart.Models.Entities.Kingdom", b =>
                 {
                     b.HasOne("Naivart.Models.Entities.Location", "Location")
                         .WithOne("Kingdom")
-                        .HasForeignKey("Naivart.Models.Entities.Kingdom", "LocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Naivart.Models.Entities.Kingdom", "LocationId");
 
                     b.Navigation("Location");
                 });
