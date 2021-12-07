@@ -1,4 +1,6 @@
-﻿using Naivart.Database;
+﻿using Microsoft.EntityFrameworkCore;
+using Naivart.Database;
+using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +15,14 @@ namespace Naivart.Services
         public KingdomService(ApplicationDbContext dbContext)
         {
             DbContext = dbContext;
+        }
+
+        public List<Kingdom> GetAll()
+        {
+            return DbContext.Kingdoms
+                .Include(k => k.Player)
+                .Include(k => k.Location)
+                .ToList();   
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Naivart.Models.APIModels;
 using Naivart.Services;
 using System;
 using System.Collections.Generic;
@@ -7,19 +9,35 @@ using System.Threading.Tasks;
 
 namespace Naivart.Controllers
 {
+    [Route("/")]
     public class HomeController : Controller
     {
-        public KingdomService KingdomService { get; set; }
-        public PlayerService PlayerService { get; set; }
-        public HomeController(KingdomService kingdomService, PlayerService playerService)
+        private readonly IMapper _mapper;
+
+        private KingdomService KingdomService { get; set; }
+
+        private PlayerService PlayerService { get; set; }
+
+        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService)
         {
-            PlayerService = playerService;
+            _mapper = mapper;
             KingdomService = kingdomService;
+            PlayerService = playerService;
         }
 
-        public IActionResult Index()
+        [HttpGet("kingdoms")]
+        public object Kingdoms()
         {
-            return View();
+            var kingdoms = KingdomService.GetAll();
+            var kingdomAPIModels = new List<KingdomAPIModel>();
+
+            foreach (var kingdom in kingdoms)
+            {
+                var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
+                kingdomAPIModels.Add(kingdomAPIModel);
+            }
+
+            return Ok(new { kingdoms = kingdomAPIModels });
         }
     }
 }
