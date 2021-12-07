@@ -14,10 +14,10 @@ namespace Naivart.Services
     public class LoginService
     {
         private ApplicationDbContext DbContext { get; }
-        private readonly AppSettings _appSettings;
+        private readonly AppSettings appSettings;
         public LoginService(IOptions<AppSettings> appSettings, ApplicationDbContext dbContext)
         {
-            _appSettings = appSettings.Value;
+            this.appSettings = appSettings.Value;
             DbContext = dbContext;
         }
 
@@ -33,7 +33,7 @@ namespace Naivart.Services
             else if (LoginPasswordCheck(username, password))
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var tokenKey = Encoding.ASCII.GetBytes(_appSettings.Key);
+                var tokenKey = Encoding.ASCII.GetBytes(appSettings.Key);
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new Claim[]
@@ -47,10 +47,7 @@ namespace Naivart.Services
                 var token = tokenHandler.CreateToken(tokenDescriptor);  
                 return tokenHandler.WriteToken(token);  
             }
-            else
-            {
                 return null;
-            }
         }
 
         public bool LoginPasswordCheck(string name, string password)    
@@ -59,7 +56,7 @@ namespace Naivart.Services
             {
                 return DbContext.Players.Any(x => x.Username == name && x.Password == password);
             }
-            catch
+            catch (Exception)
             {
                 throw new Exception();
             }

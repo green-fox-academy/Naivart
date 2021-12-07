@@ -81,34 +81,29 @@ namespace NaivartUnitTest
             Assert.Equal(messageExpected, statusError.error);
         }
 
-        [Fact]
-        public void PostEmptyLogin_ReturnStatus400AndMessage()
+        //[Fact]
+        [Theory]
+        [InlineData("", "qojqodqj")]
+        [InlineData("qf5qf5q1q5", "")]
+        public void PostEmptyLogin_ReturnStatus400AndMessage(string usernameInput, string passwordInput)
         {
             string messageExpected = "Field username and/or field password was empty!";
             var statusCodeExpected = HttpStatusCode.BadRequest;
 
             var request = new HttpRequestMessage();
-            var request2 = new HttpRequestMessage();
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = "", password = "qd55q5dq" });
-            var inputObj2 = JsonConvert.SerializeObject(new PlayerLogin() { username = "qwqwfwfqqfwq11", password = "" });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = usernameInput, password = passwordInput });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
-            StringContent requestContent2 = new(inputObj2, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("http://localhost:5467/login");
             request.Method = HttpMethod.Post;
             request.Content = requestContent;
             var response = httpClient.SendAsync(request).Result;
-            request2.RequestUri = new Uri("http://localhost:5467/login");
-            request2.Method = HttpMethod.Post;
-            request2.Content = requestContent2;
-            var response2 = httpClient.SendAsync(request2).Result;
 
-            var response3 = httpClient.PostAsync("http://localhost:5467/login", requestContent).Result;
-            string responseBodyContent = response3.Content.ReadAsStringAsync().Result;
+            var response2 = httpClient.PostAsync("http://localhost:5467/login", requestContent).Result;
+            string responseBodyContent = response2.Content.ReadAsStringAsync().Result;
             StatusForError statusError = JsonConvert.DeserializeObject<StatusForError>(responseBodyContent);
 
             Assert.Equal(statusCodeExpected, response.StatusCode);
-            Assert.Equal(statusCodeExpected, response2.StatusCode);
             Assert.Equal(messageExpected, statusError.error);
         }
     }
