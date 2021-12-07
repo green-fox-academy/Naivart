@@ -58,14 +58,17 @@ namespace NaivartUnitTest
             Assert.Equal(tokenExpected, resultToken);
         }
 
-        [Fact]
-        public void PostInvalidPlayer_ReturnStatus401AndMessage()
+        [Theory]
+        [InlineData("Adam", "qojqodqj")]    //if username is correct, but password incorrect
+        [InlineData("qojdoqwf44q8", "Santa")]   //if username is incorrect, but password correct
+        [InlineData("qojdoqwf44q8", "qw5d1qw51q5qa")]   //if both incorrect
+        public void PostInvalidPlayer_ReturnStatus401AndMessage(string usernameInput, string passwordInput)
         {
             string messageExpected = "Username and/or password was incorrect!";
             var statusCodeExpected = HttpStatusCode.Unauthorized;
 
             var request = new HttpRequestMessage();
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = "qwoifqwj5454qw", password = "qd55q5dq" });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = usernameInput, password = passwordInput });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("http://localhost:5467/login");
