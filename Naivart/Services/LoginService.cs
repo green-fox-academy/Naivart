@@ -1,9 +1,12 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Naivart.Database;
 using Naivart.Models;
 using Naivart.Models.APIModels;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 
@@ -11,9 +14,11 @@ namespace Naivart.Services
 {
     public class LoginService
     {
+        private ApplicationDbContext DbContext { get; }
         private readonly AppSettings _appSettings;
-        public LoginService(IOptions<AppSettings> appSettings)
+        public LoginService(IOptions<AppSettings> appSettings, ApplicationDbContext dbContext)
         {
+            DbContext = dbContext;
             _appSettings = appSettings.Value;
         }
 
@@ -49,10 +54,47 @@ namespace Naivart.Services
             }
         }
 
-        public bool LoginPasswordCheck(string name, string password)    //change this when Database is added
+        public bool LoginPasswordCheck(string name, string password)    
         {
-            //return DbContext.Players.Any(x => x.Name == name && x.Password == password);
-            return true;
+            return DbContext.Players.Any(x => x.Username == name && x.Password == password);
+        }
+        public PlayerWithKingdom GetPrincipal(PlayerIdentity player)
+        {
+            string token = player.token;
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+
+                if (jwtToken == null)
+                    return null;
+
+                var symmetricKey = Encoding.ASCII.GetBytes(_appSettings.key);
+
+                var validationParameters = new TokenValidationParameters()
+                {
+                    RequireExpirationTime = true,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(symmetricKey)
+                };
+
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
+                var identity = principal.Identity.Name;
+
+                return FindPlayerByName(identity);
+            }
+
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+        public PlayerWithKingdom FindPlayerByName(string name)
+        {
+            var player= DbContext.Players.Where(x => x.Username == name).Include(x => x.Kingdom).FirstOrDefault();
+            PlayerWithKingdom playerWithKingdom = new PlayerWithKingdom { kingdomId = player.KingdomId, kingdomName = player.Kingdom.Name, ruler = player.Username };
+            return playerWithKingdom;
         }
     }
 }

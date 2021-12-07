@@ -36,5 +36,14 @@ namespace Naivart.Controllers
             return Ok(correctLogin);
 
         }
+        //[HttpPost("auth")]
+        //public IActionResult Auth([FromBody]PlayerIdentity token)
+        //{
+        //    if (true)
+        //    {
+               
+        //    }
+
+        //}
     }
 }
