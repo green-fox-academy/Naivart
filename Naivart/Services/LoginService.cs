@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Naivart.Database;
 using Naivart.Models;
 using Naivart.Models.APIModels;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 
@@ -11,10 +13,12 @@ namespace Naivart.Services
 {
     public class LoginService
     {
+        private ApplicationDbContext DbContext { get; }
         private readonly AppSettings _appSettings;
-        public LoginService(IOptions<AppSettings> appSettings)
+        public LoginService(IOptions<AppSettings> appSettings, ApplicationDbContext dbContext)
         {
             _appSettings = appSettings.Value;
+            DbContext = dbContext;
         }
 
         public string Authenticate(PlayerLogin player)
@@ -49,10 +53,16 @@ namespace Naivart.Services
             }
         }
 
-        public bool LoginPasswordCheck(string name, string password)    //change this when Database is added
+        public bool LoginPasswordCheck(string name, string password)    
         {
-            //return DbContext.Players.Any(x => x.Name == name && x.Password == password);
-            return true;
+            try
+            {
+                return DbContext.Players.Any(x => x.Username == name && x.Password == password);
+            }
+            catch
+            {
+                throw new Exception();
+            }
         }
     }
 }

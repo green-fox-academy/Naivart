@@ -38,7 +38,6 @@ namespace Naivart.Controllers
             }
             var correctLogin = new TokenWithStatus() { status = "ok", token = token};
             return Ok(correctLogin);
-
         }
     }
 }
