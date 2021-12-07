@@ -36,14 +36,18 @@ namespace Naivart.Controllers
             return Ok(correctLogin);
 
         }
-        //[HttpPost("auth")]
-        //public IActionResult Auth([FromBody]PlayerIdentity token)
-        //{
-        //    if (true)
-        //    {
-               
-        //    }
-
-        //}
+        [HttpPost("auth")]
+        public IActionResult Auth([FromBody] PlayerIdentity token)
+        {
+            var player = LoginService.GetPrincipal(token);
+            if (player == null)
+            {
+                return StatusCode(401);
+            }
+            else
+            {
+                return Ok(player);
+            }
+        }
     }
 }
