@@ -8,10 +8,15 @@ namespace Naivart.Controllers
     public class HomeController : Controller
     {
         public LoginService LoginService { get; set; }
-        public HomeController(LoginService service)
+        public KingdomService KingdomService { get; set; }
+        public PlayerService PlayerService { get; set; }
+        public HomeController(KingdomService kingdomService, PlayerService playerService, LoginService service)
         {
+            PlayerService = playerService;
+            KingdomService = kingdomService;
             LoginService = service;
         }
+
         public IActionResult Index()
         {
             return View();
