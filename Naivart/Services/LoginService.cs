@@ -25,40 +25,45 @@ namespace Naivart.Services
         {
             string username = player.username;
             string password = player.password;
-
-            if (String.IsNullOrEmpty(username) || String.IsNullOrEmpty(password))
+            try
             {
-                return "";
-            }
-            else if (LoginPasswordCheck(username, password))
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var tokenKey = Encoding.ASCII.GetBytes(appSettings.Key);
-                var tokenDescriptor = new SecurityTokenDescriptor
+                if (String.IsNullOrEmpty(username) || String.IsNullOrEmpty(password))
                 {
-                    Subject = new ClaimsIdentity(new Claim[]
+                    return "";
+                }
+                else if (LoginPasswordCheck(username, password))
+                {
+                    var tokenHandler = new JwtSecurityTokenHandler();
+                    var tokenKey = Encoding.ASCII.GetBytes(appSettings.Key);
+                    var tokenDescriptor = new SecurityTokenDescriptor
                     {
-                        new Claim(ClaimTypes.Name, username)    
-                    }),
-                    Expires = DateTime.UtcNow.AddHours(24),  
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey),
-                    SecurityAlgorithms.HmacSha256Signature) 
-                };
-                var token = tokenHandler.CreateToken(tokenDescriptor);  
-                return tokenHandler.WriteToken(token);  
+                        Subject = new ClaimsIdentity(new Claim[]
+                        {
+                            new Claim(ClaimTypes.Name, username)    
+                        }),
+                        Expires = DateTime.UtcNow.AddHours(24),  
+                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey),
+                        SecurityAlgorithms.HmacSha256Signature) 
+                    };
+                    var token = tokenHandler.CreateToken(tokenDescriptor);  
+                    return tokenHandler.WriteToken(token);  
+                }
+                    return null;
             }
+            catch (Exception)
+            {
                 return null;
+            }
         }
-
         public bool LoginPasswordCheck(string name, string password)    
         {
             try
             {
                 return DbContext.Players.Any(x => x.Username == name && x.Password == password);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                throw new Exception();
+                throw new InvalidOperationException("Data could not be read", e);
             }
         }
     }

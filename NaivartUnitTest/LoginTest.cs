@@ -17,17 +17,6 @@ namespace NaivartUnitTest
         private readonly HttpClient httpClient;
         public LoginTest(WebApplicationFactory<Startup> factory)
         {
-            //factory.ConfigureTestServices(services =>
-            //{
-            //    // You can mock services here if you have to
-            //    // e.g.
-            //    //var mockService = Substitute.For<IHelloService>();
-            //    //string expectedResult = "test";
-            //    //mockService.SayHello().Returns(expectedResult);
-
-            //    //services.AddTransient<IHelloService>(_ => mockService);
-            //});
-
             httpClient = factory.CreateClient();
         }
 
@@ -42,13 +31,8 @@ namespace NaivartUnitTest
             var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = "Adam", password = "Santa" });
            
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
-            request.RequestUri = new Uri("http://localhost:5467/login");
-            request.Method = HttpMethod.Post;
-            request.Content = requestContent;
-            var response = httpClient.SendAsync(request).Result;
-
-            var response2 = httpClient.PostAsync("http://localhost:5467/login", requestContent).Result;
-            string responseBodyContent = response2.Content.ReadAsStringAsync().Result;
+            var response = httpClient.PostAsync("http://localhost:5467/login", requestContent).Result;
+            string responseBodyContent = response.Content.ReadAsStringAsync().Result;
             TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(responseBodyContent);
             var resultTokenSplit = token.token.Split(".");
             var resultToken = resultTokenSplit[0];
@@ -88,6 +72,7 @@ namespace NaivartUnitTest
         [Theory]
         [InlineData("", "qojqodqj")]
         [InlineData("qf5qf5q1q5", "")]
+        [InlineData("", "")]
         public void PostEmptyLogin_ReturnStatus400AndMessage(string usernameInput, string passwordInput)
         {
             string messageExpected = "Field username and/or field password was empty!";
