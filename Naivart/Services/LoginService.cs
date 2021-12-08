@@ -70,8 +70,6 @@ namespace Naivart.Services
             {
                 throw new InvalidOperationException("Data could not be read", e);
             }
-                return null;
-            }
         }
 
 
@@ -86,7 +84,7 @@ namespace Naivart.Services
                 if (jwtToken == null)
                     return null;
 
-                var symmetricKey = Encoding.ASCII.GetBytes(_appSettings.key);
+                var symmetricKey = Encoding.ASCII.GetBytes(appSettings.Key);
 
                 var validationParameters = new TokenValidationParameters()
                 {
