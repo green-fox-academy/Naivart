@@ -6,11 +6,15 @@ namespace Naivart.Controllers
 {
     [Route("")]
     public class HomeController : Controller
-    {
+    {   
+        public KingdomService KingdomService { get; set; }
+        public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
-        public HomeController(LoginService service)
+        public HomeController(KingdomService kingdomService, PlayerService playerService,LoginService service)
         {
             LoginService = service;
+            PlayerService = playerService;
+            KingdomService = kingdomService;
         }
 
         public IActionResult Index()
