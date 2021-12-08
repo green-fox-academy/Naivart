@@ -10,11 +10,11 @@ namespace Naivart.Controllers
         public LoginService LoginService { get; set; }
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
-        public HomeController(KingdomService kingdomService, PlayerService playerService, LoginService service)
+        public HomeController(KingdomService kingdomService, PlayerService playerService, LoginService loginservice)
         {
             PlayerService = playerService;
             KingdomService = kingdomService;
-            LoginService = service;
+            LoginService = loginservice;
         }
 
         public IActionResult Index()
@@ -26,12 +26,12 @@ namespace Naivart.Controllers
         public IActionResult Login([FromBody] PlayerLogin player)
         {
             string token = LoginService.Authenticate(player);
-            if (token == "")
+            if (token == "empty")
             {
                 var emptyInput = new StatusForError(){ error = "Field username and/or field password was empty!" };
                 return StatusCode(400, emptyInput);
             }
-            else if (token is null)
+            else if (token == "incorrect")
             {
                 var wrongLogin = new StatusForError() { error = "Username and/or password was incorrect!" };
                 return StatusCode(401, wrongLogin);

@@ -29,9 +29,9 @@ namespace Naivart.Services
             {
                 if (String.IsNullOrEmpty(username) || String.IsNullOrEmpty(password))
                 {
-                    return "";
+                    return "empty";
                 }
-                else if (LoginPasswordCheck(username, password))
+                else if (IsLoginPasswordCorrect(username, password))
                 {
                     var tokenHandler = new JwtSecurityTokenHandler();
                     var tokenKey = Encoding.ASCII.GetBytes(appSettings.Key);
@@ -48,14 +48,14 @@ namespace Naivart.Services
                     var token = tokenHandler.CreateToken(tokenDescriptor);  
                     return tokenHandler.WriteToken(token);  
                 }
-                    return null;
+                    return "incorrect";
             }
             catch (Exception)
             {
-                return null;
+                return "incorrect";
             }
         }
-        public bool LoginPasswordCheck(string name, string password)    
+        public bool IsLoginPasswordCorrect(string name, string password)    
         {
             try
             {
