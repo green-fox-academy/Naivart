@@ -16,17 +16,7 @@ namespace NaivartUnitTest
         private readonly HttpClient httpClient;
 
         public IdentityTest(WebApplicationFactory<Startup> factory)
-        {
-            //factory.ConfigureTestServices(services =>
-            //{
-            //    // You can mock services here if you have to
-            //    // e.g.
-            //    //var mockService = Substitute.For<IHelloService>();
-            //    //string expectedResult = "test";
-            //    //mockService.SayHello().Returns(expectedResult);
-
-            //    //services.AddTransient<IHelloService>(_ => mockService);
-            //});
+        { 
 
             httpClient = factory.CreateClient();
         }
@@ -34,20 +24,28 @@ namespace NaivartUnitTest
         public void AuthPostEndpoint_ShouldReturnOkFromToken()
         {
             var request = new HttpRequestMessage();
-            var inputObj = JsonConvert.SerializeObject(new PlayerIdentity() { token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IkFkYW0iLCJuYmYiOjE2Mzg4ODgwMjgsImV4cCI6MTYzODk3NDQyOCwiaWF0IjoxNjM4ODg4MDI4fQ.A5ngmHslgtIbKFuIStQtdYK_fw-sRriReWsYtx_f7zY" });
-            StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
 
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin { username = "Adam", password = "Santa" });
+            StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
+            var response = httpClient.PostAsync("https://localhost:44385/login", requestContent).Result;
+            string contentResponse = response.Content.ReadAsStringAsync().Result;
+            TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(contentResponse);
+            string tokenResult = token.token;
+
+            var inputObj2 = JsonConvert.SerializeObject(new PlayerIdentity() { token = tokenResult });
+            StringContent requestContent2 = new(inputObj2, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("https://localhost:44385/auth");
             request.Method = HttpMethod.Post;
-            request.Content = requestContent;
-            var response = httpClient.SendAsync(request).Result;
+            request.Content = requestContent2;
+            var response2 = httpClient.SendAsync(request).Result;
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
         }
         [Fact]
         public void AuthPostEndpoint_ReturnStatusCode401()
         {
             var request = new HttpRequestMessage();
+
             var inputObj = JsonConvert.SerializeObject(new PlayerIdentity() { token = "" });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
 
@@ -66,7 +64,6 @@ namespace NaivartUnitTest
             long kingdomIdExpected = 1;
             string kingdomNameExpected = "Igala";
             var statusCodeExpected = HttpStatusCode.OK;
-            var request = new HttpRequestMessage();
 
             var inputObj = JsonConvert.SerializeObject(new PlayerLogin { username = "Adam", password = "Santa" });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");

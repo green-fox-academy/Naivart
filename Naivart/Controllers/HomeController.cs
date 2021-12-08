@@ -39,7 +39,7 @@ namespace Naivart.Controllers
         [HttpPost("auth")]
         public IActionResult Auth([FromBody] PlayerIdentity token)
         {
-            var player = LoginService.GetPrincipal(token);
+            var player = LoginService.GetTokenOwner(token);
             if (player == null)
             {
                 return StatusCode(401);

@@ -58,7 +58,7 @@ namespace Naivart.Services
         {
             return DbContext.Players.Any(x => x.Username == name && x.Password == password);
         }
-        public PlayerWithKingdom GetPrincipal(PlayerIdentity player)
+        public PlayerWithKingdom GetTokenOwner(PlayerIdentity player)
         {
             string token = player.token;
             try
