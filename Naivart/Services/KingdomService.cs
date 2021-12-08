@@ -16,15 +16,19 @@ namespace Naivart.Services
             DbContext = dbContext;
         }
 
-        public void RegisterKingdom(KingdomLocationInput input)
+        public string RegisterKingdom(KingdomLocationInput input, out int status)
         {
-            if (IsCorrectLocationRange(input))
+            status = 400;
+            if (!IsCorrectLocationRange(input))
             {
-                if (IsLocationFree(input))
-                {
-
-                }
+                return "One or both coordinates are out of valid range (0-99).";
             }
+            if (IsLocationTaken(input))
+            {
+                return "Given coordinates are already taken!";
+            }
+            status = 200;
+            return "ok";
         }
 
         public bool IsCorrectLocationRange(KingdomLocationInput input)
@@ -32,9 +36,9 @@ namespace Naivart.Services
             return input.coordinateX >= 0 && input.coordinateX <= 99 && input.coordinateY >= 0 && input.coordinateY <= 99;
         }
 
-        public bool IsLocationFree(KingdomLocationInput input)
+        public bool IsLocationTaken(KingdomLocationInput input)
         {
-            return !DbContext.Locations.Any(x => x.CoordinateX == input.coordinateX && x.CoordinateY == input.coordinateY);
+            return DbContext.Locations.Any(x => x.CoordinateX == input.coordinateX && x.CoordinateY == input.coordinateY);
         }
     }
 }
