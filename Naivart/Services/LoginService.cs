@@ -92,9 +92,16 @@ namespace Naivart.Services
         }
         public PlayerWithKingdom FindPlayerByName(string name)
         {
-            var player= DbContext.Players.Where(x => x.Username == name).Include(x => x.Kingdom).FirstOrDefault();
-            PlayerWithKingdom playerWithKingdom = new PlayerWithKingdom { kingdomId = player.KingdomId, kingdomName = player.Kingdom.Name, ruler = player.Username };
-            return playerWithKingdom;
+            try
+            {
+                var player = DbContext.Players.Where(x => x.Username == name).Include(x => x.Kingdom).FirstOrDefault();
+                PlayerWithKingdom playerWithKingdom = new PlayerWithKingdom { kingdomId = player.KingdomId, kingdomName = player.Kingdom.Name, ruler = player.Username };
+                return playerWithKingdom;
+            }
+            catch
+            {
+                return null;
+            }       
         }
     }
 }

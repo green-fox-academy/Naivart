@@ -30,6 +30,7 @@ namespace Naivart
             services.AddControllersWithViews();
 
             services.AddTransient<LoginService>();
+            services.AddTransient<PlayerService>();
 
             var appSettingSection = AppConfig.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingSection);
@@ -71,7 +72,7 @@ namespace Naivart
             app.UseRouting();
 
             app.UseAuthentication();
-            app.UseAuthorization(); 
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
@@ -79,7 +80,7 @@ namespace Naivart
             });
         }
 
-        private void ConfigureDb(IServiceCollection services)
+        protected virtual void ConfigureDb(IServiceCollection services)
         {
             var connectionString = AppConfig.GetConnectionString("DefaultConnection");
             var serverVersion = new MySqlServerVersion(new Version(8, 0));

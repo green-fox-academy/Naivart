@@ -34,8 +34,8 @@ namespace Naivart.Controllers
             }
             var correctLogin = new TokenWithStatus() { status = "ok", token = token};
             return Ok(correctLogin);
-
         }
+
         [HttpPost("auth")]
         public IActionResult Auth([FromBody] PlayerIdentity token)
         {
