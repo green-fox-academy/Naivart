@@ -29,20 +29,14 @@ namespace Naivart.Controllers
         public object Kingdoms()
         {
             var kingdoms = KingdomService.GetAll();
-            var kingdomAPIModels = new List<KingdomAPIModel>();
+            var response = new KingdomAPIResponse(_mapper, kingdoms); 
 
-            if (kingdoms.Count == 0)
+            if (response.Kingdoms.Count == 0)
             {
                 return NotFound(new { errorMessage = "No data was present!" });
             }
 
-            foreach (var kingdom in kingdoms)
-            {
-                var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
-                kingdomAPIModels.Add(kingdomAPIModel);
-            }
-
-            return Ok(new { kingdoms = kingdomAPIModels });
+            return Ok(new { kingdoms = response.Kingdoms });
         }
     }
 }

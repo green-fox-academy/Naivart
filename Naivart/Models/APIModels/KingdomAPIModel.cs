@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace Naivart.Models.APIModels
 {
-    //[JsonObject]
     public class KingdomAPIModel
     {
         [JsonPropertyName("kingdom_id")]
@@ -18,6 +17,6 @@ namespace Naivart.Models.APIModels
         public string PlayerUsername { get; set; }
         public int Population { get; set; }
         [JsonPropertyName("location")]
-        public Dictionary<string, int> LocationCoordinates { get; set; }
+        public LocationAPIModel LocationAPIModel { get; set; }
     }
 }

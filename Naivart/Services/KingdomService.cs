@@ -17,7 +17,7 @@ namespace Naivart.Services
             DbContext = dbContext;
         }
 
-        public virtual List<Kingdom> GetAll()
+        public List<Kingdom> GetAll()
         {
             var kingdoms = new List<Kingdom>();
             try
