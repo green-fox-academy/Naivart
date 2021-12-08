@@ -20,21 +20,15 @@ namespace Naivart.Services
         {
                 if (password.Length >= 8 
                     && !String.IsNullOrWhiteSpace(username) 
-                    && FindPlayerByUsername(username) == null)
+                    && !isInDbWithThisUsername(username))
                 {
                     Player player = new Player() { Username = username, Password = password };
                     Kingdom kingdom = new Kingdom();
 
-                    //check if given kingdom name(and username) is not empty or already exists in database 
-                    if (!String.IsNullOrWhiteSpace(kingdomName) && FindKingdomByName(kingdomName) == null)
-                    {
-                        kingdom.Name = kingdomName;
-                    }
-                    else
-                    {
-                        kingdom.Name = $"{player.Username}'s kingdom";
-                    }
-                    var newKingdom = DbContext.Kingdoms.Add(kingdom).Entity;
+                //check if given kingdom name(and username) is not empty or already exists in database 
+                kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && FindKingdomByName(kingdomName) == null ? kingdomName : $"{player.Username}'s kingdom";
+
+                var newKingdom = DbContext.Kingdoms.Add(kingdom).Entity;
                     DbContext.SaveChanges();
 
                     var DbKingdom = FindKingdomByName(kingdom.Name);
@@ -54,9 +48,17 @@ namespace Naivart.Services
         {
             return DbContext.Kingdoms.FirstOrDefault(x => x.Name == kingdomName);
         }
-        public Player FindPlayerByUsername(string username)
+        public Player FindByUsername(string username)
         {
             return DbContext.Players.FirstOrDefault(x => x.Username == username);
+        }
+        public bool isInDbWithThisUsername(string username)
+        {
+            return DbContext.Players.Any(x => x.Username == username) ? true : false;
+        }
+        public void DeleteByUsername(string username)
+        {
+            DbContext.Players.Remove(FindByUsername(username));
         }
     }
 }

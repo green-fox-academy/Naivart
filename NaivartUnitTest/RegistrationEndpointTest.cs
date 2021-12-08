@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Naivart;
+using Naivart.Database;
 using Naivart.Models.APIModels;
+using Naivart.Services;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace NaivartUnitTest
@@ -16,20 +15,11 @@ namespace NaivartUnitTest
     public class RegistrationEndpointTest : IClassFixture<WebApplicationFactory<Startup>>
     {
         private readonly HttpClient httpClient;
+        public PlayerService PlayerService { get; set; }
         public RegistrationEndpointTest(WebApplicationFactory<Startup> factory)
         {
-            //factory.ConfigureTestServices(services =>
-            //{
-            //    // You can mock services here if you have to
-            //    // e.g.
-            //    //var mockService = Substitute.For<IHelloService>();
-            //    //string expectedResult = "test";
-            //    //mockService.SayHello().Returns(expectedResult);
-
-            //    //services.AddTransient<IHelloService>(_ => mockService);
-            //});
-
             httpClient = factory.CreateClient();
+            PlayerService = factory.Services.GetService<PlayerService>();
         }
 
         [Fact]
@@ -42,25 +32,22 @@ namespace NaivartUnitTest
             var request = new HttpRequestMessage();
             var inputObj = JsonConvert.SerializeObject(new RegisterRequest()
             {
-                username = "adam0096",
+                username = $"usertest",
                 password = "password123",
-                kingdomName = "Discovery Channel"
+                kingdomName = "kingdom Name Test"
             });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
-            //request.RequestUri = new Uri("https://localhost:44388/registration");
-            //request.Method = HttpMethod.Post;
-            //request.Content = requestContent;
-            //var response = httpClient.SendAsync(request).Result;
 
-            var response2 = httpClient.PostAsync("https://localhost:44388/registration", requestContent).Result;
-            string responseBodyContent = response2.Content.ReadAsStringAsync().Result;
+            var response = httpClient.PostAsync("https://localhost:44388/registration", requestContent).Result;
+            string responseBodyContent = response.Content.ReadAsStringAsync().Result;
             RegisterResponse RegisterResponse = JsonConvert.DeserializeObject<RegisterResponse>(responseBodyContent);
 
 
-            Assert.Equal(statusCodeExpected, response2.StatusCode);
+            Assert.Equal(statusCodeExpected, response.StatusCode);
             Assert.Equal(kingdomIdExpected, RegisterResponse.kingdomId);
             Assert.Equal(UsernameExpected, RegisterResponse.username);
 
+            PlayerService.DeleteByUsername(RegisterResponse.username);
         }
 
         [Fact]
@@ -76,11 +63,11 @@ namespace NaivartUnitTest
                 kingdomName = "Discovery Channel"
             });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
-            var response2 = httpClient.PostAsync("https://localhost:44388/registration", requestContent).Result;
-            string responseBodyContent = response2.Content.ReadAsStringAsync().Result;
+            var response = httpClient.PostAsync("https://localhost:44388/registration", requestContent).Result;
+            string responseBodyContent = response.Content.ReadAsStringAsync().Result;
             ErrorResponse ErrorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseBodyContent);
 
-            Assert.Equal(statusCodeExpected, response2.StatusCode);
+            Assert.Equal(statusCodeExpected, response.StatusCode);
             Assert.Equal(ErrorExpected, ErrorResponse.error);
 
         }
