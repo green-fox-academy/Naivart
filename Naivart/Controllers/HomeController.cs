@@ -10,11 +10,11 @@ namespace Naivart.Controllers
         public LoginService LoginService { get; set; }
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
-        public HomeController(KingdomService kingdomService, PlayerService playerService, LoginService loginservice)
+        public HomeController(KingdomService kingdomService, PlayerService playerService, LoginService loginService)
         {
             PlayerService = playerService;
             KingdomService = kingdomService;
-            LoginService = loginservice;
+            LoginService = loginService;
         }
 
         public IActionResult Index()
@@ -33,6 +33,20 @@ namespace Naivart.Controllers
             }
             var correctLogin = new TokenWithStatus() { status = "ok", token = tokenOrMessage};
             return Ok(correctLogin);
+        }
+
+        [HttpPost("auth")]
+        public IActionResult Auth([FromBody] PlayerIdentity token)
+        {
+            var player = LoginService.GetTokenOwner(token);
+            if (player == null)
+            {
+                return StatusCode(401);
+            }
+            else
+            {
+                return Ok(player);
+            }
         }
     }
 }
