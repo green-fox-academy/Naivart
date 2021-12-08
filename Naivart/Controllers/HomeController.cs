@@ -25,18 +25,13 @@ namespace Naivart.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] PlayerLogin player)
         {
-            string token = LoginService.Authenticate(player);
-            if (token == "empty")
+            string tokenOrMessage = LoginService.Authenticate(player, out int statusCode);
+            if (statusCode != 200)
             {
-                var emptyInput = new StatusForError(){ error = "Field username and/or field password was empty!" };
-                return StatusCode(400, emptyInput);
+                var output = new StatusForError(){ error = tokenOrMessage };
+                return StatusCode(statusCode, output);
             }
-            else if (token == "incorrect")
-            {
-                var wrongLogin = new StatusForError() { error = "Username and/or password was incorrect!" };
-                return StatusCode(401, wrongLogin);
-            }
-            var correctLogin = new TokenWithStatus() { status = "ok", token = token};
+            var correctLogin = new TokenWithStatus() { status = "ok", token = tokenOrMessage};
             return Ok(correctLogin);
         }
     }

@@ -21,15 +21,16 @@ namespace Naivart.Services
             DbContext = dbContext;
         }
 
-        public string Authenticate(PlayerLogin player)
+        public string Authenticate(PlayerLogin player, out int statusCode)
         {
             string username = player.username;
             string password = player.password;
+            statusCode = 400;
             try
             {
                 if (String.IsNullOrEmpty(username) || String.IsNullOrEmpty(password))
                 {
-                    return "empty";
+                    return "Field username and/or field password was empty!";
                 }
                 else if (IsLoginPasswordCorrect(username, password))
                 {
@@ -45,14 +46,17 @@ namespace Naivart.Services
                         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey),
                         SecurityAlgorithms.HmacSha256Signature) 
                     };
-                    var token = tokenHandler.CreateToken(tokenDescriptor);  
+                    var token = tokenHandler.CreateToken(tokenDescriptor);
+                    statusCode = 200;
                     return tokenHandler.WriteToken(token);  
                 }
-                    return "incorrect";
+                statusCode = 401;
+                return "Username and/or password was incorrect!";
             }
             catch (Exception)
             {
-                return "incorrect";
+                statusCode = 500;
+                return "Data could not be read";
             }
         }
         public bool IsLoginPasswordCorrect(string name, string password)    
