@@ -53,5 +53,12 @@ namespace Naivart.Controllers
                 return Ok(player);
             }
         }
+
+        [HttpPut("registration")]
+        public IActionResult KingdomRegistration([FromBody]KingdomLocationInput input)
+        {
+
+            return Ok();
+        }
     }
 }
