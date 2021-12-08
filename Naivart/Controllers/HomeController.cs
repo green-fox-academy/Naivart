@@ -6,11 +6,11 @@ namespace Naivart.Controllers
 {
     [Route("")]
     public class HomeController : Controller
-    {   
+    {
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
-        public HomeController(KingdomService kingdomService, PlayerService playerService,LoginService service)
+        public HomeController(KingdomService kingdomService, PlayerService playerService, LoginService service)
         {
             LoginService = service;
             PlayerService = playerService;
@@ -28,7 +28,7 @@ namespace Naivart.Controllers
             string token = LoginService.Authenticate(player);
             if (token == "")
             {
-                var emptyInput = new StatusForError(){ error = "Field username and/or field password was empty!" };
+                var emptyInput = new StatusForError() { error = "Field username and/or field password was empty!" };
                 return StatusCode(400, emptyInput);
             }
             else if (token is null)
@@ -36,7 +36,7 @@ namespace Naivart.Controllers
                 var wrongLogin = new StatusForError() { error = "Username and/or password was incorrect!" };
                 return StatusCode(401, wrongLogin);
             }
-            var correctLogin = new TokenWithStatus() { status = "ok", token = token};
+            var correctLogin = new TokenWithStatus() { status = "ok", token = token };
             return Ok(correctLogin);
         }
 
@@ -52,6 +52,11 @@ namespace Naivart.Controllers
             {
                 return Ok(player);
             }
+        }
+        [HttpPost("kingdoms/{id}/buildings")]
+        public IActionResult Buildings()
+        {
+            return Ok();
         }
     }
 }
