@@ -23,7 +23,7 @@ namespace Naivart.Database
                 .HasOne<Location>(k => k.Location)
                 .WithOne(l => l.Kingdom)
                 .HasForeignKey<Kingdom>(k => k.LocationId)
-                .IsRequired(true);
+                .IsRequired(false);
         }
     }
 }
