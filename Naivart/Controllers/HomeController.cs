@@ -38,7 +38,12 @@ namespace Naivart.Controllers
 
             foreach (var kingdom in kingdoms)
             {
-                var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
+                var kingdomAPIModel = new KingdomAPIModel();
+                kingdomAPIModel.Name = kingdom.Name;
+            //    kingdomAPIModel.PlayerUsername = kingdom.Player.Username;
+
+
+
                 kingdomAPIModels.Add(kingdomAPIModel);
             }
 

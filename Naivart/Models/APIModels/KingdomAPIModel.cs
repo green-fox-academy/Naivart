@@ -18,6 +18,6 @@ namespace Naivart.Models.APIModels
         public string PlayerUsername { get; set; }
         public int Population { get; set; }
         [JsonPropertyName("location")]
-        public Dictionary<string, int> LocationCoordinates { get; set; }
+        public Location Location { get; set; }
     }
 }
