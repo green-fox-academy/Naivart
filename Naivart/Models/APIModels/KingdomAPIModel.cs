@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Models.APIModels
 {
+    //[JsonObject]
     public class KingdomAPIModel
     {
         [JsonPropertyName("kingdom_id")]

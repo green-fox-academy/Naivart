@@ -51,7 +51,7 @@ namespace Naivart
             });
         }
 
-        private void ConfigureDb(IServiceCollection services)
+        protected virtual void ConfigureDb(IServiceCollection services)
         {
             var connectionString = AppConfig.GetConnectionString("DefaultConnection");
             var serverVersion = new MySqlServerVersion(new Version(8, 0));

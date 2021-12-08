@@ -31,6 +31,11 @@ namespace Naivart.Controllers
             var kingdoms = KingdomService.GetAll();
             var kingdomAPIModels = new List<KingdomAPIModel>();
 
+            if (kingdoms.Count == 0)
+            {
+                return NotFound(new { errorMessage = "No data was present!" });
+            }
+
             foreach (var kingdom in kingdoms)
             {
                 var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);

@@ -17,12 +17,22 @@ namespace Naivart.Services
             DbContext = dbContext;
         }
 
-        public List<Kingdom> GetAll()
+        public virtual List<Kingdom> GetAll()
         {
-            return DbContext.Kingdoms
-                .Include(k => k.Player)
-                .Include(k => k.Location)
-                .ToList();   
+            var kingdoms = new List<Kingdom>();
+            try
+            {
+                kingdoms = DbContext.Kingdoms
+                    .Include(k => k.Player)
+                    .Include(k => k.Location)
+                    .ToList();
+
+                return kingdoms;
+            }
+            catch
+            {
+                return kingdoms;
+            }
         }
     }
 }

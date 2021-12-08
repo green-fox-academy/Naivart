@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Naivart", "Naivart\Naivart.csproj", "{B7D91C09-BE6D-4032-ACC5-0F3C664ECA1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Naivart", "Naivart\Naivart.csproj", "{B7D91C09-BE6D-4032-ACC5-0F3C664ECA1C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaivartUnitTest", "NaivartUnitTest\NaivartUnitTest.csproj", "{D7F299DA-717D-4C48-894B-279BB72296F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{B7D91C09-BE6D-4032-ACC5-0F3C664ECA1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7D91C09-BE6D-4032-ACC5-0F3C664ECA1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7D91C09-BE6D-4032-ACC5-0F3C664ECA1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7F299DA-717D-4C48-894B-279BB72296F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7F299DA-717D-4C48-894B-279BB72296F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7F299DA-717D-4C48-894B-279BB72296F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7F299DA-717D-4C48-894B-279BB72296F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
