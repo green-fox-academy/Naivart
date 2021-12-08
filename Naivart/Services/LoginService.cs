@@ -25,11 +25,11 @@ namespace Naivart.Services
         {
             string username = player.username;
             string password = player.password;
-            statusCode = 400;
             try
             {
                 if (String.IsNullOrEmpty(username) || String.IsNullOrEmpty(password))
                 {
+                    statusCode = 400;
                     return "Field username and/or field password was empty!";
                 }
                 else if (IsLoginPasswordCorrect(username, password))
