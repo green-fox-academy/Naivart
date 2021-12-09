@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Naivart.Models.Entities
 {
@@ -11,6 +12,7 @@ namespace Naivart.Models.Entities
         public int Population { get; set; }
         public long? LocationId { get; set; }
         public Location Location { get; set; }
-
+        public List<Resource> Resources { get; set; }
+        public Resource Resource { get; set; }
     }
 }
