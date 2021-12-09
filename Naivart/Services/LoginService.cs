@@ -34,7 +34,7 @@ namespace Naivart.Services
             else if (LoginPasswordCheck(username, password))
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var tokenKey = Encoding.ASCII.GetBytes(_appSettings.key);
+                var tokenKey = Encoding.ASCII.GetBytes(_appSettings.Key);
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new Claim[]
@@ -69,7 +69,7 @@ namespace Naivart.Services
                 if (jwtToken == null)
                     return null;
 
-                var symmetricKey = Encoding.ASCII.GetBytes(_appSettings.key);
+                var symmetricKey = Encoding.ASCII.GetBytes(_appSettings.Key);
 
                 var validationParameters = new TokenValidationParameters()
                 {
