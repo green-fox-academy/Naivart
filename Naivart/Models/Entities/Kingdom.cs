@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Naivart.Models.Entities
 {
@@ -15,6 +11,6 @@ namespace Naivart.Models.Entities
         public int Population { get; set; }
         public long? LocationId { get; set; }
         public Location Location { get; set; }
-        public List<Building> Buildings { get; set; }
+
     }
 }

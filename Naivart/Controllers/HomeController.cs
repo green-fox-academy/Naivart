@@ -1,42 +1,45 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
 using Naivart.Services;
 
 namespace Naivart.Controllers
 {
-    [Route("")]
+    [Route("/")]
     public class HomeController : Controller
     {
+        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
-        public HomeController(KingdomService kingdomService, PlayerService playerService, LoginService service)
+        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService service)
         {
+            _mapper = mapper;
+            KingdomService = kingdomService;
             LoginService = service;
             PlayerService = playerService;
-            KingdomService = kingdomService;
         }
 
-        public IActionResult Index()
+        [HttpGet("kingdoms")]
+        public object Kingdoms()
         {
-            return View();
+            var kingdoms = KingdomService.GetAll();
+            var response = new KingdomAPIResponse(_mapper, kingdoms);
+
+            return response.Kingdoms.Count == 0 ? NotFound(new { kingdoms = response.Kingdoms })
+                                                : Ok(new { kingdoms = response.Kingdoms });
         }
 
         [HttpPost("login")]
         public IActionResult Login([FromBody] PlayerLogin player)
         {
-            string token = LoginService.Authenticate(player);
-            if (token == "")
+            string tokenOrMessage = LoginService.Authenticate(player, out int statusCode);
+            if (statusCode != 200)
             {
-                var emptyInput = new StatusForError() { error = "Field username and/or field password was empty!" };
-                return StatusCode(400, emptyInput);
+                var output = new StatusForError(){ error = tokenOrMessage };
+                return StatusCode(statusCode, output);
             }
-            else if (token is null)
-            {
-                var wrongLogin = new StatusForError() { error = "Username and/or password was incorrect!" };
-                return StatusCode(401, wrongLogin);
-            }
-            var correctLogin = new TokenWithStatus() { status = "ok", token = token };
+            var correctLogin = new TokenWithStatus() { status = "ok", token = tokenOrMessage};
             return Ok(correctLogin);
         }
 
