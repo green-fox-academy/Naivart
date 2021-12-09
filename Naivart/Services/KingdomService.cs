@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Naivart.Models.APIModels;
+using Microsoft.EntityFrameworkCore;
+using Naivart.Models.Entities;
 
 namespace Naivart.Services
 {
@@ -23,12 +25,18 @@ namespace Naivart.Services
             {
                 return "One or both coordinates are out of valid range (0-99).";
             }
-            if (IsLocationTaken(input))
+            else if (IsLocationTaken(input))
             {
                 return "Given coordinates are already taken!";
             }
-            status = 200;
-            return "ok";
+            else if (HasAlreadyLocation(input))
+            {
+                ConnectLocation(input);
+                status = 200;
+                return "ok";
+            }
+            status = 409;
+            return "Your kingdom already have location!";
         }
 
         public bool IsCorrectLocationRange(KingdomLocationInput input)
@@ -39,6 +47,20 @@ namespace Naivart.Services
         public bool IsLocationTaken(KingdomLocationInput input)
         {
             return DbContext.Locations.Any(x => x.CoordinateX == input.coordinateX && x.CoordinateY == input.coordinateY);
+        }
+        public bool HasAlreadyLocation(KingdomLocationInput input)
+        {
+            return DbContext.Kingdoms.Any(x => x.Id == input.kingdomId && x.LocationId == null);
+        }
+        public void ConnectLocation(KingdomLocationInput input)
+        {
+            var model = new Location() {CoordinateX = input.coordinateX, CoordinateY = input.coordinateY };
+            DbContext.Locations.Add(model);
+            DbContext.SaveChanges();
+            //var locationModel = DbContext.Kingdoms.Where(x => x.Id == input.kingdomId).Include(x => x.Location).FirstOrDefault();
+            //model.Location.CoordinateX = input.coordinateX;
+            //model.Location.CoordinateY = input.coordinateY;
+            //DbContext.SaveChanges();
         }
     }
 }

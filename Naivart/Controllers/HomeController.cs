@@ -58,12 +58,11 @@ namespace Naivart.Controllers
         public IActionResult KingdomRegistration([FromBody]KingdomLocationInput input)
         {
             string result = KingdomService.RegisterKingdom(input, out int status);
-            if (status == 400)
+            if (status != 400)
             {
                 var outputError = new StatusForError() { error = result};
                 return StatusCode(status, outputError);
             }
-
             var outputOk = new StatusOutput() { status = result };
             return Ok(outputOk);
         }
