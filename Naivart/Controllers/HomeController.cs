@@ -54,6 +54,12 @@ namespace Naivart.Controllers
                                                 : Ok(new { kingdoms = response.Kingdoms });
         }
 
+        [HttpGet("kingdoms/{id}/resources")]
+        public object Resources([FromRoute] long id)
+        {
+
+        }
+
         [HttpPost("login")]
         public IActionResult Login([FromBody] PlayerLogin player)
         {
