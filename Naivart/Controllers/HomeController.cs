@@ -43,9 +43,9 @@ namespace Naivart.Controllers
                 return StatusCode(400, response);
             }
         }
+
         [HttpGet("kingdoms")]
         public object Kingdoms()
-        public IActionResult Index()
         {
             var kingdoms = KingdomService.GetAll();
             var response = new KingdomAPIResponse(_mapper, kingdoms);
@@ -80,6 +80,5 @@ namespace Naivart.Controllers
                 return Ok(player);
             }
         }
-
     }
 }
