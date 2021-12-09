@@ -118,5 +118,13 @@ namespace Naivart.Services
                 return null;
             }       
         }
+        public string CleanToken(string auth)
+        {
+            return auth.Remove(0,7);
+        }
+        public bool IsTokenOwner(string username, string auth)
+        {
+            return true;
+        }
     }
 }
