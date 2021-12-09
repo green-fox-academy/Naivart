@@ -45,7 +45,7 @@ namespace Naivart.Services
         }
 
         public string RegisterKingdom(KingdomLocationInput input, string authorization, out int status)
-        {
+        {           
             try
             {
                 status = 400;
@@ -59,9 +59,14 @@ namespace Naivart.Services
                 }
                 else if (HasAlreadyLocation(input))
                 {
-                    ConnectLocation(input);
-                    status = 200;
-                    return "ok";
+                    if (LoginService.IsTokenOwner(FindKingdomOwnerPlayer(input.kingdomId), authorization))
+                    {
+                        ConnectLocation(input);
+                        status = 200;
+                        return "ok";
+                    }
+                    status = 500;
+                    return "Wrong user authentication!";
                 }
                 status = 409;
                 return "Your kingdom already have location!";
@@ -110,6 +115,18 @@ namespace Naivart.Services
                 long locationId = DbContext.Locations.FirstOrDefault(x => x.CoordinateX == model.CoordinateX && x.CoordinateY == model.CoordinateY).Id;
                 DbContext.Kingdoms.FirstOrDefault(x => x.Id == input.kingdomId).LocationId = locationId;
                 DbContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
+        }
+
+        public string FindKingdomOwnerPlayer(long kingdomId)
+        {
+            try
+            {
+                return DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username;
             }
             catch (Exception e)
             {

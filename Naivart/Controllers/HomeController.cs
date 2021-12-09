@@ -21,7 +21,7 @@ namespace Naivart.Controllers
             LoginService = service;
             PlayerService = playerService;
         }
-
+        [AllowAnonymous]
         [HttpGet("kingdoms")]
         public object Kingdoms()
         {

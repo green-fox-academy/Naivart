@@ -124,7 +124,9 @@ namespace Naivart.Services
         }
         public bool IsTokenOwner(string username, string auth)
         {
-            return true;
+            string token = CleanToken(auth);
+            var model = GetTokenOwner(new PlayerIdentity() { token = token});
+            return model.ruler == username;
         }
     }
 }
