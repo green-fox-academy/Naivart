@@ -1,33 +1,25 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
 using Naivart.Services;
 
 namespace Naivart.Controllers
 {
-    [Route("/")]
+    [Route("")]
     public class HomeController : Controller
     {
-        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
+        public LoginService LoginService { get; set; }
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
-        public LoginService LoginService { get; set; }
-        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService service)
+        public HomeController(KingdomService kingdomService, PlayerService playerService, LoginService loginService)
         {
-            _mapper = mapper;
-            KingdomService = kingdomService;
-            LoginService = service;
             PlayerService = playerService;
+            KingdomService = kingdomService;
+            LoginService = loginService;
         }
 
-        [HttpGet("kingdoms")]
-        public object Kingdoms()
+        public IActionResult Index()
         {
-            var kingdoms = KingdomService.GetAll();
-            var response = new KingdomAPIResponse(_mapper, kingdoms);
-
-            return response.Kingdoms.Count == 0 ? NotFound(new { kingdoms = response.Kingdoms })
-                                                : Ok(new { kingdoms = response.Kingdoms });
+            return View();
         }
 
         [HttpPost("login")]
