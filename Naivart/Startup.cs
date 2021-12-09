@@ -36,7 +36,7 @@ namespace Naivart
             services.Configure<AppSettings>(appSettingSection);
 
             var appSettings = appSettingSection.Get<AppSettings>();
-            var key = Encoding.ASCII.GetBytes(appSettings.key);
+            var key = Encoding.ASCII.GetBytes(appSettings.Key);
 
             services.AddAuthentication(x =>
             {

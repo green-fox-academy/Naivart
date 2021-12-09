@@ -7,6 +7,6 @@ namespace Naivart.Models
 {
     public class AppSettings
     {
-        public string key { get; set; }
+        public string Key { get; set; }
     }
 }
