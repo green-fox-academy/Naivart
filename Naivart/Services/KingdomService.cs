@@ -57,10 +57,9 @@ namespace Naivart.Services
             var model = new Location() {CoordinateX = input.coordinateX, CoordinateY = input.coordinateY };
             DbContext.Locations.Add(model);
             DbContext.SaveChanges();
-            //var locationModel = DbContext.Kingdoms.Where(x => x.Id == input.kingdomId).Include(x => x.Location).FirstOrDefault();
-            //model.Location.CoordinateX = input.coordinateX;
-            //model.Location.CoordinateY = input.coordinateY;
-            //DbContext.SaveChanges();
+            long locationId = DbContext.Locations.FirstOrDefault(x => x.CoordinateX == model.CoordinateX && x.CoordinateY == model.CoordinateY).Id;
+            DbContext.Kingdoms.FirstOrDefault(x => x.Id == input.kingdomId).LocationId = locationId;
+            DbContext.SaveChanges();
         }
     }
 }
