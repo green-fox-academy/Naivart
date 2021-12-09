@@ -22,7 +22,7 @@ namespace Naivart.Controllers
             LoginService = service;
             PlayerService = playerService;
         }
-
+        [AllowAnonymous]
         [HttpPost("registration")]
         public IActionResult Registration([FromBody] RegisterRequest request)
         {
