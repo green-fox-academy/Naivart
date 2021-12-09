@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
+using Naivart.Models.Entities;
 using Naivart.Services;
 
 namespace Naivart.Controllers
@@ -21,6 +22,29 @@ namespace Naivart.Controllers
             LoginService = service;
             PlayerService = playerService;
         }
+
+        [HttpPost("registration")]
+        public IActionResult Registration([FromBody] RegisterRequest request)
+        {
+            Player player = PlayerService.RegisterPlayer(
+                request.username,
+                request.password,
+                request.kingdomName);
+            if (player != null)
+            {
+                var response = new RegisterResponse()
+                {
+                    username = player.Username,
+                    kingdomId = player.Kingdom.Id
+                };
+                return StatusCode(200, response);
+            }
+            else
+            {
+                var response = new ErrorResponse() { error = "Username was empty, already exists or password was shorter than 8 characters!" };
+                return StatusCode(400, response);
+            }
+        }
         [AllowAnonymous]
         [HttpGet("kingdoms")]
         public object Kingdoms()
@@ -38,10 +62,10 @@ namespace Naivart.Controllers
             string tokenOrMessage = LoginService.Authenticate(player, out int statusCode);
             if (statusCode != 200)
             {
-                var output = new StatusForError(){ error = tokenOrMessage };
+                var output = new StatusForError() { error = tokenOrMessage };
                 return StatusCode(statusCode, output);
             }
-            var correctLogin = new TokenWithStatus() { status = "ok", token = tokenOrMessage};
+            var correctLogin = new TokenWithStatus() { status = "ok", token = tokenOrMessage };
             return Ok(correctLogin);
         }
         [AllowAnonymous]
