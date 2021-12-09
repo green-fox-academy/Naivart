@@ -65,7 +65,7 @@ namespace Naivart.Services
                         status = 200;
                         return "ok";
                     }
-                    status = 500;
+                    status = 401;
                     return "Wrong user authentication!";
                 }
                 status = 409;
