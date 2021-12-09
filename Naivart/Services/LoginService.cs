@@ -15,49 +15,64 @@ namespace Naivart.Services
     public class LoginService
     {
         private ApplicationDbContext DbContext { get; }
-        private readonly AppSettings _appSettings;
+        private readonly AppSettings appSettings;
         public LoginService(IOptions<AppSettings> appSettings, ApplicationDbContext dbContext)
         {
+            this.appSettings = appSettings.Value;
             DbContext = dbContext;
-            _appSettings = appSettings.Value;
         }
 
-        public string Authenticate(PlayerLogin player)
+        public string Authenticate(PlayerLogin player, out int statusCode)
         {
             string username = player.username;
             string password = player.password;
-
-            if (String.IsNullOrEmpty(username) || String.IsNullOrEmpty(password))
+            try
             {
-                return "";
-            }
-            else if (LoginPasswordCheck(username, password))
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var tokenKey = Encoding.ASCII.GetBytes(_appSettings.key);
-                var tokenDescriptor = new SecurityTokenDescriptor
+                if (String.IsNullOrEmpty(username) || String.IsNullOrEmpty(password))
                 {
-                    Subject = new ClaimsIdentity(new Claim[]
+                    statusCode = 400;
+                    return "Field username and/or field password was empty!";
+                }
+                else if (IsLoginPasswordCorrect(username, password))
+                {
+                    var tokenHandler = new JwtSecurityTokenHandler();
+                    var tokenKey = Encoding.ASCII.GetBytes(appSettings.Key);
+                    var tokenDescriptor = new SecurityTokenDescriptor
                     {
-                        new Claim(ClaimTypes.Name, username)    
-                    }),
-                    Expires = DateTime.UtcNow.AddHours(24),  
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey),
-                    SecurityAlgorithms.HmacSha256Signature) 
-                };
-                var token = tokenHandler.CreateToken(tokenDescriptor);  
-                return tokenHandler.WriteToken(token);  
+                        Subject = new ClaimsIdentity(new Claim[]
+                        {
+                            new Claim(ClaimTypes.Name, username)    
+                        }),
+                        Expires = DateTime.UtcNow.AddHours(24),  
+                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey),
+                        SecurityAlgorithms.HmacSha256Signature) 
+                    };
+                    var token = tokenHandler.CreateToken(tokenDescriptor);
+                    statusCode = 200;
+                    return tokenHandler.WriteToken(token);  
+                }
+                statusCode = 401;
+                return "Username and/or password was incorrect!";
             }
-            else
+            catch (Exception)
             {
-                return null;
+                statusCode = 500;
+                return "Data could not be read";
+            }
+        }
+        public bool IsLoginPasswordCorrect(string name, string password)    
+        {
+            try
+            {
+                return DbContext.Players.Any(x => x.Username == name && x.Password == password);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
             }
         }
 
-        public bool LoginPasswordCheck(string name, string password)    
-        {
-            return DbContext.Players.Any(x => x.Username == name && x.Password == password);
-        }
+
         public PlayerWithKingdom GetTokenOwner(PlayerIdentity player)
         {
             string token = player.token;
@@ -69,7 +84,7 @@ namespace Naivart.Services
                 if (jwtToken == null)
                     return null;
 
-                var symmetricKey = Encoding.ASCII.GetBytes(_appSettings.key);
+                var symmetricKey = Encoding.ASCII.GetBytes(appSettings.Key);
 
                 var validationParameters = new TokenValidationParameters()
                 {
