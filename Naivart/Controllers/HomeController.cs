@@ -7,15 +7,15 @@ namespace Naivart.Controllers
 {
     [Route("")]
     public class HomeController : Controller
-    {   
+    {
+        public LoginService LoginService { get; set; }
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
-        public LoginService LoginService { get; set; }
-        public HomeController(KingdomService kingdomService, PlayerService playerService,LoginService service)
+        public HomeController(KingdomService kingdomService, PlayerService playerService, LoginService loginService)
         {
-            LoginService = service;
             PlayerService = playerService;
             KingdomService = kingdomService;
+            LoginService = loginService;
         }
 
         [HttpPost("registration")]
@@ -44,18 +44,13 @@ namespace Naivart.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] PlayerLogin player)
         {
-            string token = LoginService.Authenticate(player);
-            if (token == "")
+            string tokenOrMessage = LoginService.Authenticate(player, out int statusCode);
+            if (statusCode != 200)
             {
-                var emptyInput = new StatusForError(){ error = "Field username and/or field password was empty!" };
-                return StatusCode(400, emptyInput);
+                var output = new StatusForError(){ error = tokenOrMessage };
+                return StatusCode(statusCode, output);
             }
-            else if (token is null)
-            {
-                var wrongLogin = new StatusForError() { error = "Username and/or password was incorrect!" };
-                return StatusCode(401, wrongLogin);
-            }
-            var correctLogin = new TokenWithStatus() { status = "ok", token = token};
+            var correctLogin = new TokenWithStatus() { status = "ok", token = tokenOrMessage};
             return Ok(correctLogin);
         }
 

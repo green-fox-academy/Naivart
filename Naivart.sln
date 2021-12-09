@@ -5,6 +5,7 @@ VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Naivart", "Naivart\Naivart.csproj", "{B7D91C09-BE6D-4032-ACC5-0F3C664ECA1C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaivartUnitTest", "NaivartUnitTest\NaivartUnitTest.csproj", "{9D2EF28F-EFEB-47B1-A1CF-B6E813DB2985}"
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaivartUnitTest", "NaivartUnitTest\NaivartUnitTest.csproj", "{E30E5C53-9B72-4E50-9E72-E9CEF2EA9AA8}"
 EndProject
 Global
