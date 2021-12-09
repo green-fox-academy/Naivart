@@ -11,7 +11,6 @@ namespace Naivart.Services
     public class KingdomService
     {
         private ApplicationDbContext DbContext { get; }
-
         public KingdomService(ApplicationDbContext dbContext)
         {
             DbContext = dbContext;

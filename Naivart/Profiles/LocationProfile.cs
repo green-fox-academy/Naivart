@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Profiles
 {
-    public class LocationProfile : Profile
+    public class LocationProfile : Profile //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
     {
         public LocationProfile()
         {

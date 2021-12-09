@@ -1,16 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Naivart;
 using Naivart.Models.APIModels;
-using Naivart.Models.Entities;
-using Naivart.Services;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace NaivartUnitTest
@@ -25,63 +21,67 @@ namespace NaivartUnitTest
         }
 
         [Fact]
-        public void KingdomsEndpoint_ShouldReturnListOfKingdomAPIModels()
+        public void KingdomsEndpoint_CaseWithOneKingdomShouldPass()
         {
             //arrange
+            HttpStatusCode expectedStatusCode = HttpStatusCode.OK;
             var request = new HttpRequestMessage();
             request.RequestUri = new Uri("https://localhost:44311/kingdoms");
             request.Method = HttpMethod.Get;
 
-            //act
-            var response = HttpClient.SendAsync(request).Result;
+            var locationAPIModel = new LocationAPIModel()
+            {
+                CoordinateX = 15,
+                CoordinateY = 30
+            };
 
-            //assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
-        //[Fact]
-        //public void Get_EdgeCaseWithZeroKingdomsShouldReturnEmptyList()
-        //{
-        //    //arrange
-        //    var request = new HttpRequestMessage();
-        //    var inputObj = JsonConvert.SerializeObject(new List<KingdomAPIModel>());
-        //    StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
-        //    request.RequestUri = new Uri("https://localhost:44311/kingdoms");
-        //    request.Method = HttpMethod.Get;
-        //    request.Content = requestContent;
-
-        //    //act
-        //    var response = HttpClient.SendAsync(request).Result;
-
-        //    //assert
-        //    Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        //}
-
-        [Fact]
-        public void KingdomsEndpoint_ShouldReturnListOfKingdomAPIModels2()
-        {
-            //arrange4
-            HttpStatusCode expectedStatusCode = HttpStatusCode.OK;
-            //string expectedMessage = "No data was present!";
-            //var inputDataObj = JsonConvert.SerializeObject(new List<KingdomAPIModel>());
-            //StringContent requestContent = new(inputDataObj, Encoding.UTF8, "application/json");
             var kingdomAPIModel = new KingdomAPIModel()
             {
-                Id = 1,
-                Name = "Igala",
-                PlayerUsername = "Adam",
+                Kingdom_Id = 1,
+                KingdomName = "Igala",
+                Ruler = "Adam",
                 Population = 1,
-                LocationCoordinates = new Dictionary<string, int>() { { "coordinateX", 15 }, { "coordinateY", 30 } }
+                Location = locationAPIModel
             };
-            
+
+            var kingdomAPIResponse = new KingdomAPIResponse()
+            {
+                Kingdoms = new List<KingdomAPIModel>() { kingdomAPIModel }
+            };
+
             //act
-            var response = HttpClient.GetAsync("https://localhost:44311/kingdoms").Result;
+            var response = HttpClient.SendAsync(request).Result;
             var responseData = response.Content.ReadAsStringAsync().Result;
-            var responseDataObj = JsonConvert.DeserializeObject<List<KingdomAPIModel>>(responseData);
+            var responseDataObj = JsonConvert.DeserializeObject<KingdomAPIResponse>(responseData);
+
+            //assert
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.Equal(expectedStatusCode, response.StatusCode);
+            kingdomAPIModel.Should().BeEquivalentTo(responseDataObj.Kingdoms[0]); //install Fluent Assertions NuGet Package ver. 6.2.0
+        }
+
+        [Fact]
+        public void KingdomsEndpoint_EdgeCaseWithZeroKingdomsShouldFailForNow() //need to set up functional database and service mocking
+        {
+            //arrange
+            HttpStatusCode expectedStatusCode = HttpStatusCode.NotFound;
+            var request = new HttpRequestMessage();
+            request.RequestUri = new Uri("https://localhost:44311/kingdoms");
+            request.Method = HttpMethod.Get;
+
+            var kingdomAPIResponse = new KingdomAPIResponse()
+            {
+                Kingdoms = new List<KingdomAPIModel>()
+            };
+
+            //act
+            var response = HttpClient.SendAsync(request).Result;
+            var responseData = response.Content.ReadAsStringAsync().Result;
+            var responseDataObj = JsonConvert.DeserializeObject<KingdomAPIResponse>(responseData);
 
             //assert
             Assert.Equal(expectedStatusCode, response.StatusCode);
-            Assert.Equal(kingdomAPIModel, responseDataObj[0]);
+            kingdomAPIResponse.Should().BeEquivalentTo(responseDataObj);
         }
     }
 }
