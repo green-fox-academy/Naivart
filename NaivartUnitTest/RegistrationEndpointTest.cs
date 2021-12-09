@@ -28,7 +28,7 @@ namespace NaivartUnitTest
             int rInt = r.Next(0, 1000);
 
             var statusCodeExpected = HttpStatusCode.OK;
-            long kingdomIdExpected = 18;
+            //long kingdomIdExpected = 18;
             string UsernameExpected = $"usertest{rInt}";
 
             var request = new HttpRequestMessage();
