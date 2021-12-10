@@ -7,8 +7,7 @@ namespace Naivart.Models.APIModels
     public class KingdomAPIResponse
     {
         private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
-        public List<KingdomAPIModel> Kingdoms { get; set; }
-
+        public List<KingdomAPIModel> Kingdoms { get; set;}
         public KingdomAPIResponse()
         {
 
