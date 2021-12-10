@@ -23,6 +23,11 @@ namespace Naivart.Services
         {
             var resourceAPIModels = new List<ResourceAPIModel>();
 
+            if (resources is null)
+            {
+                return resourceAPIModels;
+            }
+
             foreach (var resource in resources)
             {
                 var resourceAPIModel = _mapper.Map<ResourceAPIModel>(resource);

@@ -68,7 +68,6 @@ namespace Naivart.Controllers
                 Kingdom = kingdomAPIModel,
                 Resources = resourceAPIModels
             };
-
             return Ok(response);
         }
 
