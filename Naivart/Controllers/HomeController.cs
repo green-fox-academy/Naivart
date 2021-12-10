@@ -20,9 +20,8 @@ namespace Naivart.Controllers
             _mapper = mapper;
             ResourceService = resourceService;
             KingdomService = kingdomService;
-            LoginService = service;
-            PlayerService = playerService;
             LoginService = loginService;
+            PlayerService = playerService;
         }
         
         [HttpPost("registration")]

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Naivart.Models.Entities;
 using Naivart.Models;
 using Microsoft.Extensions.Options;
+using System;
 
 namespace Naivart.Services
 {
@@ -57,25 +58,6 @@ namespace Naivart.Services
                 kingdomAPIModels.Add(kingdomAPIModel);
             }
             return kingdomAPIModels;
-        }
-
-        public Kingdom GetById(long id)
-        {
-            var kingdom = new Kingdom();
-            try
-            {
-               kingdom = DbContext.Kingdoms
-                    .Where(k => k.Id == id)
-                    .Include(k => k.Player)
-                    .Include(k => k.Location)
-                    .Include(k => k.Resources)
-                    .FirstOrDefault();
-                return kingdom;
-            }
-            catch
-            {
-                return kingdoms;
-            }
         }
 
         public string RegisterKingdom(KingdomLocationInput input, string authorization, out int status)
@@ -193,10 +175,7 @@ namespace Naivart.Services
             }
         }
 
-    }
-                return kingdom;
-            }
-        }
+    
 
         public KingdomAPIModel KingdomMapping(Kingdom kingdom)
         {
