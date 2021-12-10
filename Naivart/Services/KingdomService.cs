@@ -145,5 +145,19 @@ namespace Naivart.Services
                 status = 401;
             }
         }
+        public Kingdom GetById(long id)
+        {
+            var kingdom = new Kingdom();
+            try
+            {
+                kingdom = DbContext.Kingdoms.Include(k => k.Player).Include(k => k.Location).Include(k => k.Buildings).FirstOrDefault(k => k.Id == id);
+                return kingdom;
+            }
+            catch(Exception)
+            {
+                return null;
+            }
+        }
+
     }
 }
