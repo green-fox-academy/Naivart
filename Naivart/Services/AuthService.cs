@@ -40,14 +40,16 @@ namespace Naivart.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
         public string GetNameFromToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
 
             if (jwtToken == null)
+            {
                 return null;
-
+            }
             var symmetricKey = Encoding.ASCII.GetBytes(appSettings.Key);
 
             var validationParameters = new TokenValidationParameters()
@@ -61,10 +63,12 @@ namespace Naivart.Services
             var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
             return principal.Identity.Name;
         }
-        public string CleanToken(string auth)
+
+        public string CleanToken(string auth)   //remove "bearer " from authentication token
         {
             return auth.Remove(0, 7);
         }
+
         public bool IsTokenOwner(string username, string auth)
         {
             string token = CleanToken(auth);

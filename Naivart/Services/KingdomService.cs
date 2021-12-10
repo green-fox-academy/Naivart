@@ -23,6 +23,7 @@ namespace Naivart.Services
             DbContext = dbContext;
             AuthService = authService;
         }
+
         public List<Kingdom> GetAll()
         {
             var kingdoms = new List<Kingdom>();
@@ -40,6 +41,7 @@ namespace Naivart.Services
                 return kingdoms;
             }
         }
+
         public string RegisterKingdom(KingdomLocationInput input, string usernameToken, out int status)
         {           
             try
@@ -90,6 +92,7 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
+
         public bool HasAlreadyLocation(KingdomLocationInput input)
         {
             try
@@ -101,6 +104,7 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
+
         public void ConnectLocation(KingdomLocationInput input)
         {
             try
@@ -117,6 +121,7 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
+
         public string FindKingdomOwnerPlayer(long kingdomId)
         {
             try
@@ -128,6 +133,7 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
+
         public bool IsUserKingdomOwner(long kingdomId, string username)
         {           
             try
