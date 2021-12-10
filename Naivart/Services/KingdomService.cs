@@ -18,12 +18,14 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         private readonly AppSettings appSettings;
         public LoginService LoginService { get; set; }
+        public AuthService AuthService { get; set; }
 
-        public KingdomService(ApplicationDbContext dbContext, IOptions<AppSettings> appSettings, LoginService loginService)
+        public KingdomService(ApplicationDbContext dbContext, IOptions<AppSettings> appSettings, LoginService loginService, AuthService authService)
         {
             this.appSettings = appSettings.Value;
             DbContext = dbContext;
             LoginService = loginService;
+            AuthService = authService;
         }
 
         public List<Kingdom> GetAll()
@@ -59,7 +61,7 @@ namespace Naivart.Services
                 }
                 else if (HasAlreadyLocation(input))
                 {
-                    if (LoginService.IsTokenOwner(FindKingdomOwnerPlayer(input.kingdomId), authorization))
+                    if (AuthService.IsTokenOwner(FindKingdomOwnerPlayer(input.kingdomId), authorization))
                     {
                         ConnectLocation(input);
                         status = 200;
