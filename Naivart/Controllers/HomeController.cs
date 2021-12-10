@@ -86,9 +86,9 @@ namespace Naivart.Controllers
         }
         [Authorize]
         [HttpPut("registration")]
-        public IActionResult KingdomRegistration([FromBody]KingdomLocationInput input, [FromHeader]string authorization)
+        public IActionResult KingdomRegistration([FromBody]KingdomLocationInput input)
         {
-            string result = KingdomService.RegisterKingdom(input, authorization, out int status);
+            string result = KingdomService.RegisterKingdom(input, HttpContext.User.Identity.Name, out int status);
             if (status != 200)
             {
                 var outputError = new StatusForError() { error = result};

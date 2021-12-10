@@ -17,12 +17,10 @@ namespace Naivart.Services
     {
         private ApplicationDbContext DbContext { get; }
         private readonly AppSettings appSettings;
-        public LoginService LoginService { get; set; }
-        public AuthService(IOptions<AppSettings> appSettings, ApplicationDbContext dbContext, LoginService loginService)
+        public AuthService(IOptions<AppSettings> appSettings, ApplicationDbContext dbContext)
         {
             this.appSettings = appSettings.Value;
             DbContext = dbContext;
-            LoginService = loginService;
         }
 
         public string GetToken(string username)
@@ -70,8 +68,9 @@ namespace Naivart.Services
         public bool IsTokenOwner(string username, string auth)
         {
             string token = CleanToken(auth);
-            var model = LoginService.GetTokenOwner(new PlayerIdentity() { token = token });
-            return model.ruler == username;
+            var name = GetNameFromToken(token);
+            return name == username;
         }
+
     }
 }

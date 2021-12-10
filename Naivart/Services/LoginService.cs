@@ -23,7 +23,6 @@ namespace Naivart.Services
             DbContext = dbContext;
             AuthService = authService;
         }
-
         public string Authenticate(PlayerLogin player, out int statusCode)
         {
             string username = player.username;
@@ -60,8 +59,6 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
-
-
         public PlayerWithKingdom GetTokenOwner(PlayerIdentity player)
         {
             string token = player.token;
