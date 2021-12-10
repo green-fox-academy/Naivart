@@ -12,11 +12,11 @@ namespace Naivart.Controllers
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
-        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService service)
+        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService loginService)
         {
             _mapper = mapper;
             KingdomService = kingdomService;
-            LoginService = service;
+            LoginService = loginService;
             PlayerService = playerService;
         }
 
@@ -56,10 +56,19 @@ namespace Naivart.Controllers
                 return Ok(player);
             }
         }
-        [HttpPost("kingdoms/{id}/buildings")]
-        public IActionResult Buildings()
+        [HttpGet("kingdoms/{id=int}/buildings")]
+        public IActionResult Buildings([FromRoute] int id)
         {
-            return Ok();
+            var kingdom = KingdomService.GetById(id);
+            if (kingdom == null)
+            {
+                return StatusCode(401);
+            }
+            else
+            {
+                return Ok(kingdom);
+            }
+            
         }
     }
 }

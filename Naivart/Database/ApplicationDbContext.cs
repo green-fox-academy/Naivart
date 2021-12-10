@@ -32,6 +32,12 @@ namespace Naivart.Database
                 .WithOne(k => k.Player)
                 .HasForeignKey<Player>(p => p.KingdomId)
                 .IsRequired(true);
+
+            modelBuilder.Entity<Kingdom>()
+                .HasMany<Building>(k=> k.Buildings)
+                .WithOne(b => b.Kingdom)
+                .HasForeignKey(b => b.KingdomId)
+                .IsRequired(true);
         }
     }
 }
