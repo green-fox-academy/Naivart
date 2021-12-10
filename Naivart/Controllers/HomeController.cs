@@ -7,7 +7,6 @@ using Naivart.Services;
 
 namespace Naivart.Controllers
 {
-    [Authorize]
     [Route("/")]
     public class HomeController : Controller
     {
@@ -22,7 +21,7 @@ namespace Naivart.Controllers
             LoginService = service;
             PlayerService = playerService;
         }
-        [AllowAnonymous]
+        
         [HttpPost("registration")]
         public IActionResult Registration([FromBody] RegisterRequest request)
         {
@@ -45,7 +44,7 @@ namespace Naivart.Controllers
                 return StatusCode(400, response);
             }
         }
-        [AllowAnonymous]
+        
         [HttpGet("kingdoms")]
         public object Kingdoms()
         {
@@ -55,7 +54,7 @@ namespace Naivart.Controllers
             return response.Kingdoms.Count == 0 ? NotFound(new { kingdoms = response.Kingdoms })
                                                 : Ok(new { kingdoms = response.Kingdoms });
         }
-        [AllowAnonymous]
+        
         [HttpPost("login")]
         public IActionResult Login([FromBody] PlayerLogin player)
         {
@@ -68,7 +67,7 @@ namespace Naivart.Controllers
             var correctLogin = new TokenWithStatus() { status = "ok", token = tokenOrMessage };
             return Ok(correctLogin);
         }
-        [AllowAnonymous]
+        
         [HttpPost("auth")]
         public IActionResult Auth([FromBody] PlayerIdentity token)
         {
@@ -82,7 +81,7 @@ namespace Naivart.Controllers
                 return Ok(player);
             }
         }
-
+        [Authorize]
         [HttpPut("registration")]
         public IActionResult KingdomRegistration([FromBody]KingdomLocationInput input, [FromHeader]string authorization)
         {
@@ -94,6 +93,18 @@ namespace Naivart.Controllers
             }
             var outputOk = new StatusOutput() { status = result };
             return Ok(outputOk);
+        }
+        
+        [Authorize]
+        [HttpGet("kingdoms/{id}")]
+        public IActionResult KingdomInformation([FromRoute]long id, [FromHeader]string authorization)
+        {
+            KingdomService.GetKingdomInfo(id, authorization, out int status);
+            if (status != 200)
+            {
+                return StatusCode(status);
+            }
+            return Ok();
         }
     }
 }

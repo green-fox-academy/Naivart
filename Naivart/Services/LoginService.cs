@@ -128,5 +128,51 @@ namespace Naivart.Services
             var model = GetTokenOwner(new PlayerIdentity() { token = token});
             return model.ruler == username;
         }
+        public bool IsTokenOwner(long id, string auth)
+        {
+            string token = CleanToken(auth);
+            var model = GetTokenOwnerInfo(token);
+            return model.Id == id;
+        }
+
+        public PlayerInfo GetTokenOwnerInfo(string token)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+
+                if (jwtToken == null)
+                    return null;
+
+                var symmetricKey = Encoding.ASCII.GetBytes(appSettings.Key);
+
+                var validationParameters = new TokenValidationParameters()
+                {
+                    RequireExpirationTime = true,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(symmetricKey)
+                };
+
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
+                var identity = principal.Identity.Name;
+
+                return FindPlayerByNameReturnPlayerInfo(identity);
+            }
+
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public PlayerInfo FindPlayerByNameReturnPlayerInfo(string name)
+        {
+            var model = DbContext.Players.FirstOrDefault(x => x.Username == name);
+            return new PlayerInfo() { Id = model.Id, Username = model.Username, KingdomId = model.KingdomId};
+        }
+
+
     }
 }

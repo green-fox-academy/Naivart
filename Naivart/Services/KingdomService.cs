@@ -133,5 +133,17 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
+
+        public void GetKingdomInfo(long id, string auth, out int status)
+        {
+            if (LoginService.IsTokenOwner(id, auth))
+            {
+                status = 200;
+            }
+            else
+            {
+                status = 401;
+            }
+        }
     }
 }
