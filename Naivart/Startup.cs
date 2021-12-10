@@ -31,6 +31,7 @@ namespace Naivart
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAutoMapper(typeof(Startup));
+            services.AddTransient<ResourceService>();
             services.AddTransient<KingdomService>();
             services.AddControllersWithViews();
             services.AddTransient<PlayerService>();

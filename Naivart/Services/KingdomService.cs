@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
+using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,14 +16,16 @@ namespace Naivart.Services
 {
     public class KingdomService
     {
+        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private ApplicationDbContext DbContext { get; }
         private readonly AppSettings appSettings;
         public LoginService LoginService { get; set; }
 
-        public KingdomService(ApplicationDbContext dbContext, IOptions<AppSettings> appSettings, LoginService loginService)
+        public KingdomService(ApplicationDbContext dbContext, IOptions<AppSettings> appSettings, LoginService loginService, IMapper mapper)
         {
             this.appSettings = appSettings.Value;
             DbContext = dbContext;
+            _mapper = mapper;
             LoginService = loginService;
         }
 
@@ -31,12 +34,43 @@ namespace Naivart.Services
             var kingdoms = new List<Kingdom>();
             try
             {
-                kingdoms = DbContext.Kingdoms
+                return kingdoms = DbContext.Kingdoms
                     .Include(k => k.Player)
                     .Include(k => k.Location)
                     .ToList();
-
+            }
+            catch
+            {
                 return kingdoms;
+            }
+        }
+
+        public List<KingdomAPIModel> ListOfKingdomsMapping(List<Kingdom> kingdoms)
+        {
+            var kingdomAPIModels = new List<KingdomAPIModel>();
+
+            foreach (var kingdom in kingdoms)
+            {
+                var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
+                var locationAPIModel = _mapper.Map<LocationAPIModel>(kingdom.Location);
+                kingdomAPIModel.Location = locationAPIModel;
+                kingdomAPIModels.Add(kingdomAPIModel);
+            }
+            return kingdomAPIModels;
+        }
+
+        public Kingdom GetById(long id)
+        {
+            var kingdom = new Kingdom();
+            try
+            {
+               kingdom = DbContext.Kingdoms
+                    .Where(k => k.Id == id)
+                    .Include(k => k.Player)
+                    .Include(k => k.Location)
+                    .Include(k => k.Resources)
+                    .FirstOrDefault();
+                return kingdom;
             }
             catch
             {
@@ -159,5 +193,17 @@ namespace Naivart.Services
             }
         }
 
+    }
+                return kingdom;
+            }
+        }
+
+        public KingdomAPIModel KingdomMapping(Kingdom kingdom)
+        {
+            var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
+            var locationAPIModel = _mapper.Map<LocationAPIModel>(kingdom.Location);
+            kingdomAPIModel.Location = locationAPIModel;
+            return kingdomAPIModel;
+        }
     }
 }

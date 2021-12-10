@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Naivart.Models.Entities;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Naivart.Models.APIModels
 {
@@ -32,5 +30,4 @@ namespace Naivart.Models.APIModels
             return kingdomAPIModels;
         }
     }
-
 }

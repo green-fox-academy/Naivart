@@ -12,6 +12,7 @@ namespace Naivart.Database
         public DbSet<Player> Players { get; set; }
         public DbSet<Kingdom> Kingdoms { get; set; }
         public DbSet<Location> Locations { get; set; }
+        public DbSet<Resource> Resources { get; set; }
         public DbSet<Troop> Troops { get; set; }
         public DbSet<Building> Buildings { get; set; }
 
@@ -45,6 +46,12 @@ namespace Naivart.Database
                 .WithOne(l => l.Kingdom)
                 .HasForeignKey(a => a.KingdomId)
                 .IsRequired(true);
+
+            modelBuilder.Entity<Resource>()
+                .HasOne<Kingdom>(r => r.Kingdom)
+                .WithMany(k => k.Resources)
+                .HasForeignKey(r => r.KingdomId)
+                .IsRequired(false);
         }
     }
 }

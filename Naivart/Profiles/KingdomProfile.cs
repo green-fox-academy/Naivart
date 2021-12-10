@@ -11,8 +11,7 @@ namespace Naivart
             CreateMap<Kingdom, KingdomAPIModel>()
            .ForMember(dest => dest.Kingdom_Id, opt => opt.MapFrom(src => src.Id))
            .ForMember(dest => dest.KingdomName, opt => opt.MapFrom(src => src.Name))
-           .ForMember(dest => dest.Ruler, opt => opt.MapFrom(src => src.Player.Username))
-           .ReverseMap();
+           .ForMember(dest => dest.Ruler, opt => opt.MapFrom(src => src.Player.Username));
         }
     }
 }

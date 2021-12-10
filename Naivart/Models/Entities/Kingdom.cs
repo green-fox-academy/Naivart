@@ -15,5 +15,6 @@ namespace Naivart.Models.Entities
         public List<Building> Buildings { get; set; }
         public List<Troop> Troops { get; set; }
 
+        public List<Resource> Resources { get; set; }
     }
 }
