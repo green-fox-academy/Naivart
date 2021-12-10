@@ -60,5 +60,9 @@ namespace Naivart.Services
         {
             DbContext.Players.Remove(FindByUsername(username));
         }
+        public Player GetPlayerById(long id)
+        {
+            return DbContext.Players.Include(p => p.Kingdom).FirstOrDefault(p => p.Id == id);
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
+using Naivart.Models.Entities;
 using Naivart.Services;
 
 namespace Naivart.Controllers
@@ -78,20 +79,28 @@ namespace Naivart.Controllers
                 return Ok(player);
             }
         }
-        [HttpGet("kingdoms/{id=int}/buildings")]
-        public IActionResult Buildings([FromRoute] int id)
+        [HttpGet("kingdoms/{id=long}/buildings")]
+        public IActionResult Buildings([FromRoute] long id)
         {
             var kingdom = KingdomService.GetById(id);
-            if (kingdom == null)
+            var player = PlayerService.GetPlayerById(kingdom.Player.Id);
+            if (kingdom.Player.Id != player.Id)
             {
                 return StatusCode(401);
             }
             else
             {
-                return Ok(kingdom);
-            }
-            
+                var buildings = new BuildingApiResponse()
+                {
+                    kingdomId = kingdom.Id,
+                    kingdomName = kingdom.Name,
+                    ruler = kingdom.Player.Username,
+                    population = kingdom.Population,
+                    location = kingdom.Location,
+                    buildings = kingdom.Buildings
+                };
+                return Ok(buildings);
+            }   
         }
-
     }
 }

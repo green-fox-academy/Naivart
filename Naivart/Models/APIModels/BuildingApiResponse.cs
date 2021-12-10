@@ -8,11 +8,11 @@ namespace Naivart.Models.APIModels
 {
     public class BuildingApiResponse
     {
-        public int KingdomId { get; set; }
-        public string KingdomName { get; set; }
-        public string Ruler { get; set; }
-        public int Population { get; set; }
-        public Location Location { get; set; }
-        public List<Building> Buildings { get; set; }
+        public long kingdomId { get; set; }
+        public string kingdomName { get; set; }
+        public string ruler { get; set; }
+        public int population { get; set; }
+        public Location location { get; set; }
+        public List<Building> buildings { get; set; }
     }
 }
