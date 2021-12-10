@@ -80,11 +80,11 @@ namespace Naivart.Controllers
             }
         }
 
-        [HttpGet("kingdoms/{id}/troops")]
-        public IActionResult Troops([FromRoute] long id)
-        {
+        //[HttpGet("kingdoms/{id}/troops")]
+        //public IActionResult Troops([FromRoute] long id)
+        //{
 
-        }
+        //}
 
     }
 }
