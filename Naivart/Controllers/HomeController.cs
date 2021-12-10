@@ -10,12 +10,14 @@ namespace Naivart.Controllers
     public class HomeController : Controller
     {
         private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
+        public ResourceService ResourceService { get; set; }
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
-        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService loginService)
+        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService)
         {
             _mapper = mapper;
+            ResourceService = resourceService;
             KingdomService = kingdomService;
             PlayerService = playerService;
             LoginService = loginService;
@@ -48,7 +50,8 @@ namespace Naivart.Controllers
         public object Kingdoms()
         {
             var kingdoms = KingdomService.GetAll();
-            var response = new KingdomAPIResponse(_mapper, kingdoms);
+            var kingdomAPIModels = KingdomService.ListOfKingdomsMapping(kingdoms);
+            var response = new KingdomAPIResponse() { Kingdoms = kingdomAPIModels };
 
             return response.Kingdoms.Count == 0 ? NotFound(new { kingdoms = response.Kingdoms })
                                                 : Ok(new { kingdoms = response.Kingdoms });
@@ -57,7 +60,16 @@ namespace Naivart.Controllers
         [HttpGet("kingdoms/{id}/resources")]
         public object Resources([FromRoute] long id)
         {
+            var kingdom = KingdomService.GetById(id);
+            var kingdomAPIModel = KingdomService.KingdomMapping(kingdom);
+            var resourceAPIModels = ResourceService.ListOfResourcesMapping(kingdom.Resources);
+            var response = new ResourceAPIResponse()
+            {
+                Kingdom = kingdomAPIModel,
+                Resources = resourceAPIModels
+            };
 
+            return Ok(response);
         }
 
         [HttpPost("login")]

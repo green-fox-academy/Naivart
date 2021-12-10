@@ -36,7 +36,7 @@ namespace Naivart.Database
                 .HasOne<Kingdom>(r => r.Kingdom)
                 .WithMany(k => k.Resources)
                 .HasForeignKey(r => r.KingdomId)
-                .IsRequired(true);
+                .IsRequired(false);
         }
     }
 }

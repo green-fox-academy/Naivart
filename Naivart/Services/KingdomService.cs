@@ -53,11 +53,13 @@ namespace Naivart.Services
             var kingdom = new Kingdom();
             try
             {
-                return kingdom = DbContext.Kingdoms
+               kingdom = DbContext.Kingdoms
+                    .Where(k => k.Id == id)
                     .Include(k => k.Player)
                     .Include(k => k.Location)
                     .Include(k => k.Resources)
-                    .FirstOrDefault(k => k.Id == id);
+                    .FirstOrDefault();
+                return kingdom;
             }
             catch
             {
