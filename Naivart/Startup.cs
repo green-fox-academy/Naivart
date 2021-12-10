@@ -9,9 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Naivart.Database;
-using Naivart.Interfaces;
 using Naivart.Models;
-using Naivart.Models.Helpers;
 using Naivart.Services;
 using System;
 using System.Collections.Generic;
@@ -32,41 +30,35 @@ namespace Naivart
 
         public void ConfigureServices(IServiceCollection services)
         {
-
-            services.AddCors();     //added
             services.AddAutoMapper(typeof(Startup));
             services.AddTransient<KingdomService>();
             services.AddControllersWithViews();
             services.AddTransient<PlayerService>();
             services.AddTransient<LoginService>();
-            
-            services.Configure<AppSettings>(AppConfig.GetSection("AppSettings"));   //added
-           
-            //var appSettingSection = AppConfig.GetSection("AppSettings");      //deleted
-            //services.Configure<AppSettings>(appSettingSection);
-            //var appSettings = appSettingSection.Get<AppSettings>();
-            //var key = Encoding.ASCII.GetBytes(appSettings.Key);
 
-            
-            services.AddScoped<IAuthService, AuthService>();    //added
-            
-            //services.AddAuthentication(x =>       //deleted
-            //{
-            //    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            //}).AddJwtBearer(x =>
-            //{
-            //    x.RequireHttpsMetadata = false;
-            //    x.SaveToken = true;
-            //    x.TokenValidationParameters = new TokenValidationParameters
-            //    {
-            //        ValidateIssuerSigningKey = true,
-            //        IssuerSigningKey = new SymmetricSecurityKey(key),
-            //        ValidateIssuer = false,
-            //        ValidateAudience = false
+            var appSettingSection = AppConfig.GetSection("AppSettings");
+            services.Configure<AppSettings>(appSettingSection);
 
-            //    };
-            //});
+            var appSettings = appSettingSection.Get<AppSettings>();
+            var key = Encoding.ASCII.GetBytes(appSettings.Key);
+
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+
+                };
+            });
 
             ConfigureDb(services);
         }
@@ -81,14 +73,9 @@ namespace Naivart
 
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-            app.UseCors(x => x          //added
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
-            //app.UseAuthentication();  //deleted
-            //app.UseAuthorization();
-            app.UseMiddleware<JwtMiddleware>(); //added
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
