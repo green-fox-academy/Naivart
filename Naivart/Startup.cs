@@ -35,6 +35,7 @@ namespace Naivart
             services.AddControllersWithViews();
             services.AddTransient<PlayerService>();
             services.AddTransient<LoginService>();
+            services.AddTransient<BuildingService>();
 
             var appSettingSection = AppConfig.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingSection);

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using Naivart.Services;
+using System.Linq;
 
 namespace Naivart.Controllers
 {
@@ -13,12 +14,14 @@ namespace Naivart.Controllers
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
-        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService loginService)
+        public BuildingService BuildingService { get; set; }
+        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService loginService, BuildingService buildingService)
         {
             _mapper = mapper;
             KingdomService = kingdomService;
             LoginService = loginService;
             PlayerService = playerService;
+            BuildingService = buildingService;
         }
 
         [HttpPost("registration")]
@@ -79,28 +82,15 @@ namespace Naivart.Controllers
                 return Ok(player);
             }
         }
-        [HttpGet("kingdoms/{id=long}/buildings")]
+        [HttpGet("kingdoms/{id}/buildings")]
         public IActionResult Buildings([FromRoute] long id)
         {
-            var kingdom = KingdomService.GetById(id);
-            var player = PlayerService.GetPlayerById(kingdom.Player.Id);
-            if (kingdom.Player.Id != player.Id)
+            var response = BuildingService.GetBuildingResponse(id);
+            if (response == null)
             {
                 return StatusCode(401);
             }
-            else
-            {
-                var buildings = new BuildingApiResponse()
-                {
-                    kingdomId = kingdom.Id,
-                    kingdomName = kingdom.Name,
-                    ruler = kingdom.Player.Username,
-                    population = kingdom.Population,
-                    location = kingdom.Location,
-                    buildings = kingdom.Buildings
-                };
-                return Ok(buildings);
-            }   
+            return Ok(response);
         }
     }
 }
