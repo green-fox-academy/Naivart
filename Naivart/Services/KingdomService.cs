@@ -57,7 +57,7 @@ namespace Naivart.Services
             return kingdomAPIModels;
         }
 
-        public Kingdom GetById(long id)
+        public Kingdom GetByIdWithResources(long id)
         {
             var kingdom = new Kingdom();
             try

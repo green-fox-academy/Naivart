@@ -17,7 +17,7 @@ namespace Naivart.Controllers
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
         public AuthService AuthService { get; set; }
-        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService service, AuthService authService)
+        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService, AuthService authService)
         {
             _mapper = mapper;
             ResourceService = resourceService;
@@ -61,18 +61,27 @@ namespace Naivart.Controllers
                                                 : Ok(new { kingdoms = response.Kingdoms });
         }
 
+        [Authorize]
         [HttpGet("kingdoms/{id}/resources")]
         public object Resources([FromRoute] long id)
         {
-            var kingdom = KingdomService.GetById(id);
-            var kingdomAPIModel = KingdomService.KingdomMapping(kingdom);
-            var resourceAPIModels = ResourceService.ListOfResourcesMapping(kingdom.Resources);
-            var response = new ResourceAPIResponse()
+            if (KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
             {
-                Kingdom = kingdomAPIModel,
-                Resources = resourceAPIModels
-            };
-            return Ok(response);
+                var kingdom = KingdomService.GetByIdWithResources(id);
+                var kingdomAPIModel = KingdomService.KingdomMapping(kingdom);
+                var resourceAPIModels = ResourceService.ListOfResourcesMapping(kingdom.Resources);
+                var response = new ResourceAPIResponse()
+                {
+                    Kingdom = kingdomAPIModel,
+                    Resources = resourceAPIModels
+                };
+
+                return Ok(response);
+            }
+            else
+            {
+                return Unauthorized(new { error = "This kingdom does not belong to authenticated player" });
+            }
         }
 
         [HttpPost("login")]
