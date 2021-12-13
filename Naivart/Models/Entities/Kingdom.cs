@@ -14,6 +14,7 @@ namespace Naivart.Models.Entities
         public Location Location { get; set; }
         public List<Resource> Resources { get; set; }
         public List<Troop> Troops { get; set; }
+        public List<Building> Buildings { get; set; }
 
     }
 }
