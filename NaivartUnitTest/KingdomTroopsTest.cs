@@ -38,32 +38,36 @@ namespace NaivartUnitTest
             //arrange
             HttpStatusCode expectedStatusCode = HttpStatusCode.OK;
             var request = new HttpRequestMessage();
-            request.RequestUri = new Uri("https://localhost:44388/kingdoms/5/troops");
+            request.RequestUri = new Uri("https://localhost:44388/kingdoms/1/troops");
             request.Headers.Add("Authorization", $"Bearer {GetToken()}");
             request.Method = HttpMethod.Get;
 
             var locationAPIModel = new LocationAPIModel()
             {
-                CoordinateX = 90,
-                CoordinateY = 80
+                CoordinateX = 15,
+                CoordinateY = 30
             };
 
             var kingdomAPIModel = new KingdomAPIModel()
             {
-                Kingdom_Id = 5,
-                KingdomName = "Deira",
-                Ruler = "Fro",
+                Kingdom_Id = 1,
+                KingdomName = "Igala",
+                Ruler = "Adam",
                 Population = 1,
                 Location = locationAPIModel
             };
 
             var TroopAPIModels = new List<TroopAPIModel>();
-            var TroopAPIModel_1 = new TroopAPIModel() { Id = 5, Level = 1, Hp = 1, Attack = 1, Defense = 1 };
+            var TroopAPIModel_1 = new TroopAPIModel() { Id = 1, Level = 1, Hp = 1, Attack = 1, Defense = 1 };
             TroopAPIModels.Add(TroopAPIModel_1);
-            var TroopAPIModel_2 = new TroopAPIModel() { Id = 10, Level = 5, Hp = 6, Attack = 2, Defense = 2 };
+            var TroopAPIModel_2 = new TroopAPIModel() { Id = 6, Level = 1, Hp = 1, Attack = 2, Defense = 1 };
             TroopAPIModels.Add(TroopAPIModel_2);
-            var TroopAPIModel_3 = new TroopAPIModel() { Id = 20, Level = 5, Hp = 6, Attack = 2, Defense = 2 };
+            var TroopAPIModel_3 = new TroopAPIModel() { Id = 11, Level = 1, Hp = 1, Attack = 2, Defense = 1 };
             TroopAPIModels.Add(TroopAPIModel_3);
+            var TroopAPIModel_4 = new TroopAPIModel() { Id = 12, Level = 2, Hp = 3, Attack = 2, Defense = 2 };
+            TroopAPIModels.Add(TroopAPIModel_4);
+            var TroopAPIModel_5 = new TroopAPIModel() { Id = 13, Level = 2, Hp = 1, Attack = 4, Defense = 1 };
+            TroopAPIModels.Add(TroopAPIModel_5);
 
             var TroopAPIResponse = new TroopAPIResponse()
             {
