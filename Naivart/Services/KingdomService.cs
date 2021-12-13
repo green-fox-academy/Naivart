@@ -1,31 +1,22 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Naivart.Models.APIModels;
-using Microsoft.EntityFrameworkCore;
-using Naivart.Models.Entities;
-using Naivart.Models;
-using Microsoft.Extensions.Options;
-using System;
 
 namespace Naivart.Services
 {
     public class KingdomService
     {
-        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
 
-        public KingdomService(IMapper mapper, ApplicationDbContext dbContext, AuthService authService)
+        public KingdomService(ApplicationDbContext dbContext, AuthService authService)
         {
             DbContext = dbContext;
             AuthService = authService;
-            _mapper = mapper;
         }
 
         public List<Kingdom> GetAll()
@@ -33,55 +24,17 @@ namespace Naivart.Services
             var kingdoms = new List<Kingdom>();
             try
             {
-                return kingdoms = DbContext.Kingdoms
+                kingdoms = DbContext.Kingdoms
                     .Include(k => k.Player)
                     .Include(k => k.Location)
                     .ToList();
+
+                return kingdoms;
             }
             catch
             {
                 return kingdoms;
             }
-        }
-
-        public List<KingdomAPIModel> ListOfKingdomsMapping(List<Kingdom> kingdoms)
-        {
-            var kingdomAPIModels = new List<KingdomAPIModel>();
-
-            foreach (var kingdom in kingdoms)
-            {
-                var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
-                var locationAPIModel = _mapper.Map<LocationAPIModel>(kingdom.Location);
-                kingdomAPIModel.Location = locationAPIModel;
-                kingdomAPIModels.Add(kingdomAPIModel);
-            }
-            return kingdomAPIModels;
-        }
-
-        public Kingdom GetByIdWithResources(long id)
-        {
-            var kingdom = new Kingdom();
-            try
-            {
-               return kingdom = DbContext.Kingdoms
-                    .Where(k => k.Id == id)
-                    .Include(k => k.Player)
-                    .Include(k => k.Location)
-                    .Include(k => k.Resources)
-                    .First();
-            }
-            catch
-            {
-                return kingdom;
-            }
-        }
-
-        public KingdomAPIModel KingdomMapping(Kingdom kingdom)
-        {
-            var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
-            var locationAPIModel = _mapper.Map<LocationAPIModel>(kingdom.Location);
-            kingdomAPIModel.Location = locationAPIModel;
-            return kingdomAPIModel;
         }
 
         public string RegisterKingdom(KingdomLocationInput input, string usernameToken, out int status)
