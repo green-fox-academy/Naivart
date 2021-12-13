@@ -18,7 +18,7 @@ namespace Naivart.Controllers
         public LoginService LoginService { get; set; }
         public AuthService AuthService { get; set; }
         public TroopService TroopService { get; set; }
-        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService, TroopService troopService)
+        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService,AuthService authService, TroopService troopService)
         {
             _mapper = mapper;
             ResourceService = resourceService;
@@ -71,7 +71,7 @@ namespace Naivart.Controllers
         {
             if (KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
             {
-                var kingdom = KingdomService.GetById(id); //přidat novou metodu abych invokoval pouze troops
+                var kingdom = KingdomService.GetByIdWithTroops(id);
                 var kingdomApiModel = KingdomService.KingdomMapping(kingdom);
                 var troopAPIModels = TroopService.ListOfTroopsMapping(kingdom.Troops);
                 var response = new TroopAPIResponse()

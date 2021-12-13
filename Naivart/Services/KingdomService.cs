@@ -6,11 +6,9 @@ using Naivart.Models.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Naivart.Models.APIModels;
-using Microsoft.EntityFrameworkCore;
-using Naivart.Models.Entities;
 using Naivart.Models;
 using Microsoft.Extensions.Options;
+using System;
 
 namespace Naivart.Services
 {
@@ -61,13 +59,29 @@ namespace Naivart.Services
             var kingdom = new Kingdom();
             try
             {
-               kingdom = DbContext.Kingdoms
-                    .Where(k => k.Id == id)
-                    .Include(k => k.Player)
-                    .Include(k => k.Location)
-                    .Include(k => k.Resources)
-                    .Include(k=>k.Troops)
-                    .FirstOrDefault();
+                kingdom = DbContext.Kingdoms
+                     .Where(k => k.Id == id)
+                     .Include(k => k.Player)
+                     .Include(k => k.Location)
+                     .FirstOrDefault();
+                return kingdom;
+            }
+            catch
+            {
+                return kingdom;
+            }
+        }
+        public Kingdom GetByIdWithTroops(long id)
+        {
+            var kingdom = new Kingdom();
+            try
+            {
+                kingdom = DbContext.Kingdoms
+                     .Where(k => k.Id == id)
+                     .Include(k => k.Player)
+                     .Include(k => k.Location)
+                     .Include(k => k.Troops)
+                     .FirstOrDefault();
                 return kingdom;
             }
             catch
@@ -85,7 +99,7 @@ namespace Naivart.Services
         }
 
         public string RegisterKingdom(KingdomLocationInput input, string usernameToken, out int status)
-        {           
+        {
             try
             {
                 status = 400;
@@ -177,7 +191,7 @@ namespace Naivart.Services
         }
 
         public bool IsUserKingdomOwner(long kingdomId, string username)
-        {           
+        {
             try
             {
                 return DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username == username;
