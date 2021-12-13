@@ -19,11 +19,13 @@ namespace Naivart.Services
             DbContext = dbContext;
             KingdomService = kingdomService;
             PlayerService = playerService;
-        }
-          public KingdomResponseForBuilding GetKingdom(long id)
+        }    
+
+        public KingdomResponseForBuilding GetKingdom(long id)
         {
-            var kingdom = KingdomService.GetById(id);
+            var kingdom = KingdomService.GetByIdWithBuilding(id);
             var player = PlayerService.GetPlayerById(kingdom.Player.Id);
+            var location = GetLocations(kingdom);
             if (kingdom != null && player != null)
             {
                 return new KingdomResponseForBuilding()
@@ -32,7 +34,7 @@ namespace Naivart.Services
                     KingdomName = kingdom.Name,
                     Ruler = player.Username,
                     Population = 0,
-                    Location = new Location() { CoordinateX = kingdom.Location.CoordinateX, CoordinateY = kingdom.Location.CoordinateY }
+                    Location = location
                 };
             }
             else
@@ -45,21 +47,14 @@ namespace Naivart.Services
         {
             List<BuildingsForResponse> buildings = DbContext.Buildings.Where(b => b.KingdomId == id).Select(b => new BuildingsForResponse()
             {
-                id = b.Id,
-                type = b.Type,
-                level = b.Level,
-                startedAt = b.StartedAt,
-                finishedAt = b.FinishedAt
+                Id = b.Id,
+                Type = b.Type,
+                Level = b.Level,
+                StartedAt = b.StartedAt,
+                FinishedAt = b.FinishedAt
             }).ToList();
 
-            if (buildings != null)
-            {
-                return buildings;
-            }
-            else
-            {
-                return new List<BuildingsForResponse>();
-            }
+            return buildings != null ? buildings : new List<BuildingsForResponse>();
         }
       
         public BuildingResponse GetBuildingResponse(long id,string usernameToken, out int status)
@@ -77,6 +72,10 @@ namespace Naivart.Services
                 status = 401;
                 return response;
             }
+        }
+        public LocationAPIModel GetLocations(Kingdom kingdom)
+        {
+            return new LocationAPIModel() { CoordinateX = kingdom.Location.CoordinateX, CoordinateY = kingdom.Location.CoordinateY };
         }
     }
 }

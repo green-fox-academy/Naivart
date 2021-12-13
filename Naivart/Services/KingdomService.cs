@@ -143,7 +143,7 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
-        public Kingdom GetById(long id)
+        public Kingdom GetByIdWithBuilding(long id)
         {
             var kingdom = new Kingdom();
             try

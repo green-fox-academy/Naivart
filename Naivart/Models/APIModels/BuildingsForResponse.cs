@@ -8,10 +8,10 @@ namespace Naivart.Models.APIModels
 {
     public class BuildingsForResponse
     {
-        public long id { get; set; }
-        public string type { get; set; }
-        public int level { get; set; }
-        public long startedAt { get; set; }
-        public long finishedAt { get; set; }
+        public long Id { get; set; }
+        public string Type { get; set; }
+        public int Level { get; set; }
+        public long StartedAt { get; set; }
+        public long FinishedAt { get; set; }
     }
 }

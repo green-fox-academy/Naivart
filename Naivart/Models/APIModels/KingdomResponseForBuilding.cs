@@ -12,6 +12,6 @@ namespace Naivart.Models.APIModels
         public string KingdomName { get; set; }
         public string Ruler { get; set; }
         public int Population { get; set; }
-        public Location Location { get; set; }
+        public LocationAPIModel Location { get; set; }
     }
 }
