@@ -63,14 +63,25 @@ namespace Naivart.Controllers
         public IActionResult Troops([FromRoute] long id)
         {
             var kingdom = KingdomService.GetById(id);
-            var kingdomApiModel = KingdomService.KingdomMapping(kingdom);
-            var troopAPIModels = TroopService.ListOfTroopsMapping(kingdom.Troops);
-            var response = new TroopAPIResponse()
+            if (kingdom == null)
             {
-                Kingdom = kingdomApiModel,
-                Troops = troopAPIModels
-            };
-            return Ok(response);
+                ErrorResponse ErrorResponse = new ErrorResponse()
+                { error = "This kingdom does not belong to authenticated player" };
+                return Unauthorized(ErrorResponse);
+            }
+            else
+            {
+                var kingdomApiModel = KingdomService.KingdomMapping(kingdom);
+                var troopAPIModels = TroopService.ListOfTroopsMapping(kingdom.Troops);
+                var response = new TroopAPIResponse()
+                {
+                    Kingdom = kingdomApiModel,
+                    Troops = troopAPIModels
+                };
+                return Ok(response);
+            }
+
+
         }
 
         [HttpGet("kingdoms/{id}/resources")]
