@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Naivart.Models.APIModels;
-using Microsoft.EntityFrameworkCore;
-using Naivart.Models.Entities;
 using Naivart.Models;
 using Microsoft.Extensions.Options;
 
@@ -143,6 +141,19 @@ namespace Naivart.Services
             catch (Exception e)
             {
                 throw new InvalidOperationException("Data could not be read", e);
+            }
+        }
+        public Kingdom GetByIdWithBuilding(long id)
+        {
+            var kingdom = new Kingdom();
+            try
+            {
+                kingdom = DbContext.Kingdoms.Include(k => k.Player).Include(k => k.Location).Include(k => k.Buildings).FirstOrDefault(k => k.Id == id);
+                return kingdom;
+            }
+            catch(Exception)
+            {
+                return null;
             }
         }
     }
