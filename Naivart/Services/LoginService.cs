@@ -87,7 +87,7 @@ namespace Naivart.Services
         }
         public bool IsTokenOwner(long id, string auth)
         {
-            string token = CleanToken(auth);
+            string token = AuthService.CleanToken(auth);
             var model = GetTokenOwnerInfo(token);
             return model.Id == id;
         }

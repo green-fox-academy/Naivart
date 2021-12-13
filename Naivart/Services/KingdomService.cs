@@ -20,6 +20,7 @@ namespace Naivart.Services
         private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
+        public LoginService LoginService { get; set; }
         public KingdomService(ApplicationDbContext dbContext, IOptions<AppSettings> appSettings, LoginService loginService, IMapper mapper, AuthService authService)
         {
             DbContext = dbContext;
@@ -58,7 +59,7 @@ namespace Naivart.Services
             return kingdomAPIModels;
         }
 
-        public string RegisterKingdom(KingdomLocationInput input, string authorization, out int status)
+        public string RegisterKingdom(KingdomLocationInput input, string usernameToken, out int status)
         {           
             try
             {

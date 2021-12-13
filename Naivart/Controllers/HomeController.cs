@@ -17,7 +17,7 @@ namespace Naivart.Controllers
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
         public AuthService AuthService { get; set; }
-        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService service, AuthService authService)
+        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService loginService, AuthService authService, ResourceService resourceService)
         {
             _mapper = mapper;
             ResourceService = resourceService;
