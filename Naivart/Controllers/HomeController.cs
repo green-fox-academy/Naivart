@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
 using Naivart.Services;
 
@@ -14,13 +15,15 @@ namespace Naivart.Controllers
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
-        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService)
+        public TroopService TroopService { get; set; }
+        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService, TroopService troopService)
         {
             _mapper = mapper;
             ResourceService = resourceService;
             KingdomService = kingdomService;
             PlayerService = playerService;
             LoginService = loginService;
+            TroopService = troopService;
         }
 
         [HttpPost("registration")]
@@ -55,6 +58,19 @@ namespace Naivart.Controllers
 
             return response.Kingdoms.Count == 0 ? NotFound(new { kingdoms = response.Kingdoms })
                                                 : Ok(new { kingdoms = response.Kingdoms });
+        }
+        [HttpGet("kingdoms/{id}/troops")]
+        public IActionResult Troops([FromRoute] long id)
+        {
+            var kingdom = KingdomService.GetById(id);
+            var kingdomApiModel = KingdomService.KingdomMapping(kingdom);
+            var troopAPIModels = TroopService.ListOfTroopsMapping(kingdom.Troops);
+            var response = new TroopAPIResponse()
+            {
+                Kingdom = kingdomApiModel,
+                Troops = troopAPIModels
+            };
+            return Ok(response);
         }
 
         [HttpGet("kingdoms/{id}/resources")]
@@ -99,11 +115,6 @@ namespace Naivart.Controllers
             }
         }
 
-        //[HttpGet("kingdoms/{id}/troops")]
-        //public IActionResult Troops([FromRoute] long id)
-        //{
-
-        //}
 
     }
 }

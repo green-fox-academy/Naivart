@@ -58,6 +58,7 @@ namespace Naivart.Services
                     .Include(k => k.Player)
                     .Include(k => k.Location)
                     .Include(k => k.Resources)
+                    .Include(k=>k.Troops)
                     .FirstOrDefault();
                 return kingdom;
             }
