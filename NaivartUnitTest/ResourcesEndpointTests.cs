@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using Xunit;
 
 namespace NaivartUnitTest
@@ -20,14 +21,26 @@ namespace NaivartUnitTest
         {
             HttpClient = factory.CreateClient();
         }
+        public string GetToken()
+        {
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = "Adam", password = "Santa" });
+
+            StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
+            var response = HttpClient.PostAsync("http://localhost:5467/login", requestContent).Result;
+            string responseBodyContent = response.Content.ReadAsStringAsync().Result;
+            TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(responseBodyContent);
+            return token.token;
+        }
 
         [Fact]
         public void ResourcesEndpoint_PositiveCaseShouldPass()
         {
             //arrange
             HttpStatusCode expectedStatusCode = HttpStatusCode.OK;
+
             var request = new HttpRequestMessage();
             request.RequestUri = new Uri($"https://localhost:44311/kingdoms/1/resources");
+            request.Headers.Add("Authorization", $"Bearer {GetToken()}");
             request.Method = HttpMethod.Get;
 
             var locationAPIModel = new LocationAPIModel()
@@ -88,19 +101,10 @@ namespace NaivartUnitTest
         public void ResourcesEndpoint_NegativeCaseShouldPass()
         {
             //arrange
-            HttpStatusCode expectedStatusCode = HttpStatusCode.OK;
+            HttpStatusCode expectedStatusCode = HttpStatusCode.Unauthorized;
             var request = new HttpRequestMessage();
             request.RequestUri = new Uri($"https://localhost:44311/kingdoms/0/resources");
             request.Method = HttpMethod.Get;
-
-            var locationAPIModel = new LocationAPIModel();
-            var kingdomAPIModel = new KingdomAPIModel();
-            var resourceAPIModels = new List<ResourceAPIModel>();
-            var resourceAPIResponse = new ResourceAPIResponse()
-            {
-                Kingdom = kingdomAPIModel,
-                Resources = resourceAPIModels
-            };
 
             //act
             var response = HttpClient.SendAsync(request).Result;
@@ -108,9 +112,9 @@ namespace NaivartUnitTest
             var responseDataObj = JsonConvert.DeserializeObject<ResourceAPIResponse>(responseData);
 
             //assert
-            Assert.True(response.IsSuccessStatusCode);
             Assert.Equal(expectedStatusCode, response.StatusCode);
-            resourceAPIResponse.Should().BeEquivalentTo(responseDataObj); //install Fluent Assertions NuGet Package ver. 6.2.0
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Null(responseDataObj);
         }
     }
 }
