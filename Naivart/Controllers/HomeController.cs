@@ -119,9 +119,9 @@ namespace Naivart.Controllers
         
         [Authorize]
         [HttpGet("kingdoms/{id}")]
-        public IActionResult KingdomInformation([FromRoute]long id, [FromHeader]string authorization)
+        public IActionResult KingdomInformation([FromRoute]long id)
         {
-            KingdomService.GetKingdomInfo(id, authorization, out int status);
+            var model = KingdomService.GetKingdomInfo(id, HttpContext.User.Identity.Name, out int status);
             if (status != 200)
             {
                 return StatusCode(status);

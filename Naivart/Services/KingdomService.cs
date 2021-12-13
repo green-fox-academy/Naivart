@@ -151,11 +151,12 @@ namespace Naivart.Services
             }
         }
 
-        public void GetKingdomInfo(long id, string auth, out int status)
+        public AllPlayerDetails GetKingdomInfo(long id, string tokenUsername, out int status)
         {
-            if (LoginService.IsTokenOwner(id, auth))
+            if (IsUserKingdomOwner(id, tokenUsername))
             {
                 status = 200;
+                GetAllInfoAboutKingdom(id);
             }
             else
             {
@@ -196,6 +197,19 @@ namespace Naivart.Services
             {
                 throw new InvalidOperationException("Data could not be read", e);
             }
+        }
+
+        public AllPlayerDetails GetAllInfoAboutKingdom(long kingdomId)
+        {
+            var model = DbContext.Kingdoms.Where(x => x.Id == kingdomId)
+                              .Include(x => x.Location)
+                              .Include(x => x.Resources)
+                              .Include(x => x.Buildings)
+                              .Include(x => x.Troops).FirstOrDefault();
+            var result = new AllPlayerDetails()
+            {
+                
+            };
         }
     }
 }
