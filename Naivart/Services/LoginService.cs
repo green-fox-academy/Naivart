@@ -16,12 +16,13 @@ namespace Naivart.Services
     {
         private ApplicationDbContext DbContext { get; }
         private readonly AppSettings appSettings;
-        public LoginService(IOptions<AppSettings> appSettings, ApplicationDbContext dbContext)
+        public AuthService AuthService { get; set; }
+        public LoginService(IOptions<AppSettings> appSettings, ApplicationDbContext dbContext, AuthService authService)
         {
             this.appSettings = appSettings.Value;
             DbContext = dbContext;
+            AuthService = authService;
         }
-
         public string Authenticate(PlayerLogin player, out int statusCode)
         {
             string username = player.username;
@@ -35,21 +36,8 @@ namespace Naivart.Services
                 }
                 else if (IsLoginPasswordCorrect(username, password))
                 {
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var tokenKey = Encoding.ASCII.GetBytes(appSettings.Key);
-                    var tokenDescriptor = new SecurityTokenDescriptor
-                    {
-                        Subject = new ClaimsIdentity(new Claim[]
-                        {
-                            new Claim(ClaimTypes.Name, username)    
-                        }),
-                        Expires = DateTime.UtcNow.AddHours(24),  
-                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey),
-                        SecurityAlgorithms.HmacSha256Signature) 
-                    };
-                    var token = tokenHandler.CreateToken(tokenDescriptor);
                     statusCode = 200;
-                    return tokenHandler.WriteToken(token);  
+                    return AuthService.GetToken(username);
                 }
                 statusCode = 401;
                 return "Username and/or password was incorrect!";
@@ -71,35 +59,14 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
-
-
         public PlayerWithKingdom GetTokenOwner(PlayerIdentity player)
         {
             string token = player.token;
             try
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
-
-                if (jwtToken == null)
-                    return null;
-
-                var symmetricKey = Encoding.ASCII.GetBytes(appSettings.Key);
-
-                var validationParameters = new TokenValidationParameters()
-                {
-                    RequireExpirationTime = true,
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(symmetricKey)
-                };
-
-                var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
-                var identity = principal.Identity.Name;
-
+            {               
+                var identity = AuthService.GetNameFromToken(token);
                 return FindPlayerByName(identity);
             }
-
             catch (Exception)
             {
                 return null;
@@ -118,15 +85,6 @@ namespace Naivart.Services
                 return null;
             }       
         }
-        public string CleanToken(string auth)
-        {
-            return auth.Remove(0,7);
-        }
-        public bool IsTokenOwner(string username, string auth)
-        {
-            string token = CleanToken(auth);
-            var model = GetTokenOwner(new PlayerIdentity() { token = token});
-            return model.ruler == username;
-        }
+
     }
 }

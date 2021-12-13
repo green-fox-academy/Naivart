@@ -7,7 +7,7 @@ using Naivart.Services;
 
 namespace Naivart.Controllers
 {
-    [Authorize]
+    
     [Route("/")]
     public class HomeController : Controller
     {
@@ -15,14 +15,16 @@ namespace Naivart.Controllers
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
-        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService service)
+        public AuthService AuthService { get; set; }
+        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService service, AuthService authService)
         {
             _mapper = mapper;
             KingdomService = kingdomService;
             LoginService = service;
             PlayerService = playerService;
+            AuthService = authService;
         }
-        [AllowAnonymous]
+        
         [HttpPost("registration")]
         public IActionResult Registration([FromBody] RegisterRequest request)
         {
@@ -45,7 +47,7 @@ namespace Naivart.Controllers
                 return StatusCode(400, response);
             }
         }
-        [AllowAnonymous]
+        
         [HttpGet("kingdoms")]
         public object Kingdoms()
         {
@@ -55,7 +57,7 @@ namespace Naivart.Controllers
             return response.Kingdoms.Count == 0 ? NotFound(new { kingdoms = response.Kingdoms })
                                                 : Ok(new { kingdoms = response.Kingdoms });
         }
-        [AllowAnonymous]
+        
         [HttpPost("login")]
         public IActionResult Login([FromBody] PlayerLogin player)
         {
@@ -68,7 +70,7 @@ namespace Naivart.Controllers
             var correctLogin = new TokenWithStatus() { status = "ok", token = tokenOrMessage };
             return Ok(correctLogin);
         }
-        [AllowAnonymous]
+        
         [HttpPost("auth")]
         public IActionResult Auth([FromBody] PlayerIdentity token)
         {
@@ -83,10 +85,11 @@ namespace Naivart.Controllers
             }
         }
 
+        [Authorize]
         [HttpPut("registration")]
-        public IActionResult KingdomRegistration([FromBody]KingdomLocationInput input, [FromHeader]string authorization)
+        public IActionResult KingdomRegistration([FromBody]KingdomLocationInput input)
         {
-            string result = KingdomService.RegisterKingdom(input, authorization, out int status);
+            string result = KingdomService.RegisterKingdom(input, HttpContext.User.Identity.Name, out int status);
             if (status != 200)
             {
                 var outputError = new StatusForError() { error = result};

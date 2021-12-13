@@ -16,14 +16,12 @@ namespace Naivart.Services
     public class KingdomService
     {
         private ApplicationDbContext DbContext { get; }
-        private readonly AppSettings appSettings;
-        public LoginService LoginService { get; set; }
+        public AuthService AuthService { get; set; }
 
-        public KingdomService(ApplicationDbContext dbContext, IOptions<AppSettings> appSettings, LoginService loginService)
+        public KingdomService(ApplicationDbContext dbContext, AuthService authService)
         {
-            this.appSettings = appSettings.Value;
             DbContext = dbContext;
-            LoginService = loginService;
+            AuthService = authService;
         }
 
         public List<Kingdom> GetAll()
@@ -44,7 +42,7 @@ namespace Naivart.Services
             }
         }
 
-        public string RegisterKingdom(KingdomLocationInput input, string authorization, out int status)
+        public string RegisterKingdom(KingdomLocationInput input, string usernameToken, out int status)
         {           
             try
             {
@@ -59,7 +57,7 @@ namespace Naivart.Services
                 }
                 else if (HasAlreadyLocation(input))
                 {
-                    if (LoginService.IsTokenOwner(FindKingdomOwnerPlayer(input.kingdomId), authorization))
+                    if (IsUserKingdomOwner(input.kingdomId, usernameToken))
                     {
                         ConnectLocation(input);
                         status = 200;
@@ -94,6 +92,7 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
+
         public bool HasAlreadyLocation(KingdomLocationInput input)
         {
             try
@@ -105,6 +104,7 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
+
         public void ConnectLocation(KingdomLocationInput input)
         {
             try
@@ -127,6 +127,18 @@ namespace Naivart.Services
             try
             {
                 return DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
+        }
+
+        public bool IsUserKingdomOwner(long kingdomId, string username)
+        {           
+            try
+            {
+                return DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username == username;
             }
             catch (Exception e)
             {
