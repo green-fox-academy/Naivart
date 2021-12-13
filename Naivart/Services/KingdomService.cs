@@ -5,6 +5,8 @@ using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Naivart.Services
 {
@@ -138,6 +140,19 @@ namespace Naivart.Services
             catch (Exception e)
             {
                 throw new InvalidOperationException("Data could not be read", e);
+            }
+        }
+        public Kingdom GetByIdWithBuilding(long id)
+        {
+            var kingdom = new Kingdom();
+            try
+            {
+                kingdom = DbContext.Kingdoms.Include(k => k.Player).Include(k => k.Location).Include(k => k.Buildings).FirstOrDefault(k => k.Id == id);
+                return kingdom;
+            }
+            catch(Exception)
+            {
+                return null;
             }
         }
     }

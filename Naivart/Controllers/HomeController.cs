@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using Naivart.Services;
+using System.Linq;
 
 namespace Naivart.Controllers
 {
@@ -16,15 +17,18 @@ namespace Naivart.Controllers
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
+        public BuildingService BuildingService { get; set; }
+       
         public AuthService AuthService { get; set; }
-        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService, AuthService authService)
+        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService loginService, BuildingService buildingService,AuthService authService)
         {
             _mapper = mapper;
             ResourceService = resourceService;
             KingdomService = kingdomService;
+            LoginService = loginService;
             PlayerService = playerService;
             AuthService = authService;
-            LoginService = loginService;
+            BuildingService = buildingService;
         }
         
         [HttpPost("registration")]
@@ -109,6 +113,19 @@ namespace Naivart.Controllers
             {
                 return Ok(player);
             }
+        }
+
+        [Authorize]
+        [HttpGet("kingdoms/{id}/buildings")]
+        public IActionResult Buildings([FromRoute] long id)
+        {
+            string result = HttpContext.User.Identity.Name;
+            var response = BuildingService.GetBuildingResponse(id, HttpContext.User.Identity.Name,out int status);
+            if (status != 200)
+            {
+                return StatusCode(401);
+            }
+            return Ok(response);
         }
 
         [Authorize]

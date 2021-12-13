@@ -20,17 +20,21 @@ namespace NaivartUnitTest
 
             httpClient = factory.CreateClient();
         }
+        public string Token(string userName, string password)
+        {
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = userName, password = password });
+            StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
+            var response = httpClient.PostAsync("https://localhost:5000/login", requestContent).Result;
+            string contentResponse = response.Content.ReadAsStringAsync().Result;
+            TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(contentResponse);
+            string tokenResult = token.token;
+            return tokenResult;
+        }
         [Fact]
         public void AuthPostEndpoint_ShouldReturnOkFromToken()
         {
             var request = new HttpRequestMessage();
-
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin { username = "Adam", password = "Santa" });
-            StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
-            var response = httpClient.PostAsync("https://localhost:44385/login", requestContent).Result;
-            string contentResponse = response.Content.ReadAsStringAsync().Result;
-            TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(contentResponse);
-            string tokenResult = token.token;
+            var tokenResult = Token("Adam", "Santa");
 
             var inputObj2 = JsonConvert.SerializeObject(new PlayerIdentity() { token = tokenResult });
             StringContent requestContent2 = new(inputObj2, Encoding.UTF8, "application/json");
@@ -64,13 +68,8 @@ namespace NaivartUnitTest
             long kingdomIdExpected = 1;
             string kingdomNameExpected = "Igala";
             var statusCodeExpected = HttpStatusCode.OK;
+            var tokenResult = Token("Adam", "Santa");
 
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin { username = "Adam", password = "Santa" });
-            StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
-            var response = httpClient.PostAsync("https://localhost:44385/login", requestContent).Result;
-            string contentResponse = response.Content.ReadAsStringAsync().Result;
-            TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(contentResponse);
-            string tokenResult = token.token;
 
             var inputObj2 = JsonConvert.SerializeObject(new PlayerIdentity() { token = tokenResult });
             StringContent requestContent2 = new(inputObj2, Encoding.UTF8, "application/json");

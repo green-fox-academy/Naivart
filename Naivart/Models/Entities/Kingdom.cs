@@ -12,6 +12,7 @@ namespace Naivart.Models.Entities
         public int Population { get; set; }
         public long? LocationId { get; set; }
         public Location Location { get; set; }
+        public List<Building> Buildings { get; set; }
         public List<Resource> Resources { get; set; }
     }
 }
