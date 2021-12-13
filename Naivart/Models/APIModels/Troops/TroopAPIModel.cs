@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Naivart.Models.APIModels
+namespace Naivart.Models.APIModels.Troops
 {
     public class TroopAPIModel
     {

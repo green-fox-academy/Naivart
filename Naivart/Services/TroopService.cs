@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Naivart.Database;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
 using System.Collections.Generic;
 

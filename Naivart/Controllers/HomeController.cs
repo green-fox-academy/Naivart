@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Troops;
@@ -59,18 +60,15 @@ namespace Naivart.Controllers
             return response.Kingdoms.Count == 0 ? NotFound(new { kingdoms = response.Kingdoms })
                                                 : Ok(new { kingdoms = response.Kingdoms });
         }
+
+
+        [Authorize]
         [HttpGet("kingdoms/{id}/troops")]
         public IActionResult Troops([FromRoute] long id)
         {
-            var kingdom = KingdomService.GetById(id);
-            if (kingdom == null)
+            if (KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
             {
-                ErrorResponse ErrorResponse = new ErrorResponse()
-                { error = "This kingdom does not belong to authenticated player" };
-                return Unauthorized(ErrorResponse);
-            }
-            else
-            {
+                var kingdom = KingdomService.GetById(id); //přidat novou metodu abych invokoval pouze troops
                 var kingdomApiModel = KingdomService.KingdomMapping(kingdom);
                 var troopAPIModels = TroopService.ListOfTroopsMapping(kingdom.Troops);
                 var response = new TroopAPIResponse()
@@ -80,9 +78,14 @@ namespace Naivart.Controllers
                 };
                 return Ok(response);
             }
-
-
+            else
+            {
+                ErrorResponse ErrorResponse = new ErrorResponse()
+                { error = "This kingdom does not belong to authenticated player" };
+                return Unauthorized(ErrorResponse);
+            }
         }
+
 
         [HttpGet("kingdoms/{id}/resources")]
         public object Resources([FromRoute] long id)
