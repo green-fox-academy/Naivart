@@ -128,6 +128,7 @@ namespace Naivart.Controllers
             }
             return Ok(model);
         }
+
         [HttpGet("kingdoms/{id=int}/buildings")]
         public IActionResult Buildings([FromRoute] int id)
         {
@@ -139,8 +140,7 @@ namespace Naivart.Controllers
             else
             {
                 return Ok(kingdom);
-            }
-            
+            }            
         }
     }
 }

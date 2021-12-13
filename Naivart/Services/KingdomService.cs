@@ -155,7 +155,7 @@ namespace Naivart.Services
         {
             try
             {
-                if (IsUserKingdomOwner(id, tokenUsername))
+                if (IsUserKingdomOwner(id, tokenUsername))  //id is kingdom ID
                 {
                     error = "ok";
                     status = 200;
@@ -175,6 +175,7 @@ namespace Naivart.Services
                 return null;
             }
         }
+
         public Kingdom GetById(long id)
         {
             var kingdom = new Kingdom();
