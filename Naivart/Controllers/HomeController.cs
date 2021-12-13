@@ -129,19 +129,5 @@ namespace Naivart.Controllers
             }
             return Ok(model);
         }
-
-        [HttpGet("kingdoms/{id=int}/buildings")]
-        public IActionResult Buildings([FromRoute] int id)
-        {
-            var kingdom = KingdomService.GetById(id);
-            if (kingdom == null)
-            {
-                return StatusCode(401);
-            }
-            else
-            {
-                return Ok(kingdom);
-            }            
-        }
     }
 }
