@@ -16,6 +16,7 @@ namespace Naivart.Controllers
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
+        public AuthService AuthService { get; set; }
         public TroopService TroopService { get; set; }
         public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService, TroopService troopService)
         {
@@ -23,10 +24,11 @@ namespace Naivart.Controllers
             ResourceService = resourceService;
             KingdomService = kingdomService;
             PlayerService = playerService;
+            AuthService = authService;
             LoginService = loginService;
             TroopService = troopService;
         }
-
+        
         [HttpPost("registration")]
         public IActionResult Registration([FromBody] RegisterRequest request)
         {
@@ -49,6 +51,7 @@ namespace Naivart.Controllers
                 return StatusCode(400, response);
             }
         }
+        
 
         [HttpGet("kingdoms")]
         public object Kingdoms()
@@ -114,7 +117,7 @@ namespace Naivart.Controllers
             var correctLogin = new TokenWithStatus() { status = "ok", token = tokenOrMessage };
             return Ok(correctLogin);
         }
-
+        
         [HttpPost("auth")]
         public IActionResult Auth([FromBody] PlayerIdentity token)
         {
@@ -129,6 +132,18 @@ namespace Naivart.Controllers
             }
         }
 
-
+        [Authorize]
+        [HttpPut("registration")]
+        public IActionResult KingdomRegistration([FromBody]KingdomLocationInput input)
+        {
+            string result = KingdomService.RegisterKingdom(input, HttpContext.User.Identity.Name, out int status);
+            if (status != 200)
+            {
+                var outputError = new StatusForError() { error = result};
+                return StatusCode(status, outputError);
+            }
+            var outputOk = new StatusOutput() { status = result };
+            return Ok(outputOk);
+        }
     }
 }
