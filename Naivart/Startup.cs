@@ -36,6 +36,7 @@ namespace Naivart
             services.AddControllersWithViews();
             services.AddTransient<PlayerService>();
             services.AddTransient<LoginService>();
+            services.AddTransient<AuthService>();
 
             var appSettingSection = AppConfig.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingSection);
@@ -73,8 +74,9 @@ namespace Naivart
             }
 
             app.UseStaticFiles();
-
             app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

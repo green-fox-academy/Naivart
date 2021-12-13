@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
@@ -6,7 +7,8 @@ using Naivart.Services;
 
 namespace Naivart.Controllers
 {
-    [Route("")]
+    
+    [Route("/")]
     public class HomeController : Controller
     {
         private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
@@ -14,15 +16,17 @@ namespace Naivart.Controllers
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
-        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService)
+        public AuthService AuthService { get; set; }
+        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService service, AuthService authService)
         {
             _mapper = mapper;
             ResourceService = resourceService;
             KingdomService = kingdomService;
             PlayerService = playerService;
+            AuthService = authService;
             LoginService = loginService;
         }
-
+        
         [HttpPost("registration")]
         public IActionResult Registration([FromBody] RegisterRequest request)
         {
@@ -83,7 +87,7 @@ namespace Naivart.Controllers
             var correctLogin = new TokenWithStatus() { status = "ok", token = tokenOrMessage };
             return Ok(correctLogin);
         }
-
+        
         [HttpPost("auth")]
         public IActionResult Auth([FromBody] PlayerIdentity token)
         {
@@ -96,6 +100,20 @@ namespace Naivart.Controllers
             {
                 return Ok(player);
             }
+        }
+
+        [Authorize]
+        [HttpPut("registration")]
+        public IActionResult KingdomRegistration([FromBody]KingdomLocationInput input)
+        {
+            string result = KingdomService.RegisterKingdom(input, HttpContext.User.Identity.Name, out int status);
+            if (status != 200)
+            {
+                var outputError = new StatusForError() { error = result};
+                return StatusCode(status, outputError);
+            }
+            var outputOk = new StatusOutput() { status = result };
+            return Ok(outputOk);
         }
     }
 }
