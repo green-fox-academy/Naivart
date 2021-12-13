@@ -7,7 +7,8 @@ using Naivart.Services;
 
 namespace Naivart.Controllers
 {
-    [Route("")]
+    
+    [Route("/")]
     public class HomeController : Controller
     {
         private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
@@ -15,13 +16,15 @@ namespace Naivart.Controllers
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
-        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService)
+        public AuthService AuthService { get; set; }
+        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService service, AuthService authService)
         {
             _mapper = mapper;
             ResourceService = resourceService;
             KingdomService = kingdomService;
             LoginService = loginService;
             PlayerService = playerService;
+            AuthService = authService;
         }
         
         [HttpPost("registration")]
@@ -46,6 +49,7 @@ namespace Naivart.Controllers
                 return StatusCode(400, response);
             }
         }
+        
         [HttpGet("kingdoms")]
         public object Kingdoms()
         {
@@ -98,11 +102,12 @@ namespace Naivart.Controllers
                 return Ok(player);
             }
         }
+
         [Authorize]
         [HttpPut("registration")]
-        public IActionResult KingdomRegistration([FromBody]KingdomLocationInput input, [FromHeader]string authorization)
+        public IActionResult KingdomRegistration([FromBody]KingdomLocationInput input)
         {
-            string result = KingdomService.RegisterKingdom(input, authorization, out int status);
+            string result = KingdomService.RegisterKingdom(input, HttpContext.User.Identity.Name, out int status);
             if (status != 200)
             {
                 var outputError = new StatusForError() { error = result};

@@ -34,8 +34,10 @@ namespace Naivart
             services.AddTransient<ResourceService>();
             services.AddTransient<KingdomService>();
             services.AddControllersWithViews();
+            services.AddTransient<KingdomService>();
             services.AddTransient<PlayerService>();
             services.AddTransient<LoginService>();
+            services.AddTransient<AuthService>();
 
             var appSettingSection = AppConfig.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingSection);

@@ -19,15 +19,13 @@ namespace Naivart.Services
     {
         private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private ApplicationDbContext DbContext { get; }
-        private readonly AppSettings appSettings;
-        public LoginService LoginService { get; set; }
-
-        public KingdomService(ApplicationDbContext dbContext, IOptions<AppSettings> appSettings, LoginService loginService, IMapper mapper)
+        public AuthService AuthService { get; set; }
+        public KingdomService(ApplicationDbContext dbContext, IOptions<AppSettings> appSettings, LoginService loginService, IMapper mapper, AuthService authService)
         {
-            this.appSettings = appSettings.Value;
             DbContext = dbContext;
             _mapper = mapper;
             LoginService = loginService;
+            AuthService = authService;
         }
 
         public List<Kingdom> GetAll()
@@ -75,7 +73,7 @@ namespace Naivart.Services
                 }
                 else if (HasAlreadyLocation(input))
                 {
-                    if (LoginService.IsTokenOwner(FindKingdomOwnerPlayer(input.kingdomId), authorization))
+                    if (IsUserKingdomOwner(input.kingdomId, usernameToken))
                     {
                         ConnectLocation(input);
                         status = 200;
@@ -110,6 +108,7 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
+
         public bool HasAlreadyLocation(KingdomLocationInput input)
         {
             try
@@ -121,6 +120,7 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
+
         public void ConnectLocation(KingdomLocationInput input)
         {
             try
@@ -183,6 +183,18 @@ namespace Naivart.Services
             var locationAPIModel = _mapper.Map<LocationAPIModel>(kingdom.Location);
             kingdomAPIModel.Location = locationAPIModel;
             return kingdomAPIModel;
+        }
+
+        public bool IsUserKingdomOwner(long kingdomId, string username)
+        {           
+            try
+            {
+                return DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username == username;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
         }
     }
 }
