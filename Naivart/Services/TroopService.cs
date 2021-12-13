@@ -13,7 +13,5 @@ namespace Naivart.Services
         {
             DbContext = dbContext;
         }
-
-
     }
 }

@@ -214,44 +214,43 @@ namespace Naivart.Services
         {
             try
             {
-            var model = DbContext.Kingdoms.Where(x => x.Id == kingdomId)
-                              .Include(x => x.Location)
-                              .Include(x => x.Resources)
-                              .Include(x => x.Buildings)
-                              .Include(x => x.Troops).FirstOrDefault();
+                var model = DbContext.Kingdoms.Where(x => x.Id == kingdomId)
+                                  .Include(x => x.Location)
+                                  .Include(x => x.Resources)
+                                  .Include(x => x.Buildings)
+                                  .Include(x => x.Troops).FirstOrDefault();
 
-            var buildings = new List<BuildingsInfo>();
-            var resources = new List<ResourceAPIModel>();
-            var troops = new List<TroopsInfo>();
+                var buildings = new List<BuildingsInfo>();
+                var resources = new List<ResourceAPIModel>();
+                var troops = new List<TroopsInfo>();
 
-            foreach (var item in model.Buildings)   //Creating list of buildingsInfo
-            {
-                var buildingMapper = _mapper.Map<BuildingsInfo>(item);
-                buildings.Add(buildingMapper);
-            }
-            foreach (var item in model.Resources)   //list of resources
-            {
-                var resourcesMapper = _mapper.Map<ResourceAPIModel>(item);
-                resources.Add(resourcesMapper);
-            }
-            foreach (var item in model.Troops)   //list of troops
-            {
-                var troopsMapper = _mapper.Map<TroopsInfo>(item);
-                troops.Add(troopsMapper);
-            }
+                foreach (var item in model.Buildings)   //Creating list of buildingsInfo
+                {
+                    var buildingMapper = _mapper.Map<BuildingsInfo>(item);
+                    buildings.Add(buildingMapper);
+                }
+                foreach (var item in model.Resources)   //list of resources
+                {
+                    var resourcesMapper = _mapper.Map<ResourceAPIModel>(item);
+                    resources.Add(resourcesMapper);
+                }
+                foreach (var item in model.Troops)   //list of troops
+                {
+                    var troopsMapper = _mapper.Map<TroopsInfo>(item);
+                    troops.Add(troopsMapper);
+                }
 
-            var result = new AllPlayerDetails()
-            {
-                Kingdom = _mapper.Map<KingdomAPIModel>(model),
-                Buildings = buildings,
-                Resources = resources,
-                Troops = troops
-            };
-            return result;
+                var result = new AllPlayerDetails()
+                {
+                    Kingdom = _mapper.Map<KingdomAPIModel>(model),
+                    Buildings = buildings,
+                    Resources = resources,
+                    Troops = troops
+                };
+                return result;
             }
             catch (Exception e)
             {
-
                 throw new InvalidOperationException("Data could not be read", e); ;
             }
         }

@@ -100,8 +100,9 @@ namespace Naivart.Services
                 var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
 
                 if (jwtToken == null)
+                {
                     return null;
-
+                }
                 var symmetricKey = Encoding.ASCII.GetBytes(appSettings.Key);
 
                 var validationParameters = new TokenValidationParameters()
