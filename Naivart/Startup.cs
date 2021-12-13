@@ -31,11 +31,12 @@ namespace Naivart
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAutoMapper(typeof(Startup));
-            services.AddTransient<KingdomService>();
             services.AddControllersWithViews();
+            services.AddTransient<KingdomService>();
             services.AddTransient<PlayerService>();
             services.AddTransient<LoginService>();
             services.AddTransient<BuildingService>();
+            services.AddTransient<AuthService>();
 
             var appSettingSection = AppConfig.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingSection);
@@ -73,8 +74,9 @@ namespace Naivart
             }
 
             app.UseStaticFiles();
-
             app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
