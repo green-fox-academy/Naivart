@@ -7,10 +7,10 @@ namespace Naivart.Models.APIModels
 {
     public class BuildingsInfo
     {
-        public long id { get; set; }
-        public string type { get; set; }
-        public int level { get; set; }
-        public long started_at { get; set; }
-        public long finished_at { get; set; }
+        public long Id { get; set; }
+        public string Type { get; set; }
+        public int Level { get; set; }
+        public long Started_at { get; set; }
+        public long Finished_at { get; set; }
     }
 }

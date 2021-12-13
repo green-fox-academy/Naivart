@@ -7,9 +7,9 @@ namespace Naivart.Models.APIModels
 {
     public class AllPlayerDetails
     {
-        public KingdomInfo kingdom { get; set; }
-        public List<ResourcesInfo> resources { get; set; }
-        public List<BuildingsInfo> buildings { get; set; }
-        public List<TroopsInfo> troops { get; set; }
+        public KingdomAPIModel Kingdom { get; set; }
+        public List<ResourceAPIModel> Resources { get; set; }
+        public List<BuildingsInfo> Buildings { get; set; }
+        public List<TroopsInfo> Troops { get; set; }
     }
 }

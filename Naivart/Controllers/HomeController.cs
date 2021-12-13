@@ -121,12 +121,12 @@ namespace Naivart.Controllers
         [HttpGet("kingdoms/{id}")]
         public IActionResult KingdomInformation([FromRoute]long id)
         {
-            var model = KingdomService.GetKingdomInfo(id, HttpContext.User.Identity.Name, out int status);
+            var model = KingdomService.GetKingdomInfo(id, HttpContext.User.Identity.Name, out int status, out string error);
             if (status != 200)
             {
-                return StatusCode(status);
+                return StatusCode(status, new StatusForError() { error = error });
             }
-            return Ok();
+            return Ok(model);
         }
         [HttpGet("kingdoms/{id=int}/buildings")]
         public IActionResult Buildings([FromRoute] int id)

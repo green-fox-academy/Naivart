@@ -7,12 +7,12 @@ namespace Naivart.Models.APIModels
 {
     public class TroopsInfo
     {
-        public long id { get; set; }
-        public int level { get; set; }
-        public int hp { get; set; }
-        public int attack { get; set; }
-        public int defense { get; set; }
-        public DateTime? started_at { get; set; }
-        public DateTime? finished_at { get; set; }
+        public long Id { get; set; }
+        public int Level { get; set; }
+        public int Hp { get; set; }
+        public int Attack { get; set; }
+        public int Defense { get; set; }
+        public DateTime? Started_at { get; set; }
+        public DateTime? Finished_at { get; set; }
     }
 }
