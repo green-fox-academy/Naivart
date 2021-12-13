@@ -4,11 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using Naivart.Services;
-using System.Linq;
 
 namespace Naivart.Controllers
 {
-    
+
     [Route("/")]
     public class HomeController : Controller
     {
@@ -20,7 +19,7 @@ namespace Naivart.Controllers
         public BuildingService BuildingService { get; set; }
        
         public AuthService AuthService { get; set; }
-        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService loginService, BuildingService buildingService,AuthService authService)
+        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService, BuildingService buildingService, AuthService authService)
         {
             _mapper = mapper;
             ResourceService = resourceService;
