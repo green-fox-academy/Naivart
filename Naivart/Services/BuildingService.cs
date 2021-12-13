@@ -20,6 +20,27 @@ namespace Naivart.Services
             KingdomService = kingdomService;
             PlayerService = playerService;
         }
+          public KingdomResponseForBuilding GetKingdom(long id)
+        {
+            var kingdom = KingdomService.GetById(id);
+            var player = PlayerService.GetPlayerById(kingdom.Player.Id);
+            if (kingdom != null && player != null)
+            {
+                return new KingdomResponseForBuilding()
+                {
+                    KingdomId = kingdom.Id,
+                    KingdomName = kingdom.Name,
+                    Ruler = player.Username,
+                    Population = 0,
+                    Location = new Location() { CoordinateX = kingdom.Location.CoordinateX, CoordinateY = kingdom.Location.CoordinateY }
+                };
+            }
+            else
+            {
+                return null;
+            }
+         
+        }
         public List<BuildingsForResponse> GetBuildingsById(long id)
         {
             List<BuildingsForResponse> buildings = DbContext.Buildings.Where(b => b.KingdomId == id).Select(b => new BuildingsForResponse()
@@ -40,31 +61,21 @@ namespace Naivart.Services
                 return new List<BuildingsForResponse>();
             }
         }
-        public KingdomResponseForBuilding GetKingdom(long id)
-        {
-            var kingdom = KingdomService.GetById(id);
-            var player = PlayerService.GetPlayerById(kingdom.Player.Id);
-            return new KingdomResponseForBuilding()
-            {
-                KingdomId = kingdom.Id,
-                KingdomName = kingdom.Name,
-                Ruler = player.Username,
-                Population = 0,
-                Location = new Location() { CoordinateX = kingdom.Location.CoordinateX, CoordinateY = kingdom.Location.CoordinateY}
-            };
-        }
-        public BuildingResponse GetBuildingResponse(long id)
+      
+        public BuildingResponse GetBuildingResponse(long id,string usernameToken, out int status)
         {
             BuildingResponse response = new BuildingResponse();
-            if (response != null)
+            if (KingdomService.IsUserKingdomOwner(id, usernameToken))
             {
                 response.Kingdom = GetKingdom(id);
                 response.Buildings = GetBuildingsById(id);
+                status = 200;
                 return response;
             }
             else
             {
-                return null;
+                status = 401;
+                return response;
             }
         }
     }

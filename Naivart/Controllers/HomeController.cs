@@ -17,9 +17,9 @@ namespace Naivart.Controllers
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
         public BuildingService BuildingService { get; set; }
-        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService loginService, BuildingService buildingService)
+       
         public AuthService AuthService { get; set; }
-        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService service, AuthService authService)
+        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService loginService, BuildingService buildingService,AuthService authService)
         {
             _mapper = mapper;
             KingdomService = kingdomService;
@@ -88,11 +88,14 @@ namespace Naivart.Controllers
                 return Ok(player);
             }
         }
+
+        [Authorize]
         [HttpGet("kingdoms/{id}/buildings")]
         public IActionResult Buildings([FromRoute] long id)
         {
-            var response = BuildingService.GetBuildingResponse(id);
-            if (response == null)
+            string result = HttpContext.User.Identity.Name;
+            var response = BuildingService.GetBuildingResponse(id, HttpContext.User.Identity.Name,out int status);
+            if (status != 200)
             {
                 return StatusCode(401);
             }

@@ -10,13 +10,14 @@ using System.Threading.Tasks;
 using Xunit;
 namespace NaivartUnitTest
 {
-    class BuildingTest :IClassFixture<WebApplicationFactory<Startup>>
+    public class BuildingTest :IClassFixture<WebApplicationFactory<Startup>>
     {
         private readonly HttpClient httpClient;
         public BuildingTest(WebApplicationFactory<Startup> factory)
         {
             httpClient = factory.CreateClient();
         }
+        [Fact]
         public void BuildingGetEndpoint_ShouldReturnOk()
         {
             var request = new HttpRequestMessage();
@@ -30,11 +31,12 @@ namespace NaivartUnitTest
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+        [Fact]
         public void BuildingGetEndpoint_ShouldReturn401()
         {
             var request = new HttpRequestMessage();
 
-            var inputObj = JsonConvert.SerializeObject(new KingdomResponseForBuilding() { KingdomId = 0 });
+            var inputObj = JsonConvert.SerializeObject(new KingdomResponseForBuilding() { KingdomId = 0});
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("https://localhost:44385/kingdoms/1/buildings");
             request.Method = HttpMethod.Get;
