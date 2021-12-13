@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using Naivart.Services;
+using System.Linq;
 
 namespace Naivart.Controllers
 {
@@ -16,8 +17,10 @@ namespace Naivart.Controllers
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
+        public BuildingService BuildingService { get; set; }
+       
         public AuthService AuthService { get; set; }
-        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService loginService, AuthService authService, ResourceService resourceService)
+        public HomeController(IMapper mapper, KingdomService kingdomService, PlayerService playerService, LoginService loginService, AuthService authService, ResourceService resourceService, BuildingService buildingService)
         {
             _mapper = mapper;
             ResourceService = resourceService;
@@ -25,6 +28,7 @@ namespace Naivart.Controllers
             LoginService = loginService;
             PlayerService = playerService;
             AuthService = authService;
+            BuildingService = buildingService;
         }
         
         [HttpPost("registration")]
@@ -54,28 +58,12 @@ namespace Naivart.Controllers
         public object Kingdoms()
         {
             var kingdoms = KingdomService.GetAll();
-            var kingdomAPIModels = KingdomService.ListOfKingdomsMapping(kingdoms);
-            var response = new KingdomAPIResponse() { Kingdoms = kingdomAPIModels };
+            var response = new KingdomAPIResponse(_mapper, kingdoms);
 
             return response.Kingdoms.Count == 0 ? NotFound(new { kingdoms = response.Kingdoms })
                                                 : Ok(new { kingdoms = response.Kingdoms });
         }
-
-        [HttpGet("kingdoms/{id}/resources")]
-        public object Resources([FromRoute] long id)
-        {
-            var kingdom = KingdomService.GetById(id);
-            var kingdomAPIModel = KingdomService.KingdomMapping(kingdom);
-            var resourceAPIModels = ResourceService.ListOfResourcesMapping(kingdom.Resources);
-            var response = new ResourceAPIResponse()
-            {
-                Kingdom = kingdomAPIModel,
-                Resources = resourceAPIModels
-            };
-
-            return Ok(response);
-        }
-
+        
         [HttpPost("login")]
         public IActionResult Login([FromBody] PlayerLogin player)
         {
@@ -101,6 +89,19 @@ namespace Naivart.Controllers
             {
                 return Ok(player);
             }
+        }
+
+        [Authorize]
+        [HttpGet("kingdoms/{id}/buildings")]
+        public IActionResult Buildings([FromRoute] long id)
+        {
+            string result = HttpContext.User.Identity.Name;
+            var response = BuildingService.GetBuildingResponse(id, HttpContext.User.Identity.Name,out int status);
+            if (status != 200)
+            {
+                return StatusCode(401);
+            }
+            return Ok(response);
         }
 
         [Authorize]
