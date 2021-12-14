@@ -94,7 +94,7 @@ namespace Naivart.Controllers
         [HttpGet("kingdoms/{id}/resources")]
         public object Resources([FromRoute] long id)
         {
-            var kingdom = KingdomService.GetById(id);
+            var kingdom = KingdomService.GetByIdWithResources(id);
             var kingdomAPIModel = KingdomService.KingdomMapping(kingdom);
             var resourceAPIModels = ResourceService.ListOfResourcesMapping(kingdom.Resources);
             var response = new ResourceAPIResponse()

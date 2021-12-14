@@ -54,23 +54,24 @@ namespace Naivart.Services
             return kingdomAPIModels;
         }
 
-        public Kingdom GetById(long id)
+        public Kingdom GetByIdWithResources(long id)
         {
             var kingdom = new Kingdom();
             try
             {
-                kingdom = DbContext.Kingdoms
+                return kingdom = DbContext.Kingdoms
                      .Where(k => k.Id == id)
                      .Include(k => k.Player)
                      .Include(k => k.Location)
-                     .FirstOrDefault();
-                return kingdom;
+                     .Include(k => k.Resources)
+                     .First();
             }
             catch
             {
                 return kingdom;
             }
         }
+
         public Kingdom GetByIdWithTroops(long id)
         {
             var kingdom = new Kingdom();
