@@ -33,7 +33,7 @@ namespace NaivartUnitTest
             var request = new HttpRequestMessage();
             var tokenResult = Token("Adam", "Santa");
 
-            var inputObj = JsonConvert.SerializeObject(new KingdomResponseForBuilding() { KingdomId = 1 }); 
+            var inputObj = JsonConvert.SerializeObject(new KingdomAPIModel() { Kingdom_Id = 1 }); 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("https://localhost:44385/kingdoms/1/buildings");
             request.Method = HttpMethod.Get;
@@ -48,7 +48,7 @@ namespace NaivartUnitTest
         {
             var request = new HttpRequestMessage();
 
-            var inputObj = JsonConvert.SerializeObject(new KingdomResponseForBuilding() { KingdomId = 0});
+            var inputObj = JsonConvert.SerializeObject(new KingdomAPIModel() { Kingdom_Id = 0});
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("https://localhost:44385/kingdoms/1/buildings");
             request.Method = HttpMethod.Get;
