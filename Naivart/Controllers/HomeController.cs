@@ -168,9 +168,9 @@ namespace Naivart.Controllers
 
         [Authorize]
         [HttpPut("kingdoms/{id}")]
-        public IActionResult RenameKingdom([FromRoute] long id, [FromBody] string kingdomName)
+        public IActionResult RenameKingdom([FromRoute] long id, [FromBody] RenameKingdomRequest request)
         {
-            if (String.IsNullOrWhiteSpace(kingdomName))
+            if (String.IsNullOrWhiteSpace(request.kingdomName))
             {
                 ErrorResponse ErrorResponse = new ErrorResponse()
                 { error = "Field kingdomName was empty!" };
@@ -184,7 +184,7 @@ namespace Naivart.Controllers
                 return Unauthorized(ErrorResponse);
             }
 
-            KingdomService.RenameKingdom(id, kingdomName);
+            KingdomService.RenameKingdom(id, request.kingdomName);
             Kingdom kingdom = KingdomService.GetById(id);
             var response = new RenameKingdomResponse() { kingdomId = kingdom.Id, kingdomName = kingdom.Name };
             return Ok(response);
