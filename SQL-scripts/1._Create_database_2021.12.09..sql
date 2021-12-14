@@ -35,7 +35,6 @@
           CONSTRAINT `PK_Resources` PRIMARY KEY (`Id`),
           CONSTRAINT `FK_Resources_Kingdoms_KingdomId` FOREIGN KEY (`KingdomId`) REFERENCES `Kingdoms` (`Id`) ON DELETE CASCADE
       ) CHARACTER SET utf8mb4;
-<<<<<<< HEAD:SQL-scripts/1._Create_database_2021.12.09..sql
       
             CREATE TABLE `Troops` (
           `Id` bigint NOT NULL AUTO_INCREMENT,
@@ -49,5 +48,4 @@
           CONSTRAINT `PK_Troops` PRIMARY KEY (`Id`),
           CONSTRAINT `FK_Troops_Kingdoms_KingdomId` FOREIGN KEY (`KingdomId`) REFERENCES `Kingdoms` (`Id`) ON DELETE CASCADE
       ) CHARACTER SET utf8mb4;
-=======
->>>>>>> CS-42_Kingdom_Resources:SQL-scripts/1. Create database 2021.12.09..sql
+

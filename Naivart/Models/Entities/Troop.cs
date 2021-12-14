@@ -11,8 +11,8 @@ namespace Naivart.Models.Entities
         public int Hp { get; set; }
         public int Attack { get; set; }
         public int Defense { get; set; }
-        public DateTime? Started_at { get; set; }
-        public DateTime? Finished_at { get; set; }
+        public long Started_at { get; set; }
+        public long Finished_at { get; set; }
         public long KingdomId { get; set; }
         public Kingdom Kingdom { get; set; }
     }

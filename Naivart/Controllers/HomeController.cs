@@ -12,7 +12,6 @@ namespace Naivart.Controllers
     [Route("")]
     public class HomeController : Controller
     {
-        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         public ResourceService ResourceService { get; set; }
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
@@ -21,9 +20,8 @@ namespace Naivart.Controllers
        
         public AuthService AuthService { get; set; }
         public TroopService TroopService { get; set; }
-        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService,AuthService authService, TroopService troopService)
+        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService,AuthService authService, TroopService troopService)
         {
-            _mapper = mapper;
             ResourceService = resourceService;
             KingdomService = kingdomService;
             LoginService = loginService;

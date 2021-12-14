@@ -14,14 +14,14 @@ namespace Naivart.Services
 {
     public class KingdomService
     {
-        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
+        private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public KingdomService(IMapper mapper, ApplicationDbContext dbContext, AuthService authService)
         {
             DbContext = dbContext;
             AuthService = authService;
-            _mapper = mapper;
+            this.mapper = mapper;
         }
 
         public List<Kingdom> GetAll()
@@ -46,8 +46,8 @@ namespace Naivart.Services
 
             foreach (var kingdom in kingdoms)
             {
-                var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
-                var locationAPIModel = _mapper.Map<LocationAPIModel>(kingdom.Location);
+                var kingdomAPIModel = mapper.Map<KingdomAPIModel>(kingdom);
+                var locationAPIModel = mapper.Map<LocationAPIModel>(kingdom.Location);
                 kingdomAPIModel.Location = locationAPIModel;
                 kingdomAPIModels.Add(kingdomAPIModel);
             }
@@ -92,8 +92,8 @@ namespace Naivart.Services
 
         public KingdomAPIModel KingdomMapping(Kingdom kingdom)
         {
-            var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
-            var locationAPIModel = _mapper.Map<LocationAPIModel>(kingdom.Location);
+            var kingdomAPIModel = mapper.Map<KingdomAPIModel>(kingdom);
+            var locationAPIModel = mapper.Map<LocationAPIModel>(kingdom.Location);
             kingdomAPIModel.Location = locationAPIModel;
             return kingdomAPIModel;
         }
