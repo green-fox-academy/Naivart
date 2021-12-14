@@ -6,9 +6,6 @@ using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Naivart.Models;
-using Microsoft.Extensions.Options;
 
 namespace Naivart.Services
 {
@@ -18,13 +15,12 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public LoginService LoginService { get; set; }
-        public KingdomService(ApplicationDbContext dbContext, IOptions<AppSettings> appSettings, LoginService loginService, IMapper mapper, AuthService authService)
+        public KingdomService(ApplicationDbContext dbContext, LoginService loginService, IMapper mapper, AuthService authService)
         {
             DbContext = dbContext;
             this.mapper = mapper;
             LoginService = loginService;
             AuthService = authService;
->>>>>>>>> Temporary merge branch 2
         }
 
         public List<Kingdom> GetAll()
@@ -231,14 +227,6 @@ namespace Naivart.Services
             {
                 return null;
             }
-        }
-
-        public KingdomAPIModel KingdomMapping(Kingdom kingdom)
-        {
-            var kingdomAPIModel = mapper.Map<KingdomAPIModel>(kingdom);
-            var locationAPIModel = mapper.Map<LocationAPIModel>(kingdom.Location);
-            kingdomAPIModel.Location = locationAPIModel;
-            return kingdomAPIModel;
         }
 
         public bool IsUserKingdomOwner(long kingdomId, string username)

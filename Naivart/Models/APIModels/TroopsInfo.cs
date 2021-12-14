@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
+﻿
 namespace Naivart.Models.APIModels
 {
     public class TroopsInfo
@@ -12,7 +8,7 @@ namespace Naivart.Models.APIModels
         public int Hp { get; set; }
         public int Attack { get; set; }
         public int Defense { get; set; }
-        public DateTime? Started_at { get; set; }
-        public DateTime? Finished_at { get; set; }
+        public long Started_at { get; set; }
+        public long Finished_at { get; set; }
     }
 }

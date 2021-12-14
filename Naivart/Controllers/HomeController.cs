@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Troops;
@@ -17,10 +16,11 @@ namespace Naivart.Controllers
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
         public BuildingService BuildingService { get; set; }
-       
         public AuthService AuthService { get; set; }
         public TroopService TroopService { get; set; }
-        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService,AuthService authService, TroopService troopService, BuildingService buildingService)
+
+        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, 
+            LoginService loginService,AuthService authService, TroopService troopService, BuildingService buildingService)
         {
             ResourceService = resourceService;
             KingdomService = kingdomService;
