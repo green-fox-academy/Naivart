@@ -69,8 +69,13 @@ namespace Naivart.Controllers
         [HttpGet("kingdoms/{id}/troops")]
         public IActionResult Troops([FromRoute] long id)
         {
-            if (KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
+            if (!KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
             {
+                ErrorResponse ErrorResponse = new ErrorResponse()
+                { error = "This kingdom does not belong to authenticated player" };
+                return Unauthorized(ErrorResponse);
+            }
+
                 var kingdom = KingdomService.GetByIdWithTroops(id);
                 var kingdomApiModel = KingdomService.KingdomMapping(kingdom);
                 var troopAPIModels = TroopService.ListOfTroopsMapping(kingdom.Troops);
@@ -80,13 +85,6 @@ namespace Naivart.Controllers
                     Troops = troopAPIModels
                 };
                 return Ok(response);
-            }
-            else
-            {
-                ErrorResponse ErrorResponse = new ErrorResponse()
-                { error = "This kingdom does not belong to authenticated player" };
-                return Unauthorized(ErrorResponse);
-            }
         }
 
         [Authorize]
