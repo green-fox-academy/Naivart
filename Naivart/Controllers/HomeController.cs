@@ -5,7 +5,6 @@ using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
 using Naivart.Services;
-using System.Linq;
 
 namespace Naivart.Controllers
 {
@@ -90,20 +89,27 @@ namespace Naivart.Controllers
             }
         }
 
-
+        [Authorize]
         [HttpGet("kingdoms/{id}/resources")]
         public object Resources([FromRoute] long id)
         {
-            var kingdom = KingdomService.GetByIdWithResources(id);
-            var kingdomAPIModel = KingdomService.KingdomMapping(kingdom);
-            var resourceAPIModels = ResourceService.ListOfResourcesMapping(kingdom.Resources);
-            var response = new ResourceAPIResponse()
+            if (KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
             {
-                Kingdom = kingdomAPIModel,
-                Resources = resourceAPIModels
-            };
+                var kingdom = KingdomService.GetByIdWithResources(id);
+                var kingdomAPIModel = KingdomService.KingdomMapping(kingdom);
+                var resourceAPIModels = ResourceService.ListOfResourcesMapping(kingdom.Resources);
+                var response = new ResourceAPIResponse()
+                {
+                    Kingdom = kingdomAPIModel,
+                    Resources = resourceAPIModels
+                };
 
-            return Ok(response);
+                return Ok(response);
+            }
+            else
+            {
+                return Unauthorized(new { error = "This kingdom does not belong to authenticated player" });
+            }
         }
 
         [HttpPost("login")]
