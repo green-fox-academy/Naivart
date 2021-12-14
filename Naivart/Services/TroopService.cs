@@ -20,23 +20,29 @@ namespace Naivart.Services
             KingdomService = kingdomService;
         }
 
-        public void TroopCreateRequest(CreateTroopAPIRequest input, long kingdomId, string username)
+        public string TroopCreateRequest(CreateTroopAPIRequest input, long kingdomId, string username, out int status)
         {
             if (AuthService.IsKingdomOwner(kingdomId, username))
             {
                 int goldAmount = KingdomService.GetGoldAmount(kingdomId);
                 if (IsPossibleToCreate(goldAmount, input.Type))
                 {
-
+                    status = 200;
+                    return "ok";
                 }
+                status = 400;
+                return "You don't have enough gold to train all these units!";
             }
+            status = 401;
+            return "This kingdom does not belong to authenticated player";
         }
 
         public bool IsPossibleToCreate(int goldAmount, string troopType)    //If this pass then will create troop
         {
-            if (true)
+            var model = TroopFactory(troopType, goldAmount);
+            if (model != null)
             {
-
+                //send troop when db will be here
             }
         }
 

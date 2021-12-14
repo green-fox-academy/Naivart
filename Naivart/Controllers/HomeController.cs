@@ -17,9 +17,11 @@ namespace Naivart.Controllers
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
         public BuildingService BuildingService { get; set; }
-       
+        public TroopService TroopService { get; set; }
+
         public AuthService AuthService { get; set; }
-        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService, BuildingService buildingService, AuthService authService)
+        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, 
+            PlayerService playerService, LoginService loginService, BuildingService buildingService, AuthService authService, TroopService troopService)
         {
             _mapper = mapper;
             ResourceService = resourceService;
@@ -28,6 +30,7 @@ namespace Naivart.Controllers
             PlayerService = playerService;
             AuthService = authService;
             BuildingService = buildingService;
+            TroopService = troopService;
         }
         
         [HttpPost("registration")]
@@ -144,7 +147,12 @@ namespace Naivart.Controllers
         [HttpPost("kingdoms/{id}/troops")]
         public IActionResult CreateTroops([FromRoute]long id, [FromBody]CreateTroopAPIRequest input)
         {
-
+            var result = TroopService.TroopCreateRequest(input, id, HttpContext.User.Identity.Name, out int status);
+            if (status != 200)
+            {
+                var outputError = new StatusForError() { error = result };
+                return StatusCode(status, outputError);
+            }
             return Ok();
         }
     }
