@@ -140,5 +140,12 @@ namespace Naivart.Controllers
             var outputOk = new StatusOutput() { status = result };
             return Ok(outputOk);
         }
+
+        [HttpPost("kingdoms/{id}/troops")]
+        public IActionResult CreateTroops([FromRoute]long id, [FromBody]CreateTroopAPIRequest input)
+        {
+
+            return Ok();
+        }
     }
 }

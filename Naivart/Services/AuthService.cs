@@ -64,17 +64,16 @@ namespace Naivart.Services
             return principal.Identity.Name;
         }
 
-        public string CleanToken(string auth)   //remove "bearer " from authentication token
+        public bool IsKingdomOwner(long kingdomId, string username)
         {
-            return auth.Remove(0, 7);
+            try
+            {
+                return DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username == username;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
         }
-
-        public bool IsTokenOwner(string username, string auth)
-        {
-            string token = CleanToken(auth);
-            var name = GetNameFromToken(token);
-            return name == username;
-        }
-
     }
 }
