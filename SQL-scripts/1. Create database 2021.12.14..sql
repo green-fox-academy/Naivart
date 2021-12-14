@@ -35,3 +35,27 @@
           CONSTRAINT `PK_Resources` PRIMARY KEY (`Id`),
           CONSTRAINT `FK_Resources_Kingdoms_KingdomId` FOREIGN KEY (`KingdomId`) REFERENCES `Kingdoms` (`Id`) ON DELETE CASCADE
       ) CHARACTER SET utf8mb4;
+      
+		CREATE TABLE `Buildings` (
+          `Id` bigint NOT NULL AUTO_INCREMENT,
+          `Type` longtext CHARACTER SET utf8mb4 NULL,
+          `Level` int NOT NULL,
+          `StartedAt` bigint NOT NULL,
+          `FinishedAt` bigint NOT NULL,
+          `KingdomId` bigint NOT NULL,
+          CONSTRAINT `PK_Buildings` PRIMARY KEY (`Id`),
+          CONSTRAINT `FK_Buildings_Kingdoms_KingdomId` FOREIGN KEY (`KingdomId`) REFERENCES `Kingdoms` (`Id`) ON DELETE CASCADE
+      ) CHARACTER SET utf8mb4;
+      
+		CREATE TABLE `Troops` (
+          `Id` bigint NOT NULL AUTO_INCREMENT,
+          `Level` int NOT NULL,
+          `Hp` int NOT NULL,
+          `Attack` int NOT NULL,
+          `Defense` int NOT NULL,
+          `Started_at` bigint NOT NULL,
+          `Finished_at` bigint NOT NULL,
+          `KingdomId` bigint NOT NULL,
+          CONSTRAINT `PK_Troops` PRIMARY KEY (`Id`),
+          CONSTRAINT `FK_Troops_Kingdoms_KingdomId` FOREIGN KEY (`KingdomId`) REFERENCES `Kingdoms` (`Id`) ON DELETE CASCADE
+      ) CHARACTER SET utf8mb4;

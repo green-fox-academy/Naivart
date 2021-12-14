@@ -11,11 +11,11 @@ using Xunit;
 
 namespace NaivartUnitTest
 {
-    public class KingdomsIntegrationTests : IClassFixture<WebApplicationFactory<Startup>>
+    public class KingdomsEndpointTests : IClassFixture<WebApplicationFactory<Startup>>
     {
         private readonly HttpClient HttpClient;
 
-        public KingdomsIntegrationTests(WebApplicationFactory<Startup> factory)
+        public KingdomsEndpointTests(WebApplicationFactory<Startup> factory)
         {
             HttpClient = factory.CreateClient();
         }

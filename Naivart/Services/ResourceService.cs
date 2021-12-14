@@ -2,10 +2,7 @@
 using Naivart.Database;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Naivart.Services
 {
@@ -22,6 +19,11 @@ namespace Naivart.Services
         public List<ResourceAPIModel> ListOfResourcesMapping(List<Resource> resources)
         {
             var resourceAPIModels = new List<ResourceAPIModel>();
+
+            if (resources is null)
+            {
+                return resourceAPIModels;
+            }
 
             foreach (var resource in resources)
             {

@@ -1,11 +1,9 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 
-namespace Naivart.Models.Entities
+namespace Naivart.Models.APIModels.Troops
 {
-    public class Troop
+    public class TroopAPIModel
     {
-        [Key]
         public long Id { get; set; }
         public int Level { get; set; }
         public int Hp { get; set; }
@@ -13,7 +11,5 @@ namespace Naivart.Models.Entities
         public int Defense { get; set; }
         public long Started_at { get; set; }
         public long Finished_at { get; set; }
-        public long KingdomId { get; set; }
-        public Kingdom Kingdom { get; set; }
     }
 }
