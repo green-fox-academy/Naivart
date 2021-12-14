@@ -19,7 +19,7 @@ namespace Naivart.Controllers
        
         public AuthService AuthService { get; set; }
         public TroopService TroopService { get; set; }
-        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService,AuthService authService, TroopService troopService)
+        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService,AuthService authService, TroopService troopService, BuildingService buildingService)
         {
             ResourceService = resourceService;
             KingdomService = kingdomService;
@@ -27,6 +27,7 @@ namespace Naivart.Controllers
             PlayerService = playerService;
             AuthService = authService;
             TroopService = troopService;
+            BuildingService = buildingService;
         }
         
         [HttpPost("registration")]
