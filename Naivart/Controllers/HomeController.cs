@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using Naivart.Services;
+using System;
 
 namespace Naivart.Controllers
 {
@@ -17,7 +18,7 @@ namespace Naivart.Controllers
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
         public BuildingService BuildingService { get; set; }
-       
+
         public AuthService AuthService { get; set; }
         public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService, BuildingService buildingService, AuthService authService)
         {
@@ -29,7 +30,7 @@ namespace Naivart.Controllers
             AuthService = authService;
             BuildingService = buildingService;
         }
-        
+
         [HttpPost("registration")]
         public IActionResult Registration([FromBody] RegisterRequest request)
         {
@@ -99,7 +100,7 @@ namespace Naivart.Controllers
             var correctLogin = new TokenWithStatus() { status = "ok", token = tokenOrMessage };
             return Ok(correctLogin);
         }
-        
+
         [HttpPost("auth")]
         public IActionResult Auth([FromBody] PlayerIdentity token)
         {
@@ -119,7 +120,7 @@ namespace Naivart.Controllers
         public IActionResult Buildings([FromRoute] long id)
         {
             string result = HttpContext.User.Identity.Name;
-            var response = BuildingService.GetBuildingResponse(id, HttpContext.User.Identity.Name,out int status);
+            var response = BuildingService.GetBuildingResponse(id, HttpContext.User.Identity.Name, out int status);
             if (status != 200)
             {
                 return StatusCode(401);
@@ -129,16 +130,40 @@ namespace Naivart.Controllers
 
         [Authorize]
         [HttpPut("registration")]
-        public IActionResult KingdomRegistration([FromBody]KingdomLocationInput input)
+        public IActionResult KingdomRegistration([FromBody] KingdomLocationInput input)
         {
             string result = KingdomService.RegisterKingdom(input, HttpContext.User.Identity.Name, out int status);
             if (status != 200)
             {
-                var outputError = new StatusForError() { error = result};
+                var outputError = new StatusForError() { error = result };
                 return StatusCode(status, outputError);
             }
             var outputOk = new StatusOutput() { status = result };
             return Ok(outputOk);
+        }
+
+        [Authorize]
+        [HttpPut("kingdoms/{id}")]
+        public IActionResult RenameKingdom([FromRoute] long id, [FromBody] string kingdomName)
+        {
+            if (String.IsNullOrWhiteSpace(kingdomName))
+            {
+                ErrorResponse ErrorResponse = new ErrorResponse()
+                { error = "Field kingdomName was empty!" };
+                return BadRequest(ErrorResponse);
+            }
+
+            if (!KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
+            {
+                ErrorResponse ErrorResponse = new ErrorResponse()
+                { error = "This kingdom does not belong to authenticated player" };
+                return Unauthorized(ErrorResponse);
+            }
+
+            KingdomService.RenameKingdom(id, kingdomName);
+            Kingdom kingdom = KingdomService.GetById(id);
+            var response = new RenameKingdomResponse() { kingdomId = kingdom.Id, kingdomName = kingdom.Name };
+            return Ok(response);
         }
     }
 }
