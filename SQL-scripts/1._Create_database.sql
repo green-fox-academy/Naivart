@@ -24,3 +24,4 @@
           CONSTRAINT `PK_Players` PRIMARY KEY (`Id`),
           CONSTRAINT `FK_Players_Kingdoms_KingdomId` FOREIGN KEY (`KingdomId`) REFERENCES `Kingdoms` (`Id`) ON DELETE CASCADE
       ) CHARACTER SET utf8mb4;
+

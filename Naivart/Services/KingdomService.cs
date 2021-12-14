@@ -14,14 +14,14 @@ namespace Naivart.Services
 {
     public class KingdomService
     {
-        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
+        private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public LoginService LoginService { get; set; }
         public KingdomService(ApplicationDbContext dbContext, IOptions<AppSettings> appSettings, LoginService loginService, IMapper mapper, AuthService authService)
         {
             DbContext = dbContext;
-            _mapper = mapper;
+            this.mapper = mapper;
             LoginService = loginService;
             AuthService = authService;
         }
@@ -48,8 +48,8 @@ namespace Naivart.Services
 
             foreach (var kingdom in kingdoms)
             {
-                var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
-                var locationAPIModel = _mapper.Map<LocationAPIModel>(kingdom.Location);
+                var kingdomAPIModel = mapper.Map<KingdomAPIModel>(kingdom);
+                var locationAPIModel = mapper.Map<LocationAPIModel>(kingdom.Location);
                 kingdomAPIModel.Location = locationAPIModel;
                 kingdomAPIModels.Add(kingdomAPIModel);
             }
@@ -189,8 +189,8 @@ namespace Naivart.Services
 
         public KingdomAPIModel KingdomMapping(Kingdom kingdom)
         {
-            var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
-            var locationAPIModel = _mapper.Map<LocationAPIModel>(kingdom.Location);
+            var kingdomAPIModel = mapper.Map<KingdomAPIModel>(kingdom);
+            var locationAPIModel = mapper.Map<LocationAPIModel>(kingdom.Location);
             kingdomAPIModel.Location = locationAPIModel;
             return kingdomAPIModel;
         }
@@ -236,23 +236,23 @@ namespace Naivart.Services
 
                 foreach (var item in model.Buildings)   //Creating list of buildingsInfo
                 {
-                    var buildingMapper = _mapper.Map<BuildingsInfo>(item);
+                    var buildingMapper = mapper.Map<BuildingsInfo>(item);
                     buildings.Add(buildingMapper);
                 }
                 foreach (var item in model.Resources)   //list of resources
                 {
-                    var resourcesMapper = _mapper.Map<ResourceAPIModel>(item);
+                    var resourcesMapper = mapper.Map<ResourceAPIModel>(item);
                     resources.Add(resourcesMapper);
                 }
                 foreach (var item in model.Troops)   //list of troops
                 {
-                    var troopsMapper = _mapper.Map<TroopsInfo>(item);
+                    var troopsMapper = mapper.Map<TroopsInfo>(item);
                     troops.Add(troopsMapper);
                 }
 
                 var result = new AllPlayerDetails()
                 {
-                    Kingdom = _mapper.Map<KingdomAPIModel>(model),
+                    Kingdom = mapper.Map<KingdomAPIModel>(model),
                     Buildings = buildings,
                     Resources = resources,
                     Troops = troops
