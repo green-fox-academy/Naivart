@@ -11,7 +11,7 @@ namespace Naivart.Services
 {
     public class KingdomService
     {
-        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
+        private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
 
@@ -19,7 +19,7 @@ namespace Naivart.Services
         {
             DbContext = dbContext;
             AuthService = authService;
-            _mapper = mapper;
+            this.mapper = mapper;
         }
 
         public List<Kingdom> GetAll()
@@ -44,8 +44,8 @@ namespace Naivart.Services
 
             foreach (var kingdom in kingdoms)
             {
-                var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
-                var locationAPIModel = _mapper.Map<LocationAPIModel>(kingdom.Location);
+                var kingdomAPIModel = mapper.Map<KingdomAPIModel>(kingdom);
+                var locationAPIModel = mapper.Map<LocationAPIModel>(kingdom.Location);
                 kingdomAPIModel.Location = locationAPIModel;
                 kingdomAPIModels.Add(kingdomAPIModel);
             }
@@ -62,7 +62,7 @@ namespace Naivart.Services
                     .Include(k => k.Player)
                     .Include(k => k.Location)
                     .Include(k => k.Resources)
-                    .First();
+                    .FirstOrDefault();
             }
             catch
             {
@@ -72,8 +72,8 @@ namespace Naivart.Services
 
         public KingdomAPIModel KingdomMapping(Kingdom kingdom)
         {
-            var kingdomAPIModel = _mapper.Map<KingdomAPIModel>(kingdom);
-            var locationAPIModel = _mapper.Map<LocationAPIModel>(kingdom.Location);
+            var kingdomAPIModel = mapper.Map<KingdomAPIModel>(kingdom);
+            var locationAPIModel = mapper.Map<LocationAPIModel>(kingdom.Location);
             kingdomAPIModel.Location = locationAPIModel;
             return kingdomAPIModel;
         }
@@ -193,6 +193,23 @@ namespace Naivart.Services
             {
                 return null;
             }
+        }
+
+        public int GetGoldAmount(long kingdomId)
+        {
+            var model = DbContext.Kingdoms.Where(x => x.Id == kingdomId).
+                Include(x => x.Resources).FirstOrDefault();
+            return model.Resources.FirstOrDefault(x => x.Type == "gold").Amount;
+        }
+
+        public bool IsGoldEnoughFor(int goldAmount, string operation)
+        {
+            var operations = new Dictionary<string, int>()
+            {
+                ["upgrade building"] = 10
+            };
+
+            return operations[operation] >= goldAmount;
         }
     }
 }

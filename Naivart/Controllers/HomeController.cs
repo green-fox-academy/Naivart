@@ -11,23 +11,20 @@ namespace Naivart.Controllers
     [Route("/")]
     public class HomeController : Controller
     {
-        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         public ResourceService ResourceService { get; set; }
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
         public BuildingService BuildingService { get; set; }
-       
         public AuthService AuthService { get; set; }
-        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService, BuildingService buildingService, AuthService authService)
+        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService, BuildingService buildingService, AuthService authService)
         {
-            _mapper = mapper;
             ResourceService = resourceService;
             KingdomService = kingdomService;
-            LoginService = loginService;
             PlayerService = playerService;
-            AuthService = authService;
+            LoginService = loginService;
             BuildingService = buildingService;
+            AuthService = authService;
         }
         
         [HttpPost("registration")]
@@ -125,6 +122,26 @@ namespace Naivart.Controllers
                 return StatusCode(401);
             }
             return Ok(response);
+        }
+
+        [Authorize]
+        [HttpPut("kingdoms/{id}/buildings/{id}")]
+        public IActionResult UpgradeBuilding([FromRoute] long kingdomId, long buildingId)
+        {
+            if (!KingdomService.IsUserKingdomOwner(kingdomId, HttpContext.User.Identity.Name))
+            {
+                return Unauthorized(new StatusForError() { error = 
+                    "This kingdom does not belong to authenticated player" });
+            }
+
+            var operation = "upgrade building";
+            var upgradedBuilding = BuildingService.UpgradeBuilding
+                (kingdomId, buildingId, operation, out int statusCode, out string error);
+            if (statusCode != 200)
+            {
+                return StatusCode(statusCode, new StatusForError() { error = error });
+            }
+            return Ok(upgradedBuilding);
         }
 
         [Authorize]
