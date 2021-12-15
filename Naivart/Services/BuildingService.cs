@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -11,14 +13,17 @@ namespace Naivart.Services
 {
     public class BuildingService
     {
+        private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private ApplicationDbContext DbContext { get; }
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
-        public BuildingService(ApplicationDbContext dbContext, KingdomService kingdomService,PlayerService playerService)
+        public BuildingService(ApplicationDbContext dbContext, KingdomService kingdomService,PlayerService playerService, 
+                                IMapper mapper)
         {
             DbContext = dbContext;
             KingdomService = kingdomService;
             PlayerService = playerService;
+            this.mapper = mapper;
         }    
 
         public KingdomResponseForBuilding GetKingdom(long id)
@@ -76,6 +81,41 @@ namespace Naivart.Services
         public LocationAPIModel GetLocations(Kingdom kingdom)
         {
             return new LocationAPIModel() { CoordinateX = kingdom.Location.CoordinateX, CoordinateY = kingdom.Location.CoordinateY };
+        }
+
+        public List<LeaderboardBuildingAPIModel> GetBuildingLeaderboards(out int status, out string error)
+        {
+            try
+            {
+                var AllKingdoms = DbContext.Kingdoms.Include(k => k.Player)
+                                                    .Include(k => k.Buildings)
+                                                    .ToList();
+                if (AllKingdoms.Count() > 0)
+                {
+                    var BuildingsLeaderboard = new List<LeaderboardBuildingAPIModel>();
+                    foreach (var kingdom in AllKingdoms)
+                    {
+                        var buildingMapper = mapper.Map<LeaderboardBuildingAPIModel>(kingdom);
+                        BuildingsLeaderboard.Add(buildingMapper);
+                    }
+                    BuildingsLeaderboard.OrderBy(o => o.points);
+                    error = "ok";
+                    status = 200;
+                    return BuildingsLeaderboard;
+                }
+                else
+                {
+                    error = "There are no kingdoms in Leaderboards";
+                    status = 404;
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                error = "Data could not be read";
+                status = 500;
+                return null;
+            }
         }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,8 @@ namespace Naivart.Services
                 return kingdoms = DbContext.Kingdoms
                     .Include(k => k.Player)
                     .Include(k => k.Location)
+                    .Include(k => k.Buildings)
+                    .Include(k => k.Troops)
                     .ToList();
             }
             catch
@@ -202,7 +205,7 @@ namespace Naivart.Services
         {
             try
             {
-                if (IsUserKingdomOwner(kingdomId, tokenUsername))  
+                if (IsUserKingdomOwner(kingdomId, tokenUsername))
                 {
                     error = "ok";
                     status = 200;
@@ -231,7 +234,7 @@ namespace Naivart.Services
                 kingdom = DbContext.Kingdoms.Include(k => k.Player).Include(k => k.Location).Include(k => k.Buildings).FirstOrDefault(k => k.Id == id);
                 return kingdom;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return null;
             }
@@ -256,7 +259,7 @@ namespace Naivart.Services
                 kingdom = DbContext.Kingdoms.Include(k => k.Player).Include(k => k.Location).Include(k => k.Buildings).FirstOrDefault(k => k.Id == id);
                 return kingdom;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return null;
             }
@@ -319,5 +322,6 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
+
     }
 }
