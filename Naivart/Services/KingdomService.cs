@@ -53,19 +53,6 @@ namespace Naivart.Services
             return kingdomAPIModels;
         }
 
-        public Kingdom GetById(long id)
-        {
-            var kingdom = new Kingdom();
-            try
-            {
-                return kingdom = DbContext.Kingdoms.Where(k => k.Id == id).FirstOrDefault();
-            }
-            catch
-            {
-                return kingdom;
-            }
-        }
-
         public Kingdom GetByIdWithResources(long id)
         {
             var kingdom = new Kingdom();
