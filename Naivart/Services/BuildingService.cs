@@ -85,7 +85,7 @@ namespace Naivart.Services
         {
             try
             {
-                if (!KingdomService.IsGoldEnoughFor(KingdomService.GetGoldAmount(kingdomId), operation))
+                if (!KingdomService.IsEnoughGoldFor(KingdomService.GetGoldAmount(kingdomId), operation))
                 {
                     statusCode = 400;
                     error = "You don't have enough gold to upgrade that!";

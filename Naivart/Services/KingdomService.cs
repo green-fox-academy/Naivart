@@ -202,14 +202,14 @@ namespace Naivart.Services
             return model.Resources.FirstOrDefault(x => x.Type == "gold").Amount;
         }
 
-        public bool IsGoldEnoughFor(int goldAmount, string operation)
+        public bool IsEnoughGoldFor(int goldAmount, string operation)
         {
             var operations = new Dictionary<string, int>()
             {
                 ["upgrade building"] = 10
             };
 
-            return operations[operation] >= goldAmount;
+            return goldAmount >= operations[operation];
         }
     }
 }

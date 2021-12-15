@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Naivart;
-using Naivart.Database;
 using Naivart.Models.APIModels;
 using Newtonsoft.Json;
 using System;
@@ -39,7 +38,7 @@ namespace NaivartUnitTest
             HttpStatusCode expectedStatusCode = HttpStatusCode.OK;
 
             var request = new HttpRequestMessage();
-            request.RequestUri = new Uri($"https://localhost:44311/kingdoms/1/resources");
+            request.RequestUri = new Uri("https://localhost:44311/kingdoms/1/resources");
             request.Headers.Add("Authorization", $"Bearer {GetToken()}");
             request.Method = HttpMethod.Get;
 
@@ -63,7 +62,7 @@ namespace NaivartUnitTest
             {
                 var resourceAPIModel = new ResourceAPIModel()
                 {
-                    Amount = 1,
+                    Amount = 10,
                     Generation = 1,
                     UpdatedAt = 123456
                 };
@@ -103,7 +102,7 @@ namespace NaivartUnitTest
             //arrange
             HttpStatusCode expectedStatusCode = HttpStatusCode.Unauthorized;
             var request = new HttpRequestMessage();
-            request.RequestUri = new Uri($"https://localhost:44311/kingdoms/0/resources");
+            request.RequestUri = new Uri("https://localhost:44311/kingdoms/0/resources");
             request.Method = HttpMethod.Get;
 
             //act
