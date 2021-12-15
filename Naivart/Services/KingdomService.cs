@@ -15,12 +15,14 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public LoginService LoginService { get; set; }
-        public KingdomService(ApplicationDbContext dbContext, LoginService loginService, IMapper mapper, AuthService authService)
+        public TimeService TimeService { get; set; }
+        public KingdomService(ApplicationDbContext dbContext, LoginService loginService, IMapper mapper, AuthService authService, TimeService timeService)
         {
             DbContext = dbContext;
             this.mapper = mapper;
             LoginService = loginService;
             AuthService = authService;
+            TimeService = timeService;
         }
 
         public List<Kingdom> GetAll()
@@ -204,6 +206,7 @@ namespace Naivart.Services
             {
                 if (IsUserKingdomOwner(kingdomId, tokenUsername))  
                 {
+                    TimeService.UpdateResources(kingdomId);
                     error = "ok";
                     status = 200;
                     return GetAllInfoAboutKingdom(kingdomId);      //this will use automapper to create object
