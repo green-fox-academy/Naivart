@@ -1,36 +1,34 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
 using Naivart.Services;
 
 namespace Naivart.Controllers
 {
-
+    
     [Route("/")]
     public class HomeController : Controller
     {
-        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         public ResourceService ResourceService { get; set; }
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
         public BuildingService BuildingService { get; set; }
+        public AuthService AuthService { get; set; }
         public TroopService TroopService { get; set; }
 
-        public AuthService AuthService { get; set; }
-        public HomeController(IMapper mapper, ResourceService resourceService, KingdomService kingdomService, 
-            PlayerService playerService, LoginService loginService, BuildingService buildingService, AuthService authService, TroopService troopService)
+        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, 
+            LoginService loginService,AuthService authService, TroopService troopService, BuildingService buildingService)
         {
-            _mapper = mapper;
             ResourceService = resourceService;
             KingdomService = kingdomService;
             LoginService = loginService;
             PlayerService = playerService;
             AuthService = authService;
-            BuildingService = buildingService;
             TroopService = troopService;
+            BuildingService = buildingService;
         }
         
         [HttpPost("registration")]
@@ -55,6 +53,7 @@ namespace Naivart.Controllers
                 return StatusCode(400, response);
             }
         }
+        
 
         [HttpGet("kingdoms")]
         public object Kingdoms()
@@ -65,6 +64,29 @@ namespace Naivart.Controllers
 
             return response.Kingdoms.Count == 0 ? NotFound(new { kingdoms = response.Kingdoms })
                                                 : Ok(new { kingdoms = response.Kingdoms });
+        }
+
+
+        [Authorize]
+        [HttpGet("kingdoms/{id}/troops")]
+        public IActionResult Troops([FromRoute] long id)
+        {
+            if (!KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
+            {
+                ErrorResponse ErrorResponse = new ErrorResponse()
+                { error = "This kingdom does not belong to authenticated player" };
+                return Unauthorized(ErrorResponse);
+            }
+
+                var kingdom = KingdomService.GetByIdWithTroops(id);
+                var kingdomApiModel = KingdomService.KingdomMapping(kingdom);
+                var troopAPIModels = TroopService.ListOfTroopsMapping(kingdom.Troops);
+                var response = new TroopAPIResponse()
+                {
+                    Kingdom = kingdomApiModel,
+                    Troops = troopAPIModels
+                };
+                return Ok(response);
         }
 
         [Authorize]
@@ -143,17 +165,17 @@ namespace Naivart.Controllers
             var outputOk = new StatusOutput() { status = result };
             return Ok(outputOk);
         }
-
-        [HttpPost("kingdoms/{id}/troops")]
-        public IActionResult CreateTroops([FromRoute]long id, [FromBody]CreateTroopAPIRequest input)
+        
+        [Authorize]
+        [HttpGet("kingdoms/{id}")]
+        public IActionResult KingdomInformation([FromRoute]long id)
         {
-            var result = TroopService.TroopCreateRequest(input, id, HttpContext.User.Identity.Name, out int status);
+            var model = KingdomService.GetKingdomInfo(id, HttpContext.User.Identity.Name, out int status, out string error);
             if (status != 200)
             {
-                var outputError = new StatusForError() { error = result };
-                return StatusCode(status, outputError);
+                return StatusCode(status, new StatusForError() { error = error });
             }
-            return Ok();
+            return Ok(model);
         }
     }
 }

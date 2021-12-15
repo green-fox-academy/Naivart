@@ -10,3 +10,4 @@ namespace Naivart.Models.APIModels
         public List<ResourceAPIModel> Resources { get; set; }
     }
 }
+
