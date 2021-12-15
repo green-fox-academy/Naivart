@@ -17,14 +17,14 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
-        public BuildingService(ApplicationDbContext dbContext, KingdomService kingdomService,PlayerService playerService, 
+        public BuildingService(ApplicationDbContext dbContext, KingdomService kingdomService, PlayerService playerService,
                                 IMapper mapper)
         {
             DbContext = dbContext;
             KingdomService = kingdomService;
             PlayerService = playerService;
             this.mapper = mapper;
-        }    
+        }
 
         public KingdomResponseForBuilding GetKingdom(long id)
         {
@@ -46,7 +46,7 @@ namespace Naivart.Services
             {
                 return null;
             }
-         
+
         }
         public List<BuildingsForResponse> GetBuildingsById(long id)
         {
@@ -61,8 +61,8 @@ namespace Naivart.Services
 
             return buildings != null ? buildings : new List<BuildingsForResponse>();
         }
-      
-        public BuildingResponse GetBuildingResponse(long id,string usernameToken, out int status)
+
+        public BuildingResponse GetBuildingResponse(long id, string usernameToken, out int status)
         {
             BuildingResponse response = new BuildingResponse();
             if (KingdomService.IsUserKingdomOwner(id, usernameToken))
@@ -89,6 +89,7 @@ namespace Naivart.Services
             {
                 var AllKingdoms = DbContext.Kingdoms.Include(k => k.Player)
                                                     .Include(k => k.Buildings)
+                                                    .OrderByDescending(x => x.Buildings.Sum(a => a.Level))
                                                     .ToList();
                 if (AllKingdoms.Count() > 0)
                 {
@@ -98,14 +99,13 @@ namespace Naivart.Services
                         var buildingMapper = mapper.Map<LeaderboardBuildingAPIModel>(kingdom);
                         BuildingsLeaderboard.Add(buildingMapper);
                     }
-                    BuildingsLeaderboard.OrderBy(o => o.points);
                     error = "ok";
                     status = 200;
                     return BuildingsLeaderboard;
                 }
                 else
                 {
-                    error = "There are no kingdoms in Leaderboards";
+                    error = "There are no kingdoms in Leaderboard";
                     status = 404;
                     return null;
                 }
