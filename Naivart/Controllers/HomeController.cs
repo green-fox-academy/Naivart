@@ -5,6 +5,7 @@ using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
 using Naivart.Services;
 using System;
+using System.Linq;
 
 namespace Naivart.Controllers
 {
@@ -175,6 +176,14 @@ namespace Naivart.Controllers
             {
                 ErrorResponse ErrorResponse = new ErrorResponse()
                 { error = "Field kingdomName was empty!" };
+                return BadRequest(ErrorResponse);
+            }
+
+            var kingdomWithTheSameName = KingdomService.GetAll().Where(k => k.Name == request.kingdomName);
+            if(kingdomWithTheSameName != null)
+            {
+                ErrorResponse ErrorResponse = new ErrorResponse()
+                { error = "Given kingdom name already exists!" };
                 return BadRequest(ErrorResponse);
             }
 

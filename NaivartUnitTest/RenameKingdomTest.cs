@@ -73,16 +73,18 @@ namespace NaivartUnitTest
             Assert.Equal(kingdomNameExpected, renameKingdomResponse.kingdomName);
         }
 
-        [Fact]
-        public void Endpoint_RenameKingdom_ShouldReturnBadRequest()
+        [Theory]
+        [InlineData("Field kingdomName was empty!"," ")]
+        [InlineData("Given kingdom name already exists!", "Nabatean")]
+        public void Endpoint_RenameKingdom_ShouldReturnBadRequest(string errorExpectedInput, string kingdomNameInput)
         {
             //arange
             HttpStatusCode expectedStatusCode = HttpStatusCode.BadRequest;
             var request = new HttpRequestMessage();
-            string ErrorExpected = "Field kingdomName was empty!";
+            string ErrorExpected = errorExpectedInput;
             var inputObj = JsonConvert.SerializeObject(new RenameKingdomRequest()
             {
-                kingdomName = " "
+                kingdomName = kingdomNameInput
             });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("https://localhost:44388/kingdoms/2");
@@ -99,6 +101,7 @@ namespace NaivartUnitTest
             Assert.Equal(expectedStatusCode, response.StatusCode);
             Assert.Equal(ErrorExpected, errorResponse.error);
         }
+
 
         [Fact]
         public void Endpoint_RenameKingdom_ShouldReturnUnauthorized()
