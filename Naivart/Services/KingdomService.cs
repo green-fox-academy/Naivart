@@ -190,15 +190,15 @@ namespace Naivart.Services
             }
         }
 
-        public AllPlayerDetails GetKingdomInfo(long id, string tokenUsername, out int status, out string error)
+        public AllPlayerDetails GetKingdomInfo(long kingdomId, string tokenUsername, out int status, out string error)
         {
             try
             {
-                if (IsUserKingdomOwner(id, tokenUsername))  //id is kingdom ID
+                if (IsUserKingdomOwner(kingdomId, tokenUsername))  
                 {
                     error = "ok";
                     status = 200;
-                    return GetAllInfoAboutKingdom(id);      //this will use automapper to create object
+                    return GetAllInfoAboutKingdom(kingdomId);      //this will use automapper to create object
                 }
                 else
                 {
