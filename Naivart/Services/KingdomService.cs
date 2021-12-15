@@ -6,9 +6,6 @@ using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Naivart.Models;
-using Microsoft.Extensions.Options;
 
 namespace Naivart.Services
 {
@@ -17,11 +14,13 @@ namespace Naivart.Services
         private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
-        public KingdomService(IMapper mapper, ApplicationDbContext dbContext, AuthService authService)
+        public LoginService LoginService { get; set; }
+        public KingdomService(ApplicationDbContext dbContext, LoginService loginService, IMapper mapper, AuthService authService)
         {
             DbContext = dbContext;
-            AuthService = authService;
             this.mapper = mapper;
+            LoginService = loginService;
+            AuthService = authService;
         }
 
         public List<Kingdom> GetAll()
@@ -212,6 +211,45 @@ namespace Naivart.Services
             }
         }
 
+        public AllPlayerDetails GetKingdomInfo(long kingdomId, string tokenUsername, out int status, out string error)
+        {
+            try
+            {
+                if (IsUserKingdomOwner(kingdomId, tokenUsername))  
+                {
+                    error = "ok";
+                    status = 200;
+                    return GetAllInfoAboutKingdom(kingdomId);      //this will use automapper to create object
+                }
+                else
+                {
+                    error = "This kingdom does not belong to authenticated player";
+                    status = 401;
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                error = "Data could not be read";
+                status = 500;
+                return null;
+            }
+        }
+
+        public Kingdom GetById(long id)
+        {
+            var kingdom = new Kingdom();
+            try
+            {
+                kingdom = DbContext.Kingdoms.Include(k => k.Player).Include(k => k.Location).Include(k => k.Buildings).FirstOrDefault(k => k.Id == id);
+                return kingdom;
+            }
+            catch(Exception)
+            {
+                return null;
+            }
+        }
+
         public bool IsUserKingdomOwner(long kingdomId, string username)
         {
             try
@@ -234,6 +272,51 @@ namespace Naivart.Services
             catch(Exception)
             {
                 return null;
+            }
+        }
+
+        public AllPlayerDetails GetAllInfoAboutKingdom(long kingdomId)
+        {
+            try
+            {
+                var model = DbContext.Kingdoms.Where(x => x.Id == kingdomId)
+                                  .Include(x => x.Location)
+                                  .Include(x => x.Resources)
+                                  .Include(x => x.Buildings)
+                                  .Include(x => x.Troops).FirstOrDefault();
+
+                var buildings = new List<BuildingsInfo>();
+                var resources = new List<ResourceAPIModel>();
+                var troops = new List<TroopsInfo>();
+
+                foreach (var item in model.Buildings)   //Creating list of buildingsInfo
+                {
+                    var buildingMapper = mapper.Map<BuildingsInfo>(item);
+                    buildings.Add(buildingMapper);
+                }
+                foreach (var item in model.Resources)   //list of resources
+                {
+                    var resourcesMapper = mapper.Map<ResourceAPIModel>(item);
+                    resources.Add(resourcesMapper);
+                }
+                foreach (var item in model.Troops)   //list of troops
+                {
+                    var troopsMapper = mapper.Map<TroopsInfo>(item);
+                    troops.Add(troopsMapper);
+                }
+
+                var result = new AllPlayerDetails()
+                {
+                    Kingdom = mapper.Map<KingdomAPIModel>(model),
+                    Buildings = buildings,
+                    Resources = resources,
+                    Troops = troops
+                };
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e); ;
             }
         }
     }

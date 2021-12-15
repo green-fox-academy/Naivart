@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Troops;
@@ -9,7 +8,8 @@ using System;
 
 namespace Naivart.Controllers
 {
-    [Route("")]
+    
+    [Route("/")]
     public class HomeController : Controller
     {
         public ResourceService ResourceService { get; set; }
@@ -17,10 +17,11 @@ namespace Naivart.Controllers
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
         public BuildingService BuildingService { get; set; }
-
         public AuthService AuthService { get; set; }
         public TroopService TroopService { get; set; }
-        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService,AuthService authService, TroopService troopService, BuildingService buildingService)
+
+        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, 
+            LoginService loginService,AuthService authService, TroopService troopService, BuildingService buildingService)
         {
             ResourceService = resourceService;
             KingdomService = kingdomService;
@@ -188,6 +189,18 @@ namespace Naivart.Controllers
             Kingdom kingdom = KingdomService.GetById(id);
             var response = new RenameKingdomResponse() { kingdomId = kingdom.Id, kingdomName = kingdom.Name };
             return Ok(response);
+        }
+        
+        [Authorize]
+        [HttpGet("kingdoms/{id}")]
+        public IActionResult KingdomInformation([FromRoute]long id)
+        {
+            var model = KingdomService.GetKingdomInfo(id, HttpContext.User.Identity.Name, out int status, out string error);
+            if (status != 200)
+            {
+                return StatusCode(status, new StatusForError() { error = error });
+            }
+            return Ok(model);
         }
     }
 }
