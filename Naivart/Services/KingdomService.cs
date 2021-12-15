@@ -90,6 +90,14 @@ namespace Naivart.Services
             }
         }
 
+        public void RenameKingdom(long KingdomId, string NewKingdomName)
+        {
+            Kingdom kingdom = GetById(KingdomId);
+            kingdom.Name = NewKingdomName;
+            DbContext.Update(kingdom);
+            DbContext.SaveChanges();
+        }
+
         public KingdomAPIModel KingdomMapping(Kingdom kingdom)
         {
             var kingdomAPIModel = mapper.Map<KingdomAPIModel>(kingdom);
