@@ -43,7 +43,9 @@ namespace Naivart.Services
             if (model != null)
             {
                 //send troop when db will be here
+                return true;
             }
+            return false;
         }
 
         public TroopModel TroopFactory(string troopType, int goldAmount)
