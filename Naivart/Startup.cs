@@ -35,6 +35,7 @@ namespace Naivart
             services.AddTransient<BuildingService>();
             services.AddTransient<AuthService>();
             services.AddTransient<TroopService>();
+            services.AddTransient<TimeService>();
 
             var appSettingSection = AppConfig.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingSection);
