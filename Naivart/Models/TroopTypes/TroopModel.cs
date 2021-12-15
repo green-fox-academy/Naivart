@@ -12,6 +12,6 @@ namespace Naivart.Models.TroopTypes
         public int Level { get; set; }
         public int Hp { get; set; }
         public int Attack { get; set; }
-        public int Defence { get; set; }
+        public int Defense { get; set; }
     }
 }

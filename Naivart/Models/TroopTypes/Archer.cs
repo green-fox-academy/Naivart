@@ -14,7 +14,7 @@ namespace Naivart.Models.TroopTypes
             Level = 1;
             Hp = 7;
             Attack = 3;
-            Defence = 1;
+            Defense = 1;
         }
     }
 }

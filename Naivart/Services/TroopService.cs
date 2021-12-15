@@ -6,12 +6,14 @@ using Naivart.Models.Entities;
 using System.Collections.Generic;
 using Naivart.Models.TroopTypes;
 using System;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Naivart.Services
 {
     public class TroopService
     {
-        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
+        private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
@@ -20,7 +22,7 @@ namespace Naivart.Services
             DbContext = dbContext;
             AuthService = authService;
             KingdomService = kingdomService;
-            _mapper = mapper;
+            this.mapper = mapper;
         }
 
         public List<TroopAPIModel> ListOfTroopsMapping(List<Troop> troops)
@@ -29,61 +31,87 @@ namespace Naivart.Services
 
             foreach (var troop in troops)
             {
-                var TroopsAPIModel = _mapper.Map<TroopAPIModel>(troop);
+                var TroopsAPIModel = mapper.Map<TroopAPIModel>(troop);
                 TroopsAPIModels.Add(TroopsAPIModel);
             }
             return TroopsAPIModels;
         }
 
 
-        public bool IsPossibleToCreate(int goldAmount, string troopType)    //If this pass then will create troop
+        public List<TroopsInfo> CreateTroops(int goldAmount, string troopType, int troopAmount, long kingdomId, out bool isPossibleToCreate)    
         {
-            var model = TroopFactory(troopType, goldAmount);
+            var model = TroopFactory(troopType, goldAmount, troopAmount, out int totalCost);    //get troop stats based on type, if no golds returns null
+            var resultModel = new List<TroopsInfo>();
             if (model != null)
             {
-                //send troop when db will be here
-                return true;
+                for (int i = 0; i < troopAmount; i++)   //create troops number based on troop amount
+                {
+                    var resultTroop = mapper.Map<Troop>(model);
+                    resultTroop.KingdomId = kingdomId;
+                    DbContext.Troops.Add(resultTroop);
+                    DbContext.SaveChanges();
+                    var infoTroop = mapper.Map<TroopsInfo>(resultTroop);
+                    resultModel.Add(infoTroop);
+                }
+                var kingdomModel = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
+                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= totalCost;   //reduce owner gold by total cost
+                DbContext.SaveChanges();
+
+                isPossibleToCreate = true;
+                return resultModel; //returns list of created troops
             }
-            return false;
+            isPossibleToCreate = false;
+            return resultModel;
         }
 
-        public string TroopCreateRequest(CreateTroopAPIRequest input, long kingdomId, string username, out int status)
+        public List<TroopsInfo> TroopCreateRequest(CreateTroopAPIRequest input, long kingdomId, string username, out int status, out string result)
         {
+            var troopsCreated = new List<TroopsInfo>();
             try
             {
-                if (AuthService.IsKingdomOwner(kingdomId, username))
+                if (AuthService.IsKingdomOwner(kingdomId, username))    
                 {
                     int goldAmount = KingdomService.GetGoldAmount(kingdomId);
-                    if (IsPossibleToCreate(goldAmount, input.Type))
+                    troopsCreated = CreateTroops(goldAmount, input.Type, input.Quantity, kingdomId, out bool isPossibleToCreate);   
+
+                    if (isPossibleToCreate) 
                     {
                         status = 200;
-                        return "ok";
+                        result = "ok";
+                        return troopsCreated;
                     }
                     status = 400;
-                    return "You don't have enough gold to train all these units!";
+                    result = "You don't have enough gold to train all these units!";
+                    return troopsCreated;
                 }
                 status = 401;
-                return "This kingdom does not belong to authenticated player";
+                result = "This kingdom does not belong to authenticated player";
+                return troopsCreated;
             }
             catch (Exception)
             {
                 status = 500;
-                return "Data could not be read";
+                result = "Data could not be read";
+                return troopsCreated;
             }
         }
 
-        public TroopModel TroopFactory(string troopType, int goldAmount)
+        public TroopModel TroopFactory(string troopType, int goldAmount, int troopAmount, out int totalCost)    
+        {
+            switch (troopType)  //decide which type is about to be created and gives him proper stats
             {
-                switch (troopType)
-                {
-                    case "recruit": TroopModel recruit = new Recruit();
-                        return recruit.GoldCost == goldAmount ? recruit : null;
-                    case "archer": TroopModel archer = new Archer();
-                        return archer.GoldCost == goldAmount ? archer : null;
-                    case "knight": TroopModel knight = new Knight();
-                        return knight.GoldCost == goldAmount ? knight : null;
-                }
-                return null;
+                case "recruit": TroopModel recruit = new Recruit();
+                    totalCost = (recruit.GoldCost * troopAmount);
+                    return totalCost <= goldAmount ? recruit : null;
+                case "archer": TroopModel archer = new Archer();
+                    totalCost = (archer.GoldCost * troopAmount);
+                    return totalCost <= goldAmount ? archer : null;
+                case "knight": TroopModel knight = new Knight();
+                    totalCost = (knight.GoldCost * troopAmount);
+                    return totalCost <= goldAmount ? knight : null;
             }
+            totalCost = 0;
+            return null;    //if you dont have money returns null
+        }
     }
 }
