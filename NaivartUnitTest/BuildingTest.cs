@@ -17,7 +17,7 @@ namespace NaivartUnitTest
         {
             httpClient = factory.CreateClient();
         }
-        public string Token(string userName, string password)
+        public string GetToken(string userName, string password)
         {
             var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = userName, password = password });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
@@ -31,7 +31,7 @@ namespace NaivartUnitTest
         public void BuildingGetEndpoint_ShouldReturnOk()
         {
             var request = new HttpRequestMessage();
-            var tokenResult = Token("Adam", "Santa");
+            var tokenResult = GetToken("Adam", "Santa");
 
             var inputObj = JsonConvert.SerializeObject(new KingdomAPIModel() { Kingdom_Id = 1 }); 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");

@@ -149,6 +149,29 @@ namespace Naivart.Controllers
             var outputOk = new StatusOutput() { status = result };
             return Ok(outputOk);
         }
+
+        [Authorize]
+        [HttpPost("kingdoms/{id}/buildings")]
+        public IActionResult AddBuilding([FromRoute] long id, [FromBody] AddBuildingResponse type)
+        {
+            var response = BuildingService.AddBuilding(id, HttpContext.User.Identity.Name, out int statusCode);
+            if (statusCode == 400)
+            {
+                return StatusCode(statusCode);
+            }
+
+            if (statusCode == 401)
+            {
+                return StatusCode(statusCode);
+            }
+
+            if (statusCode == 406)
+            {
+                return StatusCode(statusCode);
+            }
+            return Ok(response);
+        }
+
     }
 }
 

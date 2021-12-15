@@ -194,5 +194,10 @@ namespace Naivart.Services
                 return null;
             }
         }
+        public int GetGoldAmount(long kingdomId)
+        {
+            var model = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
+            return model.Resources.FirstOrDefault(x => x.Type == "gold").Amount;
+        }
     }
 }
