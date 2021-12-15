@@ -197,8 +197,15 @@ namespace Naivart.Services
 
         public int GetGoldAmount(long kingdomId)
         {
-            var model = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
-            return model.Resources.FirstOrDefault(x => x.Type == "gold").Amount;
+            try
+            {
+                var model = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
+                return model.Resources.FirstOrDefault(x => x.Type == "gold").Amount;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
         }
     }
 }

@@ -22,19 +22,27 @@ namespace Naivart.Services
 
         public string TroopCreateRequest(CreateTroopAPIRequest input, long kingdomId, string username, out int status)
         {
-            if (AuthService.IsKingdomOwner(kingdomId, username))
+            try
             {
-                int goldAmount = KingdomService.GetGoldAmount(kingdomId);
-                if (IsPossibleToCreate(goldAmount, input.Type))
+                if (AuthService.IsKingdomOwner(kingdomId, username))
                 {
-                    status = 200;
-                    return "ok";
+                    int goldAmount = KingdomService.GetGoldAmount(kingdomId);
+                    if (IsPossibleToCreate(goldAmount, input.Type))
+                    {
+                        status = 200;
+                        return "ok";
+                    }
+                    status = 400;
+                    return "You don't have enough gold to train all these units!";
                 }
-                status = 400;
-                return "You don't have enough gold to train all these units!";
+                status = 401;
+                return "This kingdom does not belong to authenticated player";
             }
-            status = 401;
-            return "This kingdom does not belong to authenticated player";
+            catch (Exception)
+            {
+                status = 500;
+                return "Data could not be read";
+            }
         }
 
         public bool IsPossibleToCreate(int goldAmount, string troopType)    //If this pass then will create troop
