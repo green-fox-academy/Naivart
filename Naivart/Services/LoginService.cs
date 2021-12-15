@@ -85,12 +85,6 @@ namespace Naivart.Services
                 return null;
             }       
         }
-        public bool IsTokenOwner(long id, string auth)
-        {
-            string token = AuthService.CleanToken(auth);
-            var model = GetTokenOwnerInfo(token);
-            return model.Id == id;
-        }
 
         public PlayerInfo GetTokenOwnerInfo(string token)
         {

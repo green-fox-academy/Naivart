@@ -97,5 +97,22 @@ namespace NaivartUnitTest
             Assert.False(response.IsSuccessStatusCode);
             Assert.Null(responseDataObj);
         }
+
+        [Fact]
+        public void CreateTroopsEndpoint_DifferentKingdomIdInRouteThanLoggedUser_ShouldReturnUnauthorized()
+        {
+            var expectedStatusCode = HttpStatusCode.Unauthorized;
+            var inputObj = JsonConvert.SerializeObject(new CreateTroopAPIRequest() { Quantity = 2, Type = "knight"});
+            StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
+
+            var request = new HttpRequestMessage();
+            request.RequestUri = new Uri($"https://localhost:44388/kingdoms/2/troops");
+            request.Method = HttpMethod.Post;
+            request.Headers.Add("Authorization", $"Bearer {GetToken()}");
+            request.Content = requestContent;
+            var response = HttpClient.SendAsync(request).Result;
+
+            Assert.Equal(expectedStatusCode, response.StatusCode);
+        }
     }
 }

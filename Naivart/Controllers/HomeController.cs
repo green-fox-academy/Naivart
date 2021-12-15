@@ -179,7 +179,7 @@ namespace Naivart.Controllers
                 return BadRequest(ErrorResponse);
             }
 
-            var kingdomWithTheSameName = KingdomService.GetAll().Where(k => k.Name == request.kingdomName);
+            var kingdomWithTheSameName = KingdomService.GetAll().Where(k => k.Name == request.kingdomName).FirstOrDefault();
             if(kingdomWithTheSameName != null)
             {
                 ErrorResponse ErrorResponse = new ErrorResponse()
@@ -208,6 +208,18 @@ namespace Naivart.Controllers
             if (status != 200)
             {
                 return StatusCode(status, new StatusForError() { error = error });
+            }
+            return Ok(model);
+        }
+
+        [HttpPost("kingdoms/{id}/troops")]
+        public IActionResult CreateTroops([FromRoute] long id, [FromBody] CreateTroopAPIRequest input)
+        {
+            var model = TroopService.TroopCreateRequest(input, id, HttpContext.User.Identity.Name, out int status, out string result);
+            if (status != 200)
+            {
+                var outputError = new StatusForError() { error = result };
+                return StatusCode(status, outputError);
             }
             return Ok(model);
         }
