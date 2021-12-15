@@ -211,5 +211,17 @@ namespace Naivart.Controllers
             }
             return Ok(model);
         }
+
+        [HttpPost("kingdoms/{id}/troops")]
+        public IActionResult CreateTroops([FromRoute] long id, [FromBody] CreateTroopAPIRequest input)
+        {
+            var model = TroopService.TroopCreateRequest(input, id, HttpContext.User.Identity.Name, out int status, out string result);
+            if (status != 200)
+            {
+                var outputError = new StatusForError() { error = result };
+                return StatusCode(status, outputError);
+            }
+            return Ok(model);
+        }
     }
 }
