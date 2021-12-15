@@ -4,10 +4,8 @@ using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Naivart.Models.APIModels;
 using Naivart.Models.TroopTypes;
+using System;
 
 namespace Naivart.Services
 {
@@ -36,7 +34,7 @@ namespace Naivart.Services
             }
             return TroopsAPIModels;
         }
-    }
+    
 
         public bool IsPossibleToCreate(int goldAmount, string troopType)    //If this pass then will create troop
         {
