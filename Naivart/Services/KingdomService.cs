@@ -61,12 +61,12 @@ namespace Naivart.Services
             var kingdom = new Kingdom();
             try
             {
-                return kingdom = DbContext.Kingdoms
-                     .Where(k => k.Id == id)
-                     .Include(k => k.Player)
-                     .Include(k => k.Location)
-                     .Include(k => k.Resources)
-                     .First();
+               return kingdom = DbContext.Kingdoms
+                    .Where(k => k.Id == id)
+                    .Include(k => k.Player)
+                    .Include(k => k.Location)
+                    .Include(k => k.Resources)
+                    .FirstOrDefault();
             }
             catch
             {
@@ -263,6 +263,16 @@ namespace Naivart.Services
             {
                 return null;
             }
+        }
+
+        public bool IsEnoughGoldFor(int goldAmount, string operation)
+        {
+            var operations = new Dictionary<string, int>()
+            {
+                ["upgrade building"] = 10
+            };
+
+            return goldAmount >= operations[operation];
         }
 
         public AllPlayerDetails GetAllInfoAboutKingdom(long kingdomId)

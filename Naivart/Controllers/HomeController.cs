@@ -22,13 +22,13 @@ namespace Naivart.Controllers
         public AuthService AuthService { get; set; }
         public TroopService TroopService { get; set; }
 
-        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService,
-            LoginService loginService, AuthService authService, TroopService troopService, BuildingService buildingService)
+        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, 
+            LoginService loginService,AuthService authService, TroopService troopService, BuildingService buildingService)
         {
             ResourceService = resourceService;
             KingdomService = kingdomService;
-            LoginService = loginService;
             PlayerService = playerService;
+            LoginService = loginService;
             AuthService = authService;
             TroopService = troopService;
             BuildingService = buildingService;
@@ -68,7 +68,6 @@ namespace Naivart.Controllers
             return response.Kingdoms.Count == 0 ? NotFound(new { kingdoms = response.Kingdoms })
                                                 : Ok(new { kingdoms = response.Kingdoms });
         }
-
 
         [Authorize]
         [HttpGet("kingdoms/{id}/troops")]
@@ -153,6 +152,28 @@ namespace Naivart.Controllers
                 return StatusCode(401);
             }
             return Ok(response);
+        }
+
+        [Authorize]
+        [HttpPut("kingdoms/{kingdomId}/buildings/{buildingId}")]
+        public IActionResult UpgradeBuilding([FromRoute] long kingdomId, [FromRoute] long buildingId)
+        {
+            if (!KingdomService.IsUserKingdomOwner(kingdomId, HttpContext.User.Identity.Name))
+            {
+                return Unauthorized(new StatusForError()
+                {
+                    error = "This kingdom does not belong to authenticated player"
+                });
+            }
+
+            var operation = "upgrade building";
+            var upgradedBuilding = BuildingService.UpgradeBuilding
+                (kingdomId, buildingId, operation, out int statusCode, out string error);
+            if (statusCode != 200)
+            {
+                return StatusCode(statusCode, new StatusForError() { error = error });
+            }
+            return Ok(upgradedBuilding);
         }
 
         [Authorize]
