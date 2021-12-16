@@ -239,12 +239,7 @@ namespace Naivart.Controllers
         public IActionResult AddBuilding([FromRoute] long id, [FromBody] AddBuildingResponse type)
         {
             var response = BuildingService.AddBuilding(type,id, HttpContext.User.Identity.Name, out int status);
-            if (status == 400)
-            {
-                return StatusCode(status);
-            }
-
-            if (status == 401)
+            if (status != 200)
             {
                 return StatusCode(status);
             }
