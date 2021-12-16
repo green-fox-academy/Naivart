@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Naivart;
-using Naivart.Models.APIModels.Leaderboards;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using Xunit;
@@ -18,13 +15,16 @@ namespace NaivartUnitTest
             httpClient = factory.CreateClient();
         }
 
-        [Fact]
-        public void Endpoint_BuildingLeaderboards_ShouldReturnOk()
+        [Theory]
+        [InlineData("https://localhost:44385/leaderboards/buildings")]
+        [InlineData("https://localhost:44385/leaderboards/troops")]
+        [InlineData("https://localhost:44385/leaderboards/kingdoms")]
+        public void Endpoint_BuildingLeaderboards_ShouldReturnOk(string UriInput)
         {
             //arrange
             var statusCodeExpected = HttpStatusCode.OK;
             var request = new HttpRequestMessage();
-            request.RequestUri = new Uri("https://localhost:44385/leaderboards/buildings");
+            request.RequestUri = new Uri(UriInput);
             request.Method = HttpMethod.Get;
 
             //act

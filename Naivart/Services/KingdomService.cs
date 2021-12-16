@@ -323,5 +323,40 @@ namespace Naivart.Services
             }
         }
 
+        public List<LeaderboardKingdomAPIModel> GetKingdomsLeaderboard(out int status, out string error)
+        {
+            try
+            {
+                var AllKingdoms = DbContext.Kingdoms.Include(k => k.Player)
+                                                    .Include(k => k.Buildings)
+                                                    .Include(k => k.Troops)
+                                                    .ToList();
+                if (AllKingdoms.Count() > 0)
+                {
+                    var KingdomsLeaderboard = new List<LeaderboardKingdomAPIModel>();
+                    foreach (var kingdom in AllKingdoms)
+                    {
+                        var buildingMapper = mapper.Map<LeaderboardKingdomAPIModel>(kingdom);
+                        KingdomsLeaderboard.Add(buildingMapper);
+                    }
+                    error = "ok";
+                    status = 200;
+                    KingdomsLeaderboard = KingdomsLeaderboard.OrderByDescending(p => p.total_points).ToList();
+                    return KingdomsLeaderboard;
+                }
+                else
+                {
+                    error = "There are no kingdoms in Leaderboard";
+                    status = 404;
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                error = "Data could not be read";
+                status = 500;
+                return null;
+            }
+        }
     }
 }
