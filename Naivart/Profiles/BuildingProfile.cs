@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Profiles
 {
-    public class BuildingProfile:Profile
+    public class BuildingProfile : Profile
     {
         public BuildingProfile()
         {

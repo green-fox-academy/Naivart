@@ -12,12 +12,14 @@ namespace Naivart.Services
 {
     public class BuildingService
     {
+        private readonly IMapper mapper;
         private ApplicationDbContext DbContext { get; }
         private readonly IMapper mapper;
         public KingdomService KingdomService { get; set; }
-        public AuthService AuthService { get; set; }
-        public BuildingService(IMapper mapper, ApplicationDbContext dbContext, KingdomService kingdomService, AuthService authService)
+        public PlayerService PlayerService { get; set; }
+        public BuildingService(IMapper mapper, ApplicationDbContext dbContext, KingdomService kingdomService,PlayerService playerService)
         {
+            this.mapper = mapper;
             DbContext = dbContext;
             this.mapper = mapper;
             KingdomService = kingdomService;
@@ -138,6 +140,34 @@ namespace Naivart.Services
             }
             isPossibleToCreate = false;
             return resultModel;
+        }
+
+        public BuildingsForResponse UpgradeBuilding (long kingdomId, long buildingId, string operation, out int statusCode, out string error)
+        {
+            try
+            {
+                if (!KingdomService.IsEnoughGoldFor(KingdomService.GetGoldAmount(kingdomId), operation))
+                {
+                    statusCode = 400;
+                    error = "You don't have enough gold to upgrade that!";
+                    return new BuildingsForResponse();
+                }
+
+                var building = KingdomService.GetByIdWithBuilding(kingdomId).
+                    Buildings.Where(b => b.Id == buildingId).FirstOrDefault();
+                building.Level += 1;
+                DbContext.SaveChanges();
+                statusCode = 200;
+                error = string.Empty;
+                return mapper.Map<BuildingsForResponse>(building);
+            }
+            catch (Exception)
+            {
+                statusCode = 500;
+                error = "Data could not be read";
+                return null;
+            }
+
         }
     }
 }
