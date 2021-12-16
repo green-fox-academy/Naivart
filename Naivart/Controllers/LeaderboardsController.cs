@@ -11,7 +11,7 @@ namespace Naivart.Controllers
         public BuildingService BuildingService { get; set; }
         public TroopService TroopService { get; set; }
         public KingdomService KingdomService { get; set; }
-        public LeaderboardsController(BuildingService buildingService, TroopService troopService, KingdomService                                      kingdomService)
+        public LeaderboardsController(BuildingService buildingService, TroopService troopService, KingdomService kingdomService)
         {
             BuildingService = buildingService;
             TroopService = troopService;
