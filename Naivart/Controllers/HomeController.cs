@@ -146,9 +146,6 @@ namespace Naivart.Controllers
         [HttpGet("kingdoms/{id}/buildings")]
         public IActionResult Buildings([FromRoute] long id)
         {
-            string result = HttpContext.User.Identity.Name;
-            var response = BuildingService.GetBuildingResponse(id, HttpContext.User.Identity.Name, out int status);
-            if (status != 200)
             if (KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
             {
                 var kingdom = KingdomService.GetByIdWithBuilding(id);
@@ -241,24 +238,18 @@ namespace Naivart.Controllers
         [HttpPost("kingdoms/{id}/buildings")]
         public IActionResult AddBuilding([FromRoute] long id, [FromBody] AddBuildingResponse type)
         {
-            var response = BuildingService.AddBuilding(id, HttpContext.User.Identity.Name, out int statusCode);
-            if (statusCode == 400)
+            var response = BuildingService.AddBuilding(type,id, HttpContext.User.Identity.Name, out int status);
+            if (status == 400)
             {
-                return StatusCode(statusCode);
+                return StatusCode(status);
             }
 
-            if (statusCode == 401)
+            if (status == 401)
             {
-                return StatusCode(statusCode);
-            }
-
-            if (statusCode == 406)
-            {
-                return StatusCode(statusCode);
+                return StatusCode(status);
             }
             return Ok(response);
         }
-
     }
 }
 

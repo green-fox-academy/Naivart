@@ -1,28 +1,32 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Models.APIModels;
+using Naivart.Models.BuildingTypes;
 using Naivart.Models.Entities;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Naivart.Services
 {
     public class BuildingService
     {
         private ApplicationDbContext DbContext { get; }
-        private readonly IMapper Mapper;
+        private readonly IMapper mapper;
         public KingdomService KingdomService { get; set; }
         public AuthService AuthService { get; set; }
-        public BuildingService(IMapper mapper,ApplicationDbContext dbContext, KingdomService kingdomService,AuthService authService)
+        public BuildingService(IMapper mapper, ApplicationDbContext dbContext, KingdomService kingdomService, AuthService authService)
         {
             DbContext = dbContext;
-            Mapper = mapper;
+            this.mapper = mapper;
             KingdomService = kingdomService;
             AuthService = authService;
         }
 
         public List<BuildingsForResponse> ListOfBuildingMapping(List<Building> buildings)
         {
-            var buildingForResponses= new List<BuildingsForResponse>();
+            var buildingForResponses = new List<BuildingsForResponse>();
 
             if (buildings is null)
             {
@@ -31,52 +35,109 @@ namespace Naivart.Services
 
             foreach (var building in buildings)
             {
-                var buildingForResponse = Mapper.Map<BuildingsForResponse>(building);
+                var buildingForResponse = mapper.Map<BuildingsForResponse>(building);
                 buildingForResponses.Add(buildingForResponse);
             }
             return buildingForResponses;
         }
-        public bool IsPossibleAddBuilding(int townhallLevel, string buildingType)   
+
+        public AddBuildingForResponse AddBuilding(AddBuildingResponse input, long kingdomId, string username, out int status)
         {
-            var model = AddBuilding(buildingType, townhallLevel);
+            var addBuilding = new AddBuildingForResponse();
+            try
+            {
+                if (AuthService.IsKingdomOwner(kingdomId, username))
+                {
+                    int goldAmount = KingdomService.GetGoldAmount(kingdomId);
+                    int townHallLevel = GetTownhallLevel(kingdomId);
+                    addBuilding = CreateBuilding(goldAmount, input.Type, townHallLevel, kingdomId,out bool isPossibleToCreate);
+
+                    if (isPossibleToCreate)
+                    {
+                        status = 200;
+                        return addBuilding;
+                    }
+
+                    status = 400;
+                    return addBuilding;
+                }
+                status = 401;
+                return addBuilding;
+            }
+            catch (Exception)
+            {
+                status = 500;
+                return addBuilding;
+            }
+        }
+        public BuildingModel BuildingCreation(int goldAmount, string buildingtype, int townHallLevel)
+        {
+            switch (buildingtype)
+            {
+                case "academy":
+                    BuildingModel academy = new Academy();
+                    if (academy.GoldCost <= goldAmount && academy.RequestTownhallLevel <= townHallLevel)
+                    {
+                        return academy;
+                    }
+                    return null;
+                case "barracks":
+                    BuildingModel barracks = new Barracks();
+                    if (barracks.GoldCost <= goldAmount && barracks.RequestTownhallLevel <= townHallLevel)
+                    {
+                        return barracks;
+                    }
+                    return null;
+                case "farm":
+                    BuildingModel farm = new Farm();
+                    if (farm.GoldCost <= goldAmount && farm.RequestTownhallLevel <= townHallLevel)
+                    {
+                        return farm;
+                    }
+                    return null;
+                case "mine":
+                    BuildingModel mine = new Mine();
+                    if (mine.GoldCost <= goldAmount && mine.RequestTownhallLevel <= townHallLevel)
+                    {
+                        return mine;
+                    }
+                    return null;
+                case "walls":
+                    BuildingModel walls = new Walls();
+                    if (walls.GoldCost <= goldAmount && walls.RequestTownhallLevel <= townHallLevel)
+                    {
+                        return walls;
+                    }
+                    return null;
+            }
+            return null;
+        }
+
+        public int GetTownhallLevel(long kingdomId)
+        {
+            var buildings = DbContext.Kingdoms.Where(p => p.Id == kingdomId).Include(p => p.Buildings).FirstOrDefault();
+            return buildings.Buildings.Where(p => p.Type == "townhall").FirstOrDefault().Level;
+        }
+        public AddBuildingForResponse CreateBuilding(int goldAmount, string buildingType, int townHallLevel, long kingdomId, out bool isPossibleToCreate)
+        {
+            var model = BuildingCreation(goldAmount, buildingType, townHallLevel);
+            var resultModel = new AddBuildingForResponse();
             if (model != null)
             {
-                return true;
-            }
-            return false;
-        }
-        public string AddBuilding(AddBuildingForResponse input, long kingdomId, string username, out int status)
-        {
-            if (KingdomService.IsUserKingdomOwner(kingdomId, username))
-            {
-                int goldAmount = KingdomService.GetGoldAmount(kingdomId);
-                if (IsPossibleAddBuilding(TownhallLevel, input.BuildingType))
-                {
-                    status = 200;
-                    return "ok";
-                }
-                status = 400;
-                return "You don't have enough gold to build this building!";
-            }
-            status = 401;
-            return "This kingdom does not belong to authenticated player";
-        }
-        //public BuildingModel BuildingCreate(string buildingType, int townhallLevel)
-        //{
-        //    switch (buildingType)
-        //    {
-        //        case "recruit":
-        //            Buildin building = new Recruit();
-        //            return building.GoldCost == goldAmount ? building : null;
-        //        case "archer":
-        //            TroopModel archer = new Archer();
-        //            return archer.GoldCost == goldAmount ? archer : null;
-        //        case "knight":
-        //            TroopModel knight = new Knight();
-        //            return knight.GoldCost == goldAmount ? knight : null;
-        //    }
-        //    return null;
-        //}
+                var resultBuilding = mapper.Map<Building>(model);
+                resultBuilding.KingdomId = kingdomId;
+                DbContext.Buildings.Add(resultBuilding);
+                DbContext.SaveChanges();
+                resultModel = mapper.Map<AddBuildingForResponse>(resultBuilding);
+                var kingdomModel = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
+                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= model.GoldCost;
+                DbContext.SaveChanges();
 
+                isPossibleToCreate = true;
+                return resultModel;
+            }
+            isPossibleToCreate = false;
+            return resultModel;
+        }
     }
 }

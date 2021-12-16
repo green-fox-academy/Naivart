@@ -57,5 +57,22 @@ namespace NaivartUnitTest
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
+        [Fact]
+        public void CreateBuilding_ShouldReturnUnauthorized()
+        {
+            var expectedStatusCode = HttpStatusCode.Unauthorized;
+            var tokenResult = GetToken("Adam", "Santa");
+            var inputObj = JsonConvert.SerializeObject(new AddBuildingResponse() { Type = "farm" });
+            StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
+
+            var request = new HttpRequestMessage();
+            request.RequestUri = new Uri($"https://localhost:44385/kingdoms/1/buildings");
+            request.Method = HttpMethod.Post;
+            request.Headers.Add("Authorization", $"Bearer {tokenResult}");
+            request.Content = requestContent;
+            var response = httpClient.SendAsync(request).Result;
+
+            Assert.Equal(expectedStatusCode, response.StatusCode);
+        }
     }
 }
