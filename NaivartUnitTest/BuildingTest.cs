@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Naivart;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Troops;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 namespace NaivartUnitTest
 {
@@ -66,7 +68,7 @@ namespace NaivartUnitTest
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage();
-            request.RequestUri = new Uri($"https://localhost:44385/kingdoms/1/buildings");
+            request.RequestUri = new Uri($"https://localhost:44385/kingdoms/2/buildings");
             request.Method = HttpMethod.Post;
             request.Headers.Add("Authorization", $"Bearer {tokenResult}");
             request.Content = requestContent;
