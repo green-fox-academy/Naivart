@@ -27,6 +27,7 @@ namespace Naivart.Controllers
             ResourceService = resourceService;
             KingdomService = kingdomService;
             PlayerService = playerService;
+            LoginService = loginService;
             AuthService = authService;
             TroopService = troopService;
             BuildingService = buildingService;
