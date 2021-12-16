@@ -15,14 +15,12 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public LoginService LoginService { get; set; }
-        public TimeService TimeService { get; set; }
-        public KingdomService(ApplicationDbContext dbContext, LoginService loginService, IMapper mapper, AuthService authService, TimeService timeService)
+        public KingdomService(ApplicationDbContext dbContext, LoginService loginService, IMapper mapper, AuthService authService)
         {
             DbContext = dbContext;
             this.mapper = mapper;
             LoginService = loginService;
             AuthService = authService;
-            TimeService = timeService;
         }
 
         public List<Kingdom> GetAll()
