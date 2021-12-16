@@ -206,7 +206,6 @@ namespace Naivart.Services
             {
                 if (IsUserKingdomOwner(kingdomId, tokenUsername))  
                 {
-                    TimeService.UpdateResources(kingdomId);
                     error = "ok";
                     status = 200;
                     return GetAllInfoAboutKingdom(kingdomId);      //this will use automapper to create object
