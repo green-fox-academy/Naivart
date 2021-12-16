@@ -14,14 +14,14 @@ namespace Naivart.Services
     {
         private readonly IMapper mapper;
         private ApplicationDbContext DbContext { get; }
-        private readonly IMapper mapper;
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
-        public BuildingService(IMapper mapper, ApplicationDbContext dbContext, KingdomService kingdomService,PlayerService playerService)
+        public AuthService AuthService { get; set; }
+        public BuildingService(IMapper mapper, ApplicationDbContext dbContext, KingdomService kingdomService,PlayerService playerService, AuthService  authService)
         {
             this.mapper = mapper;
             DbContext = dbContext;
-            this.mapper = mapper;
+            PlayerService = playerService;
             KingdomService = kingdomService;
             AuthService = authService;
         }
