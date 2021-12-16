@@ -14,12 +14,13 @@ namespace Naivart.Services
         private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
-
-        public KingdomService(IMapper mapper, ApplicationDbContext dbContext, AuthService authService)
+        public LoginService LoginService { get; set; }
+        public KingdomService(ApplicationDbContext dbContext, LoginService loginService, IMapper mapper, AuthService authService)
         {
             DbContext = dbContext;
-            AuthService = authService;
             this.mapper = mapper;
+            LoginService = loginService;
+            AuthService = authService;
         }
 
         public List<Kingdom> GetAll()
@@ -70,6 +71,33 @@ namespace Naivart.Services
             }
         }
 
+        public Kingdom GetByIdWithTroops(long id)
+        {
+            var kingdom = new Kingdom();
+            try
+            {
+                kingdom = DbContext.Kingdoms
+                     .Where(k => k.Id == id)
+                     .Include(k => k.Player)
+                     .Include(k => k.Location)
+                     .Include(k => k.Troops)
+                     .FirstOrDefault();
+                return kingdom;
+            }
+            catch
+            {
+                return kingdom;
+            }
+        }
+
+        public void RenameKingdom(long KingdomId, string NewKingdomName)
+        {
+            Kingdom kingdom = GetById(KingdomId);
+            kingdom.Name = NewKingdomName;
+            DbContext.Update(kingdom);
+            DbContext.SaveChanges();
+        }
+
         public KingdomAPIModel KingdomMapping(Kingdom kingdom)
         {
             var kingdomAPIModel = mapper.Map<KingdomAPIModel>(kingdom);
@@ -79,7 +107,7 @@ namespace Naivart.Services
         }
 
         public string RegisterKingdom(KingdomLocationInput input, string usernameToken, out int status)
-        {           
+        {
             try
             {
                 status = 400;
@@ -170,8 +198,47 @@ namespace Naivart.Services
             }
         }
 
+        public AllPlayerDetails GetKingdomInfo(long kingdomId, string tokenUsername, out int status, out string error)
+        {
+            try
+            {
+                if (IsUserKingdomOwner(kingdomId, tokenUsername))  
+                {
+                    error = "ok";
+                    status = 200;
+                    return GetAllInfoAboutKingdom(kingdomId);      //this will use automapper to create object
+                }
+                else
+                {
+                    error = "This kingdom does not belong to authenticated player";
+                    status = 401;
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                error = "Data could not be read";
+                status = 500;
+                return null;
+            }
+        }
+
+        public Kingdom GetById(long id)
+        {
+            var kingdom = new Kingdom();
+            try
+            {
+                kingdom = DbContext.Kingdoms.Include(k => k.Player).Include(k => k.Location).Include(k => k.Buildings).FirstOrDefault(k => k.Id == id);
+                return kingdom;
+            }
+            catch(Exception)
+            {
+                return null;
+            }
+        }
+
         public bool IsUserKingdomOwner(long kingdomId, string username)
-        {           
+        {
             try
             {
                 return DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username == username;
@@ -210,6 +277,64 @@ namespace Naivart.Services
             };
 
             return goldAmount >= operations[operation];
+        }
+
+        public AllPlayerDetails GetAllInfoAboutKingdom(long kingdomId)
+        {
+            try
+            {
+                var model = DbContext.Kingdoms.Where(x => x.Id == kingdomId)
+                                  .Include(x => x.Location)
+                                  .Include(x => x.Resources)
+                                  .Include(x => x.Buildings)
+                                  .Include(x => x.Troops).FirstOrDefault();
+
+                var buildings = new List<BuildingsInfo>();
+                var resources = new List<ResourceAPIModel>();
+                var troops = new List<TroopsInfo>();
+
+                foreach (var item in model.Buildings)   //Creating list of buildingsInfo
+                {
+                    var buildingMapper = mapper.Map<BuildingsInfo>(item);
+                    buildings.Add(buildingMapper);
+                }
+                foreach (var item in model.Resources)   //list of resources
+                {
+                    var resourcesMapper = mapper.Map<ResourceAPIModel>(item);
+                    resources.Add(resourcesMapper);
+                }
+                foreach (var item in model.Troops)   //list of troops
+                {
+                    var troopsMapper = mapper.Map<TroopsInfo>(item);
+                    troops.Add(troopsMapper);
+                }
+
+                var result = new AllPlayerDetails()
+                {
+                    Kingdom = mapper.Map<KingdomAPIModel>(model),
+                    Buildings = buildings,
+                    Resources = resources,
+                    Troops = troops
+                };
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e); ;
+            }
+        }
+
+        public int GetGoldAmount(long kingdomId)
+        {
+            try
+            {
+                var model = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
+                return model.Resources.FirstOrDefault(x => x.Type == "gold").Amount;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
         }
     }
 }

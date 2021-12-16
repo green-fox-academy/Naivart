@@ -1,13 +1,15 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
 using Naivart.Services;
+using System;
+using System.Linq;
 
 namespace Naivart.Controllers
 {
-
+    
     [Route("/")]
     public class HomeController : Controller
     {
@@ -17,14 +19,17 @@ namespace Naivart.Controllers
         public LoginService LoginService { get; set; }
         public BuildingService BuildingService { get; set; }
         public AuthService AuthService { get; set; }
-        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, LoginService loginService, BuildingService buildingService, AuthService authService)
+        public TroopService TroopService { get; set; }
+
+        public HomeController(ResourceService resourceService, KingdomService kingdomService, PlayerService playerService, 
+            LoginService loginService,AuthService authService, TroopService troopService, BuildingService buildingService)
         {
             ResourceService = resourceService;
             KingdomService = kingdomService;
             PlayerService = playerService;
-            LoginService = loginService;
-            BuildingService = buildingService;
             AuthService = authService;
+            TroopService = troopService;
+            BuildingService = buildingService;
         }
 
         [HttpPost("registration")]
@@ -59,6 +64,28 @@ namespace Naivart.Controllers
 
             return response.Kingdoms.Count == 0 ? NotFound(new { kingdoms = response.Kingdoms })
                                                 : Ok(new { kingdoms = response.Kingdoms });
+        }
+
+        [Authorize]
+        [HttpGet("kingdoms/{id}/troops")]
+        public IActionResult Troops([FromRoute] long id)
+        {
+            if (!KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
+            {
+                ErrorResponse ErrorResponse = new ErrorResponse()
+                { error = "This kingdom does not belong to authenticated player" };
+                return Unauthorized(ErrorResponse);
+            }
+
+                var kingdom = KingdomService.GetByIdWithTroops(id);
+                var kingdomApiModel = KingdomService.KingdomMapping(kingdom);
+                var troopAPIModels = TroopService.ListOfTroopsMapping(kingdom.Troops);
+                var response = new TroopAPIResponse()
+                {
+                    Kingdom = kingdomApiModel,
+                    Troops = troopAPIModels
+                };
+                return Ok(response);
         }
 
         [Authorize]
@@ -158,6 +185,62 @@ namespace Naivart.Controllers
             }
             var outputOk = new StatusOutput() { status = result };
             return Ok(outputOk);
+        }
+
+        [Authorize]
+        [HttpPut("kingdoms/{id}")]
+        public IActionResult RenameKingdom([FromRoute] long id, [FromBody] RenameKingdomRequest request)
+        {
+            if (String.IsNullOrWhiteSpace(request.kingdomName))
+            {
+                ErrorResponse ErrorResponse = new ErrorResponse()
+                { error = "Field kingdomName was empty!" };
+                return BadRequest(ErrorResponse);
+            }
+
+            var kingdomWithTheSameName = KingdomService.GetAll().Where(k => k.Name == request.kingdomName).FirstOrDefault();
+            if(kingdomWithTheSameName != null)
+            {
+                ErrorResponse ErrorResponse = new ErrorResponse()
+                { error = "Given kingdom name already exists!" };
+                return BadRequest(ErrorResponse);
+            }
+
+            if (!KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
+            {
+                ErrorResponse ErrorResponse = new ErrorResponse()
+                { error = "This kingdom does not belong to authenticated player" };
+                return Unauthorized(ErrorResponse);
+            }
+
+            KingdomService.RenameKingdom(id, request.kingdomName);
+            Kingdom kingdom = KingdomService.GetById(id);
+            var response = new RenameKingdomResponse() { kingdomId = kingdom.Id, kingdomName = kingdom.Name };
+            return Ok(response);
+        }
+        
+        [Authorize]
+        [HttpGet("kingdoms/{id}")]
+        public IActionResult KingdomInformation([FromRoute]long id)
+        {
+            var model = KingdomService.GetKingdomInfo(id, HttpContext.User.Identity.Name, out int status, out string error);
+            if (status != 200)
+            {
+                return StatusCode(status, new StatusForError() { error = error });
+            }
+            return Ok(model);
+        }
+
+        [HttpPost("kingdoms/{id}/troops")]
+        public IActionResult CreateTroops([FromRoute] long id, [FromBody] CreateTroopAPIRequest input)
+        {
+            var model = TroopService.TroopCreateRequest(input, id, HttpContext.User.Identity.Name, out int status, out string result);
+            if (status != 200)
+            {
+                var outputError = new StatusForError() { error = result };
+                return StatusCode(status, outputError);
+            }
+            return Ok(model);
         }
     }
 }
