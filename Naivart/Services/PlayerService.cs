@@ -26,7 +26,8 @@ namespace Naivart.Services
                     Kingdom kingdom = new Kingdom();
 
                 //check if given kingdom name(and username) is not empty or already exists in database 
-                kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && FindKingdomByName(kingdomName) == null ? kingdomName : $"{player.Username}'s kingdom";
+                kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && FindKingdomByName(kingdomName) == null 
+                               ? kingdomName : $"{player.Username}'s kingdom";
 
                 var newKingdom = DbContext.Kingdoms.Add(kingdom).Entity;
                     DbContext.SaveChanges();
@@ -54,7 +55,7 @@ namespace Naivart.Services
         }
         public bool isInDbWithThisUsername(string username)
         {
-            return DbContext.Players.Any(x => x.Username == username) ? true : false;
+            return DbContext.Players.Any(x => x.Username == username);
         }
         public void DeleteByUsername(string username)
         {
