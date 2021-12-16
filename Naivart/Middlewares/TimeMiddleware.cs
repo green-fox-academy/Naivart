@@ -23,7 +23,7 @@ namespace Naivart.Middlewares
             
             if (kingdomId is not null)
             {
-                long result = long.Parse(kingdomId.ToString());
+                long.TryParse(kingdomId.ToString(), out long result);
                 timeService.UpdateResources(result);
             }
 
