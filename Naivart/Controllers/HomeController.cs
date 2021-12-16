@@ -224,19 +224,5 @@ namespace Naivart.Controllers
             }
             return Ok(model);
         }
-
-        [HttpGet("leaderboards/buildings")]
-        public object BuildingLeaderboard()
-        {
-            LeaderboardBuildingsAPIResponse response = new()
-            {
-                Results = BuildingService.GetBuildingLeaderboards(out int status, out string error)
-            };
-            if (status != 200)
-            {
-                return StatusCode(status, new ErrorResponse() { error = error });
-            }
-            return Ok(response);
-        }
     }
 }
