@@ -19,7 +19,7 @@ namespace NaivartUnitTest
         }
 
         [Fact]
-        public void Endpoint_BuildingLeaderboard_ShouldReturnOk()
+        public void Endpoint_BuildingLeaderboards_ShouldReturnOk()
         {
             //arrange
             var statusCodeExpected = HttpStatusCode.OK;

@@ -83,7 +83,7 @@ namespace Naivart.Services
             return new LocationAPIModel() { CoordinateX = kingdom.Location.CoordinateX, CoordinateY = kingdom.Location.CoordinateY };
         }
 
-        public List<LeaderboardBuildingAPIModel> GetBuildingLeaderboards(out int status, out string error)
+        public List<LeaderboardBuildingAPIModel> GetBuildingsLeaderboard(out int status, out string error)
         {
             try
             {

@@ -12,20 +12,34 @@ namespace Naivart.Controllers
     [Route("leaderboards")]
     public class LeaderboardsController : Controller
     {
-        public KingdomService KingdomService { get; set; }
         public BuildingService BuildingService { get; set; }
-        public LeaderboardsController(KingdomService kingdomService, BuildingService buildingService)
+        public TroopService TroopService { get; set; }
+        public LeaderboardsController(BuildingService buildingService, TroopService                                    troopService)
         {
-            KingdomService = kingdomService;
             BuildingService = buildingService;
+            TroopService = troopService;
         }
 
         [HttpGet("buildings")]
-        public IActionResult BuildingLeaderboard()
+        public IActionResult BuildingsLeaderboard()
         {
             LeaderboardBuildingsAPIResponse response = new()
             {
-                Results = BuildingService.GetBuildingLeaderboards(out int status, out string error)
+                Results = BuildingService.GetBuildingsLeaderboard(out int status, out string error)
+            };
+            if (status != 200)
+            {
+                return StatusCode(status, new ErrorResponse() { error = error });
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("troops")]
+        public IActionResult TroopsLeaderboard()
+        {
+            LeaderboardTroopsAPIResponse response = new()
+            {
+                Results = TroopService.GetTroopsLeaderboard(out int status, out string error)
             };
             if (status != 200)
             {
