@@ -89,7 +89,6 @@ namespace Naivart.Services
             {
                 var AllKingdoms = DbContext.Kingdoms.Include(k => k.Player)
                                                     .Include(k => k.Buildings)
-                                                    .OrderByDescending(x => x.Buildings.Sum(a => a.Level))
                                                     .ToList();
                 if (AllKingdoms.Count() > 0)
                 {
@@ -101,6 +100,7 @@ namespace Naivart.Services
                     }
                     error = "ok";
                     status = 200;
+                    BuildingsLeaderboard = BuildingsLeaderboard.OrderByDescending(p => p.points).ToList();
                     return BuildingsLeaderboard;
                 }
                 else

@@ -236,7 +236,6 @@ namespace Naivart.Controllers
             {
                 return StatusCode(status, new ErrorResponse() { error = error });
             }
-            //response.Results.OrderByDescending(x => x.points).ToList();
             return Ok(response);
         }
     }
