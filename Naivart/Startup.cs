@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Naivart.Database;
+using Naivart.Middlewares;
 using Naivart.Models;
 using Naivart.Services;
 using System;
@@ -76,6 +77,8 @@ namespace Naivart
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseMiddleware<TimeMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
