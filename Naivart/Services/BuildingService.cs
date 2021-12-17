@@ -2,11 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Models.APIModels;
+using Naivart.Models.BuildingTypes;
 using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Naivart.Services
 {
@@ -16,69 +16,130 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         public KingdomService KingdomService { get; set; }
         public PlayerService PlayerService { get; set; }
-        public BuildingService(IMapper mapper, ApplicationDbContext dbContext, KingdomService kingdomService,PlayerService playerService)
+        public AuthService AuthService { get; set; }
+        public BuildingService(IMapper mapper, ApplicationDbContext dbContext, KingdomService kingdomService,PlayerService playerService, AuthService  authService)
         {
             this.mapper = mapper;
             DbContext = dbContext;
-            KingdomService = kingdomService;
             PlayerService = playerService;
-        }    
+            KingdomService = kingdomService;
+            AuthService = authService;
+        }
 
-        public KingdomResponseForBuilding GetKingdom(long id)
+        public List<BuildingsForResponse> ListOfBuildingMapping(List<Building> buildings)
         {
-            var kingdom = KingdomService.GetByIdWithBuilding(id);
-            var player = PlayerService.GetPlayerById(kingdom.Player.Id);
-            var location = GetLocations(kingdom);
-            if (kingdom != null && player != null)
+            var buildingForResponses = new List<BuildingsForResponse>();
+
+            if (buildings is null)
             {
-                return new KingdomResponseForBuilding()
+                return buildingForResponses;
+            }
+
+            foreach (var building in buildings)
+            {
+                var buildingForResponse = mapper.Map<BuildingsForResponse>(building);
+                buildingForResponses.Add(buildingForResponse);
+            }
+            return buildingForResponses;
+        }
+
+        public AddBuildingForResponse AddBuilding(AddBuildingResponse input, long kingdomId, string username, out int status)
+        {
+            var addBuilding = new AddBuildingForResponse();
+            try
+            {
+                if (AuthService.IsKingdomOwner(kingdomId, username))
                 {
-                    KingdomId = kingdom.Id,
-                    KingdomName = kingdom.Name,
-                    Ruler = player.Username,
-                    Population = 0,
-                    Location = location
-                };
-            }
-            else
-            {
-                return null;
-            }
-         
-        }
-        public List<BuildingsForResponse> GetBuildingsById(long id)
-        {
-            List<BuildingsForResponse> buildings = DbContext.Buildings.Where(b => b.KingdomId == id).Select(b => new BuildingsForResponse()
-            {
-                Id = b.Id,
-                Type = b.Type,
-                Level = b.Level,
-                StartedAt = b.StartedAt,
-                FinishedAt = b.FinishedAt
-            }).ToList();
+                    int goldAmount = KingdomService.GetGoldAmount(kingdomId);
+                    int townHallLevel = GetTownhallLevel(kingdomId);
+                    addBuilding = CreateBuilding(goldAmount, input.Type, townHallLevel, kingdomId,out bool isPossibleToCreate);
 
-            return buildings != null ? buildings : new List<BuildingsForResponse>();
-        }
-      
-        public BuildingResponse GetBuildingResponse(long id,string usernameToken, out int status)
-        {
-            BuildingResponse response = new BuildingResponse();
-            if (KingdomService.IsUserKingdomOwner(id, usernameToken))
-            {
-                response.Kingdom = GetKingdom(id);
-                response.Buildings = GetBuildingsById(id);
-                status = 200;
-                return response;
-            }
-            else
-            {
+                    if (isPossibleToCreate)
+                    {
+                        status = 200;
+                        return addBuilding;
+                    }
+
+                    status = 400;
+                    return addBuilding;
+                }
                 status = 401;
-                return response;
+                return addBuilding;
+            }
+            catch (Exception)
+            {
+                status = 500;
+                return addBuilding;
             }
         }
-        public LocationAPIModel GetLocations(Kingdom kingdom)
+        public BuildingModel BuildingCreation(int goldAmount, string buildingtype, int townHallLevel)
         {
-            return new LocationAPIModel() { CoordinateX = kingdom.Location.CoordinateX, CoordinateY = kingdom.Location.CoordinateY };
+            switch (buildingtype)
+            {
+                case "academy":
+                    BuildingModel academy = new Academy();
+                    if (academy.GoldCost <= goldAmount && academy.RequestTownhallLevel <= townHallLevel)
+                    {
+                        return academy;
+                    }
+                    return null;
+                case "barracks":
+                    BuildingModel barracks = new Barracks();
+                    if (barracks.GoldCost <= goldAmount && barracks.RequestTownhallLevel <= townHallLevel)
+                    {
+                        return barracks;
+                    }
+                    return null;
+                case "farm":
+                    BuildingModel farm = new Farm();
+                    if (farm.GoldCost <= goldAmount && farm.RequestTownhallLevel <= townHallLevel)
+                    {
+                        return farm;
+                    }
+                    return null;
+                case "mine":
+                    BuildingModel mine = new Mine();
+                    if (mine.GoldCost <= goldAmount && mine.RequestTownhallLevel <= townHallLevel)
+                    {
+                        return mine;
+                    }
+                    return null;
+                case "walls":
+                    BuildingModel walls = new Walls();
+                    if (walls.GoldCost <= goldAmount && walls.RequestTownhallLevel <= townHallLevel)
+                    {
+                        return walls;
+                    }
+                    return null;
+            }
+            return null;
+        }
+
+        public int GetTownhallLevel(long kingdomId)
+        {
+            var buildings = DbContext.Kingdoms.Where(p => p.Id == kingdomId).Include(p => p.Buildings).FirstOrDefault();
+            return buildings.Buildings.Where(p => p.Type == "townhall").FirstOrDefault().Level;
+        }
+        public AddBuildingForResponse CreateBuilding(int goldAmount, string buildingType, int townHallLevel, long kingdomId, out bool isPossibleToCreate)
+        {
+            var model = BuildingCreation(goldAmount, buildingType, townHallLevel);
+            var resultModel = new AddBuildingForResponse();
+            if (model != null)
+            {
+                var resultBuilding = mapper.Map<Building>(model);
+                resultBuilding.KingdomId = kingdomId;
+                DbContext.Buildings.Add(resultBuilding);
+                DbContext.SaveChanges();
+                resultModel = mapper.Map<AddBuildingForResponse>(resultBuilding);
+                var kingdomModel = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
+                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= model.GoldCost;
+                DbContext.SaveChanges();
+
+                isPossibleToCreate = true;
+                return resultModel;
+            }
+            isPossibleToCreate = false;
+            return resultModel;
         }
 
         public BuildingsForResponse UpgradeBuilding (long kingdomId, long buildingId, string operation, out int statusCode, out string error)
