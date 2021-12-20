@@ -8,6 +8,7 @@ using Naivart.Models.TroopTypes;
 using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Naivart.Models.APIModels.Leaderboards;
 
 namespace Naivart.Services
 {
@@ -38,7 +39,7 @@ namespace Naivart.Services
         }
 
 
-        public List<TroopsInfo> CreateTroops(int goldAmount, string troopType, int troopAmount, long kingdomId, out bool isPossibleToCreate)    
+        public List<TroopsInfo> CreateTroops(int goldAmount, string troopType, int troopAmount, long kingdomId, out bool isPossibleToCreate)
         {
             var model = TroopFactory(troopType, goldAmount, troopAmount, out int totalCost);    //get troop stats based on type, if no golds returns null
             var resultModel = new List<TroopsInfo>();
@@ -69,12 +70,12 @@ namespace Naivart.Services
             var troopsCreated = new List<TroopsInfo>();
             try
             {
-                if (AuthService.IsKingdomOwner(kingdomId, username))    
+                if (AuthService.IsKingdomOwner(kingdomId, username))
                 {
                     int goldAmount = KingdomService.GetGoldAmount(kingdomId);
-                    troopsCreated = CreateTroops(goldAmount, input.Type, input.Quantity, kingdomId, out bool isPossibleToCreate);   
+                    troopsCreated = CreateTroops(goldAmount, input.Type, input.Quantity, kingdomId, out bool isPossibleToCreate);
 
-                    if (isPossibleToCreate) 
+                    if (isPossibleToCreate)
                     {
                         status = 200;
                         result = "ok";
@@ -96,22 +97,61 @@ namespace Naivart.Services
             }
         }
 
-        public TroopModel TroopFactory(string troopType, int goldAmount, int troopAmount, out int totalCost)    
+        public TroopModel TroopFactory(string troopType, int goldAmount, int troopAmount, out int totalCost)
         {
             switch (troopType)  //decide which type is about to be created and gives him proper stats
             {
-                case "recruit": TroopModel recruit = new Recruit();
+                case "recruit":
+                    TroopModel recruit = new Recruit();
                     totalCost = (recruit.GoldCost * troopAmount);
                     return totalCost <= goldAmount ? recruit : null;
-                case "archer": TroopModel archer = new Archer();
+                case "archer":
+                    TroopModel archer = new Archer();
                     totalCost = (archer.GoldCost * troopAmount);
                     return totalCost <= goldAmount ? archer : null;
-                case "knight": TroopModel knight = new Knight();
+                case "knight":
+                    TroopModel knight = new Knight();
                     totalCost = (knight.GoldCost * troopAmount);
                     return totalCost <= goldAmount ? knight : null;
             }
             totalCost = 0;
             return null;    //if you dont have money returns null
+        }
+
+        public List<LeaderboardTroopAPIModel> GetTroopsLeaderboard(out int status, out string error)
+        {
+            try
+            {
+                var AllKingdoms = DbContext.Kingdoms.Include(k => k.Player)
+                                                    .Include(k => k.Buildings)
+                                                    .Include(k => k.Troops)
+                                                    .ToList();
+                if (AllKingdoms.Count() > 0)
+                {
+                    var TroopsLeaderboard = new List<LeaderboardTroopAPIModel>();
+                    foreach (var kingdom in AllKingdoms)
+                    {
+                        var buildingMapper = mapper.Map<LeaderboardTroopAPIModel>(kingdom);
+                        TroopsLeaderboard.Add(buildingMapper);
+                    }
+                    error = "ok";
+                    status = 200;
+                    TroopsLeaderboard = TroopsLeaderboard.OrderByDescending(p => p.points).ToList();
+                    return TroopsLeaderboard;
+                }
+                else
+                {
+                    error = "There are no kingdoms in Leaderboard";
+                    status = 404;
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                error = "Data could not be read";
+                status = 500;
+                return null;
+            }
         }
     }
 }

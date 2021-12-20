@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Models.APIModels;
 using Naivart.Models.BuildingTypes;
+using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -168,6 +169,41 @@ namespace Naivart.Services
                 return null;
             }
 
+        }
+
+        public List<LeaderboardBuildingAPIModel> GetBuildingsLeaderboard(out int status, out string error)
+        {
+            try
+            {
+                var AllKingdoms = DbContext.Kingdoms.Include(k => k.Player)
+                                                    .Include(k => k.Buildings)
+                                                    .ToList();
+                if (AllKingdoms.Any())
+                {
+                    var BuildingsLeaderboard = new List<LeaderboardBuildingAPIModel>();
+                    foreach (var kingdom in AllKingdoms)
+                    {
+                        var buildingMapper = mapper.Map<LeaderboardBuildingAPIModel>(kingdom);
+                        BuildingsLeaderboard.Add(buildingMapper);
+                    }
+                    error = "ok";
+                    status = 200;
+                    BuildingsLeaderboard = BuildingsLeaderboard.OrderByDescending(p => p.points).ToList();
+                    return BuildingsLeaderboard;
+                }
+                else
+                {
+                    error = "There are no kingdoms in Leaderboard";
+                    status = 404;
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                error = "Data could not be read";
+                status = 500;
+                return null;
+            }
         }
     }
 }

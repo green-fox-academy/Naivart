@@ -8,12 +8,12 @@ namespace Naivart.Services
 {
     public class ResourceService
     {
-        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
+        private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private ApplicationDbContext DbContext { get; }
         public ResourceService(IMapper mapper, ApplicationDbContext dbContext)
         {
             DbContext = dbContext;
-            _mapper = mapper;
+            this.mapper = mapper;
         }
 
         public List<ResourceAPIModel> ListOfResourcesMapping(List<Resource> resources)
@@ -27,7 +27,7 @@ namespace Naivart.Services
 
             foreach (var resource in resources)
             {
-                var resourceAPIModel = _mapper.Map<ResourceAPIModel>(resource);
+                var resourceAPIModel = mapper.Map<ResourceAPIModel>(resource);
                 resourceAPIModels.Add(resourceAPIModel);
             }
             return resourceAPIModels;

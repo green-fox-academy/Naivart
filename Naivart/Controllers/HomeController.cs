@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
 using Naivart.Services;
@@ -9,7 +10,7 @@ using System.Linq;
 
 namespace Naivart.Controllers
 {
-    
+
     [Route("/")]
     public class HomeController : Controller
     {
@@ -57,6 +58,7 @@ namespace Naivart.Controllers
             }
         }
 
+
         [HttpGet("kingdoms")]
         public object Kingdoms()
         {
@@ -79,15 +81,15 @@ namespace Naivart.Controllers
                 return Unauthorized(ErrorResponse);
             }
 
-                var kingdom = KingdomService.GetByIdWithTroops(id);
-                var kingdomApiModel = KingdomService.KingdomMapping(kingdom);
-                var troopAPIModels = TroopService.ListOfTroopsMapping(kingdom.Troops);
-                var response = new TroopAPIResponse()
-                {
-                    Kingdom = kingdomApiModel,
-                    Troops = troopAPIModels
-                };
-                return Ok(response);
+            var kingdom = KingdomService.GetByIdWithTroops(id);
+            var kingdomApiModel = KingdomService.KingdomMapping(kingdom);
+            var troopAPIModels = TroopService.ListOfTroopsMapping(kingdom.Troops);
+            var response = new TroopAPIResponse()
+            {
+                Kingdom = kingdomApiModel,
+                Troops = troopAPIModels
+            };
+            return Ok(response);
         }
 
         [Authorize]
@@ -210,7 +212,7 @@ namespace Naivart.Controllers
             }
 
             var kingdomWithTheSameName = KingdomService.GetAll().Where(k => k.Name == request.kingdomName).FirstOrDefault();
-            if(kingdomWithTheSameName != null)
+            if (kingdomWithTheSameName != null)
             {
                 ErrorResponse ErrorResponse = new ErrorResponse()
                 { error = "Given kingdom name already exists!" };
@@ -229,10 +231,10 @@ namespace Naivart.Controllers
             var response = new RenameKingdomResponse() { kingdomId = kingdom.Id, kingdomName = kingdom.Name };
             return Ok(response);
         }
-        
+
         [Authorize]
         [HttpGet("kingdoms/{id}")]
-        public IActionResult KingdomInformation([FromRoute]long id)
+        public IActionResult KingdomInformation([FromRoute] long id)
         {
             var model = KingdomService.GetKingdomInfo(id, HttpContext.User.Identity.Name, out int status, out string error);
             if (status != 200)
