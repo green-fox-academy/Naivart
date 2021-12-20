@@ -117,7 +117,7 @@ namespace Naivart.Services
                 var AllKingdoms = DbContext.Kingdoms.Include(k => k.Player)
                                                     .Include(k => k.Buildings)
                                                     .ToList();
-                if (AllKingdoms.Count() > 0)
+                if (AllKingdoms.Any())
                 {
                     var BuildingsLeaderboard = new List<LeaderboardBuildingAPIModel>();
                     foreach (var kingdom in AllKingdoms)

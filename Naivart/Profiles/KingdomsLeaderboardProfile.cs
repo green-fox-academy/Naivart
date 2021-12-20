@@ -15,7 +15,7 @@ namespace Naivart.Profiles
                 .ForMember(dest => dest.buildings_points, opt => opt.MapFrom(src => src.Buildings.Sum(i => i.Level)))
                 .ForMember(dest => dest.troops_points,
                            opt => opt.MapFrom(src => src.Troops.Sum(ad => ad.Attack + ad.Defense)))
-                .ForMember(dest => dest.total_points, opt => opt.MapFrom(src => src.Buildings.Sum(i => i.Level) +              src.Troops.Sum(ad => ad.Attack + ad.Defense)));
+                .ForMember(dest => dest.total_points, opt => opt.MapFrom(src => src.Buildings.Sum(i => i.Level) + src.Troops.Sum(ad => ad.Attack + ad.Defense)));
 
 
         }
