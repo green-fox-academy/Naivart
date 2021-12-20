@@ -19,6 +19,7 @@ namespace Naivart.Controllers
         public PlayerService PlayerService { get; set; }
         public LoginService LoginService { get; set; }
         public BuildingService BuildingService { get; set; }
+
         public AuthService AuthService { get; set; }
         public TroopService TroopService { get; set; }
 
@@ -145,15 +146,24 @@ namespace Naivart.Controllers
         [HttpGet("kingdoms/{id}/buildings")]
         public IActionResult Buildings([FromRoute] long id)
         {
-            string result = HttpContext.User.Identity.Name;
-            var response = BuildingService.GetBuildingResponse(id, HttpContext.User.Identity.Name, out int status);
-            if (status != 200)
+            if (KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
             {
-                return StatusCode(401);
-            }
-            return Ok(response);
-        }
+                var kingdom = KingdomService.GetByIdWithBuilding(id);
+                var kingdomAPIModel = KingdomService.KingdomMapping(kingdom);
+                var buildingsForResponse = BuildingService.ListOfBuildingMapping(kingdom.Buildings);
+                var response = new BuildingResponse()
+                {
+                    Kingdom = kingdomAPIModel,
+                    Buildings = buildingsForResponse
+                };
 
+                return Ok(response);
+            }
+            else
+            {
+                return Unauthorized(new { error = "This kingdom does not belong to authenticated player" });
+            }
+        }
         [Authorize]
         [HttpPut("kingdoms/{kingdomId}/buildings/{buildingId}")]
         public IActionResult UpgradeBuilding([FromRoute] long kingdomId, [FromRoute] long buildingId)
@@ -245,5 +255,18 @@ namespace Naivart.Controllers
             }
             return Ok(model);
         }
+
+        [Authorize]
+        [HttpPost("kingdoms/{id}/buildings")]
+        public IActionResult AddBuilding([FromRoute] long id, [FromBody] AddBuildingResponse type)
+        {
+            var response = BuildingService.AddBuilding(type,id, HttpContext.User.Identity.Name, out int status);
+            if (status != 200)
+            {
+                return StatusCode(status);
+            }
+            return Ok(response);
+        }
     }
 }
+

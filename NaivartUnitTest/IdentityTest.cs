@@ -20,7 +20,7 @@ namespace NaivartUnitTest
 
             httpClient = factory.CreateClient();
         }
-        public string Token(string userName, string password)
+        public string GetToken(string userName, string password)
         {
             var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = userName, password = password });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
@@ -34,7 +34,7 @@ namespace NaivartUnitTest
         public void AuthPostEndpoint_ShouldReturnOkFromToken()
         {
             var request = new HttpRequestMessage();
-            var tokenResult = Token("Adam", "Santa");
+            var tokenResult = GetToken("Adam", "Santa");
 
             var inputObj2 = JsonConvert.SerializeObject(new PlayerIdentity() { token = tokenResult });
             StringContent requestContent2 = new(inputObj2, Encoding.UTF8, "application/json");
@@ -68,7 +68,7 @@ namespace NaivartUnitTest
             long kingdomIdExpected = 1;
             string kingdomNameExpected = "Igala";
             var statusCodeExpected = HttpStatusCode.OK;
-            var tokenResult = Token("Adam", "Santa");
+            var tokenResult = GetToken("Adam", "Santa");
 
 
             var inputObj2 = JsonConvert.SerializeObject(new PlayerIdentity() { token = tokenResult });
