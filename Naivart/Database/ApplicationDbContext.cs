@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Naivart.Models.Entities;
+using Naivart.Models.TroopTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace Naivart.Database
 
         public DbSet<Resource> Resources { get; set; }
         public DbSet<Troop> Troops { get; set; }
+        public DbSet<TroopModel> UpgradeTroops { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
 
