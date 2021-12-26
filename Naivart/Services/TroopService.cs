@@ -8,6 +8,7 @@ using Naivart.Models.TroopTypes;
 using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Naivart.Models.APIModels.Leaderboards;
 
 namespace Naivart.Services
 {
@@ -115,6 +116,42 @@ namespace Naivart.Services
             }
             totalCost = 0;
             return null;    //if you dont have money returns null
+        }
+
+        public List<LeaderboardTroopAPIModel> GetTroopsLeaderboard(out int status, out string error)
+        {
+            try
+            {
+                var AllKingdoms = DbContext.Kingdoms.Include(k => k.Player)
+                                                    .Include(k => k.Buildings)
+                                                    .Include(k => k.Troops)
+                                                    .ToList();
+                if (AllKingdoms.Count() > 0)
+                {
+                    var TroopsLeaderboard = new List<LeaderboardTroopAPIModel>();
+                    foreach (var kingdom in AllKingdoms)
+                    {
+                        var buildingMapper = mapper.Map<LeaderboardTroopAPIModel>(kingdom);
+                        TroopsLeaderboard.Add(buildingMapper);
+                    }
+                    error = "ok";
+                    status = 200;
+                    TroopsLeaderboard = TroopsLeaderboard.OrderByDescending(p => p.points).ToList();
+                    return TroopsLeaderboard;
+                }
+                else
+                {
+                    error = "There are no kingdoms in Leaderboard";
+                    status = 404;
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                error = "Data could not be read";
+                status = 500;
+                return null;
+            }
         }
 
         public void UpgradeTroops(long kingdomId, string username, string type, out int statusCode, out string result)

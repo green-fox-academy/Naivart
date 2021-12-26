@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,8 @@ namespace Naivart.Services
                 return kingdoms = DbContext.Kingdoms
                     .Include(k => k.Player)
                     .Include(k => k.Location)
+                    .Include(k => k.Buildings)
+                    .Include(k => k.Troops)
                     .ToList();
             }
             catch
@@ -202,7 +205,7 @@ namespace Naivart.Services
         {
             try
             {
-                if (IsUserKingdomOwner(kingdomId, tokenUsername))  
+                if (IsUserKingdomOwner(kingdomId, tokenUsername))
                 {
                     error = "ok";
                     status = 200;
@@ -231,7 +234,7 @@ namespace Naivart.Services
                 kingdom = DbContext.Kingdoms.Include(k => k.Player).Include(k => k.Location).Include(k => k.Buildings).FirstOrDefault(k => k.Id == id);
                 return kingdom;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return null;
             }
@@ -256,7 +259,7 @@ namespace Naivart.Services
                 kingdom = DbContext.Kingdoms.Include(k => k.Player).Include(k => k.Location).Include(k => k.Buildings).FirstOrDefault(k => k.Id == id);
                 return kingdom;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return null;
             }
@@ -327,6 +330,42 @@ namespace Naivart.Services
             catch (Exception e)
             {
                 throw new InvalidOperationException("Data could not be read", e);
+            }
+        }
+
+        public List<LeaderboardKingdomAPIModel> GetKingdomsLeaderboard(out int status, out string error)
+        {
+            try
+            {
+                var AllKingdoms = DbContext.Kingdoms.Include(k => k.Player)
+                                                    .Include(k => k.Buildings)
+                                                    .Include(k => k.Troops)
+                                                    .ToList();
+                if (AllKingdoms.Count() > 0)
+                {
+                    var KingdomsLeaderboard = new List<LeaderboardKingdomAPIModel>();
+                    foreach (var kingdom in AllKingdoms)
+                    {
+                        var buildingMapper = mapper.Map<LeaderboardKingdomAPIModel>(kingdom);
+                        KingdomsLeaderboard.Add(buildingMapper);
+                    }
+                    error = "ok";
+                    status = 200;
+                    KingdomsLeaderboard = KingdomsLeaderboard.OrderByDescending(p => p.total_points).ToList();
+                    return KingdomsLeaderboard;
+                }
+                else
+                {
+                    error = "There are no kingdoms in Leaderboard";
+                    status = 404;
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                error = "Data could not be read";
+                status = 500;
+                return null;
             }
         }
     }
