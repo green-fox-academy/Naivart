@@ -18,12 +18,14 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
-        public TroopService(ApplicationDbContext dbContext, AuthService authService, KingdomService kingdomService, IMapper mapper)
+        public BuildingService BuildingService { get; set; }
+        public TroopService(ApplicationDbContext dbContext, AuthService authService, KingdomService kingdomService, IMapper mapper, BuildingService buildingService)
         {
             DbContext = dbContext;
             AuthService = authService;
             KingdomService = kingdomService;
             this.mapper = mapper;
+            BuildingService = buildingService;
         }
 
         public List<TroopAPIModel> ListOfTroopsMapping(List<Troop> troops)
@@ -154,36 +156,68 @@ namespace Naivart.Services
             }
         }
 
-        public void UpgradeTroops(long kingdomId, string username, string type, out int statusCode, out string result)
+        public int UpgradeTroops(long kingdomId, string username, string type,  out string result, out int statusCode)
         {
             try
-            {
+            {           
                 if (AuthService.IsKingdomOwner(kingdomId, username))
                 {
                     int goldAmount = KingdomService.GetGoldAmount(kingdomId);
-                    var troopsLevelUp = TroopsLevelUp(kingdomId, type, goldAmount);
-                    if (troopsLevelUp)
+                    var kingdom = KingdomService.GetById(kingdomId);
+                    var academy = kingdom.Buildings.Where(t => t.Type == "Academy").FirstOrDefault();
+                    var troops = kingdom.Troops.Where(t => t.Type == type).ToList();
+                    var upgradedStats = DbContext.UpgradeTroops.Where(t => t.Type == type && t.Level == troops.First().Level + 1).FirstOrDefault();
+
+                    if (academy == null) //There is no academy in Kingdom
                     {
-                        statusCode = 200;
-                        result = "ok";
+                        result = "You have to build Academy first.";
+                        return statusCode = 400;
                     }
-                    else if()
-                    statusCode = 400;
-                    result = "You don't have enough gold to train all these units!";
-                }
-                statusCode = 401;
+                    else if(troops.Count == 0) //There are not any troop of this type
+                    {
+                        result = $"You dont have any {type} in your army to upgrade.";
+                        return statusCode = 400;
+                    }
+                    else if(troops.First().Level >= academy.Level) //Academy upgrade required
+                    {
+                        result = "Upgrade Academy first.";
+                        return statusCode = 400;
+                    }
+                    else if(troops.First().Level >= 20) //Max. level reached
+                    {
+                        result = $"{type} reached maximum level.";
+                        return statusCode = 400;
+                    }
+                    else if(goldAmount < upgradedStats.GoldCost) //Lack of gold 
+                    {
+                        result = "You don't have enough gold to upgrade this type of troops!";
+                        return statusCode = 400;
+                    }
+                    LevelUp(kingdom, type, upgradedStats); //Everything ok - upgrade all troops of its type
+                    result = "ok";
+                    return statusCode = 200;
+                }  
                 result = "This kingdom does not belong to authenticated player";
+                return statusCode = 401;
             }
             catch (Exception)
-            {
-                statusCode = 500;
+            {     
                 result = "Data could not be read";
+                return statusCode = 500;
             }
         }
 
-        public bool TroopsLevelUp(long kingdomId, string troopType, int goldAmount)
+        public void LevelUp(Kingdom kingdom, string type, TroopModel upgradedStats)
         {
-
+            kingdom.Resources.FirstOrDefault(t => t.Type == "gold").Amount -= upgradedStats.GoldCost; //Reduce owner gold by upgrade gold cost
+            foreach (Troop troop in kingdom.Troops.Where(t=>t.Type == type).ToList()) //Upgrade all units of its type
+            {
+                troop.Hp = upgradedStats.Hp;
+                troop.Attack = upgradedStats.Attack;
+                troop.Defense = upgradedStats.Defense;
+            }
+            DbContext.Update(kingdom);
+            DbContext.SaveChanges();
         }
     }
 }

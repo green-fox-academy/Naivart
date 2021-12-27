@@ -61,12 +61,12 @@ namespace Naivart.Services
             var kingdom = new Kingdom();
             try
             {
-               return kingdom = DbContext.Kingdoms
-                    .Where(k => k.Id == id)
-                    .Include(k => k.Player)
-                    .Include(k => k.Location)
-                    .Include(k => k.Resources)
-                    .FirstOrDefault();
+                return kingdom = DbContext.Kingdoms
+                     .Where(k => k.Id == id)
+                     .Include(k => k.Player)
+                     .Include(k => k.Location)
+                     .Include(k => k.Resources)
+                     .FirstOrDefault();
             }
             catch
             {
@@ -231,7 +231,11 @@ namespace Naivart.Services
             var kingdom = new Kingdom();
             try
             {
-                kingdom = DbContext.Kingdoms.Include(k => k.Player).Include(k => k.Location).Include(k => k.Buildings).FirstOrDefault(k => k.Id == id);
+                kingdom = DbContext.Kingdoms.Include(k => k.Player)
+                                            .Include(k => k.Location)
+                                            .Include(k => k.Buildings)
+                                            .Include(k => k.Troops)
+                                            .FirstOrDefault(k => k.Id == id);
                 return kingdom;
             }
             catch (Exception)
