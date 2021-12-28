@@ -74,25 +74,6 @@ namespace Naivart.Services
             }
         }
 
-        public Kingdom GetByIdWithTroops(long id)
-        {
-            var kingdom = new Kingdom();
-            try
-            {
-                kingdom = DbContext.Kingdoms
-                     .Where(k => k.Id == id)
-                     .Include(k => k.Player)
-                     .Include(k => k.Location)
-                     .Include(k => k.Troops)
-                     .FirstOrDefault();
-                return kingdom;
-            }
-            catch
-            {
-                return kingdom;
-            }
-        }
-
         public void RenameKingdom(long KingdomId, string NewKingdomName)
         {
             Kingdom kingdom = GetById(KingdomId);
@@ -235,12 +216,13 @@ namespace Naivart.Services
                                             .Include(k => k.Location)
                                             .Include(k => k.Buildings)
                                             .Include(k => k.Troops)
+                                            .ThenInclude(k=>k.TroopType)
                                             .FirstOrDefault(k => k.Id == id);
                 return kingdom;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return null;
+                throw new InvalidOperationException("Data could not be read", e);
             }
         }
 
@@ -287,7 +269,9 @@ namespace Naivart.Services
                                   .Include(x => x.Location)
                                   .Include(x => x.Resources)
                                   .Include(x => x.Buildings)
-                                  .Include(x => x.Troops).FirstOrDefault();
+                                  .Include(x => x.Troops)
+                                  .ThenInclude(x=>x.TroopType)
+                                  .FirstOrDefault();
 
                 var buildings = new List<BuildingsInfo>();
                 var resources = new List<ResourceAPIModel>();
@@ -344,6 +328,7 @@ namespace Naivart.Services
                 var AllKingdoms = DbContext.Kingdoms.Include(k => k.Player)
                                                     .Include(k => k.Buildings)
                                                     .Include(k => k.Troops)
+                                                    .ThenInclude(k=>k.TroopType)
                                                     .ToList();
                 if (AllKingdoms.Count() > 0)
                 {

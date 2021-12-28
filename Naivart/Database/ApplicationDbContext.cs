@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Naivart.Models.Entities;
-using Naivart.Models.TroopTypes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Naivart.Database
 {
@@ -17,7 +12,7 @@ namespace Naivart.Database
 
         public DbSet<Resource> Resources { get; set; }
         public DbSet<Troop> Troops { get; set; }
-        public DbSet<TroopModel> UpgradeTroops { get; set; }
+        public DbSet<TroopType> TroopTypes { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
 
@@ -53,6 +48,12 @@ namespace Naivart.Database
                 .HasMany<Building>(k=> k.Buildings)
                 .WithOne(b => b.Kingdom)
                 .HasForeignKey(b => b.KingdomId)
+                .IsRequired(true);
+
+            modelBuilder.Entity<Troop>()
+                .HasOne<TroopType>(t => t.TroopType)
+                .WithMany(t => t.Troops)
+                .HasForeignKey(t => t.TroopTypeId)
                 .IsRequired(true);
         }
     }

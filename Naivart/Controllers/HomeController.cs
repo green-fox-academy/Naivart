@@ -81,7 +81,7 @@ namespace Naivart.Controllers
                 return Unauthorized(ErrorResponse);
             }
 
-            var kingdom = KingdomService.GetByIdWithTroops(id);
+            var kingdom = KingdomService.GetById(id);
             var kingdomApiModel = KingdomService.KingdomMapping(kingdom);
             var troopAPIModels = TroopService.ListOfTroopsMapping(kingdom.Troops);
             var response = new TroopAPIResponse()
@@ -266,6 +266,20 @@ namespace Naivart.Controllers
                 return StatusCode(status);
             }
             return Ok(response);
+        }
+
+        [Authorize]
+        [HttpPut("kingdoms/{id}/troops")]
+        public IActionResult UpgradeTroops([FromRoute] long id, [FromBody] UpgradeTroopsRequest input)
+        {
+            var troop = TroopService.UpgradeTroops(id, HttpContext.User.Identity.Name, input.Type, out string result, out int statusCode);
+            if (statusCode != 200)
+            {
+                var errorResponse = new ErrorResponse() { error = result };
+                return StatusCode(statusCode, errorResponse);
+            }
+            var upgradeTroopsResponse = new UpgradeTroopsResponse() { status = "ok" };
+            return Ok(upgradeTroopsResponse);
         }
     }
 }
