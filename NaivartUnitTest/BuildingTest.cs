@@ -21,12 +21,12 @@ namespace NaivartUnitTest
         }
         public string GetToken(string userName, string password)
         {
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = userName, password = password });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = userName, Password = password });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = httpClient.PostAsync("https://localhost:5000/login", requestContent).Result;
             string contentResponse = response.Content.ReadAsStringAsync().Result;
-            TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(contentResponse);
-            string tokenResult = token.token;
+            TokenWithStatusResponse token = JsonConvert.DeserializeObject<TokenWithStatusResponse>(contentResponse);
+            string tokenResult = token.Token;
             return tokenResult;
         }
         [Fact]
@@ -64,7 +64,7 @@ namespace NaivartUnitTest
         {
             var expectedStatusCode = HttpStatusCode.Unauthorized;
             var tokenResult = GetToken("Adam", "Santa");
-            var inputObj = JsonConvert.SerializeObject(new AddBuildingResponse() { Type = "farm" });
+            var inputObj = JsonConvert.SerializeObject(new AddBuildingRequest() { Type = "farm" });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage();

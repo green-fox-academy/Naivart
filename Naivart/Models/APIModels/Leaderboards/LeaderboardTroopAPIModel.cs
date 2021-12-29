@@ -2,10 +2,10 @@
 {
     public class LeaderboardTroopAPIModel
     {
-        public string ruler { get; set; }
-        public string kingdom { get; set; }
-        public int total_defense { get; set; }
-        public int total_attack { get; set; }
-        public int points { get; set; }
+        public string Ruler { get; set; }
+        public string Kingdom { get; set; }
+        public int Total_defense { get; set; }
+        public int Total_attack { get; set; }
+        public int Points { get; set; }
     }
 }

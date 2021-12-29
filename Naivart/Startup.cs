@@ -28,15 +28,19 @@ namespace Naivart
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAutoMapper(typeof(Startup));
-            services.AddTransient<ResourceService>();
-            services.AddTransient<KingdomService>();
+
             services.AddControllersWithViews();
-            services.AddTransient<PlayerService>();
-            services.AddTransient<LoginService>();
-            services.AddTransient<BuildingService>();
+
+            ConfigureDb(services);
+
             services.AddTransient<AuthService>();
-            services.AddTransient<TroopService>();
+            services.AddTransient<BuildingService>();
+            services.AddTransient<KingdomService>();
+            services.AddTransient<LoginService>();
+            services.AddTransient<PlayerService>();
+            services.AddTransient<ResourceService>();
             services.AddTransient<TimeService>();
+            services.AddTransient<TroopService>();
 
             var appSettingSection = AppConfig.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingSection);
@@ -58,11 +62,8 @@ namespace Naivart
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = false,
                     ValidateAudience = false
-
                 };
             });
-
-            ConfigureDb(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -78,7 +79,7 @@ namespace Naivart
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseMiddleware<TimeMiddleware>();    //If you get errors using id in route then comment this
+            app.UseMiddleware<TimeMiddleware>();    //If you get errors using id in route then comment this.
 
             app.UseEndpoints(endpoints =>
             {
@@ -94,7 +95,7 @@ namespace Naivart
             services.AddDbContext<ApplicationDbContext>(
                 options => options
                 .UseMySql(connectionString, serverVersion)
-                // The following three options help with debugging
+                // The following three options help with debugging.
                 .LogTo(Console.WriteLine, LogLevel.Information)
                 .EnableSensitiveDataLogging()
                 .EnableDetailedErrors());

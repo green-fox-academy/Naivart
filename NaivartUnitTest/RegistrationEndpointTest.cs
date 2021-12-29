@@ -34,9 +34,9 @@ namespace NaivartUnitTest
             var request = new HttpRequestMessage();
             var inputObj = JsonConvert.SerializeObject(new RegisterRequest()
             {
-                username = $"usertest{rInt}",
-                password = "password123",
-                kingdomName = $"kingdom Name Test{rInt}"
+                Username = $"usertest{rInt}",
+                Password = "password123",
+                KingdomName = $"kingdom Name Test{rInt}"
             });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
 
@@ -47,7 +47,7 @@ namespace NaivartUnitTest
 
             Assert.Equal(statusCodeExpected, response.StatusCode);
             //Assert.Equal(kingdomIdExpected, RegisterResponse.kingdomId);
-            Assert.Equal(UsernameExpected, RegisterResponse.username);
+            Assert.Equal(UsernameExpected, RegisterResponse.Username);
         }
 
         [Fact]
@@ -58,9 +58,9 @@ namespace NaivartUnitTest
             var request = new HttpRequestMessage();
             var inputObj = JsonConvert.SerializeObject(new RegisterRequest()
             {
-                username = "",
-                password = "psw",
-                kingdomName = "Discovery Channel"
+                Username = "",
+                Password = "psw",
+                KingdomName = "Discovery Channel"
             });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = httpClient.PostAsync("https://localhost:44388/registration", requestContent).Result;
@@ -68,7 +68,7 @@ namespace NaivartUnitTest
             ErrorResponse ErrorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseBodyContent);
 
             Assert.Equal(statusCodeExpected, response.StatusCode);
-            Assert.Equal(ErrorExpected, ErrorResponse.error);
+            Assert.Equal(ErrorExpected, ErrorResponse.Error);
 
         }
     }

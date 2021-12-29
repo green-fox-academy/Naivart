@@ -9,13 +9,15 @@ namespace Naivart.Controllers
     public class LeaderboardsController : Controller
     {
         public BuildingService BuildingService { get; set; }
-        public TroopService TroopService { get; set; }
         public KingdomService KingdomService { get; set; }
-        public LeaderboardsController(BuildingService buildingService, TroopService troopService, KingdomService kingdomService)
+        public TroopService TroopService { get; set; }
+        public LeaderboardsController(BuildingService buildingService,
+                                      KingdomService kingdomService,
+                                      TroopService troopService)
         {
             BuildingService = buildingService;
-            TroopService = troopService;
             KingdomService = kingdomService;
+            TroopService = troopService;
         }
 
         [HttpGet("buildings")]
@@ -25,11 +27,8 @@ namespace Naivart.Controllers
             {
                 Results = BuildingService.GetBuildingsLeaderboard(out int status, out string error)
             };
-            if (status != 200)
-            {
-                return StatusCode(status, new ErrorResponse() { error = error });
-            }
-            return Ok(response);
+            return status != 200 ? StatusCode(status, new ErrorResponse() { Error = error })
+                                 : Ok(response);
         }
 
         [HttpGet("troops")]
@@ -39,11 +38,8 @@ namespace Naivart.Controllers
             {
                 Results = TroopService.GetTroopsLeaderboard(out int status, out string error)
             };
-            if (status != 200)
-            {
-                return StatusCode(status, new ErrorResponse() { error = error });
-            }
-            return Ok(response);
+            return status != 200 ? StatusCode(status, new ErrorResponse() { Error = error })
+                                 : Ok(response);
         }
 
         [HttpGet("kingdoms")]
@@ -51,13 +47,10 @@ namespace Naivart.Controllers
         {
             LeaderboardKingdomsAPIResponse response = new()
             {
-                results = KingdomService.GetKingdomsLeaderboard(out int status, out string error)
+                Results = KingdomService.GetKingdomsLeaderboard(out int status, out string error)
             };
-            if (status != 200)
-            {
-                return StatusCode(status, new ErrorResponse() { error = error });
-            }
-            return Ok(response);
+            return status != 200 ? StatusCode(status, new ErrorResponse() { Error = error })
+                                  : Ok(response);
         }
     }
 }

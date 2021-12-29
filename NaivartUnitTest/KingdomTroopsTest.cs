@@ -23,13 +23,13 @@ namespace NaivartUnitTest
 
         public string GetToken()
         {
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = "Adam", password = "Santa" });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = "Adam", Password = "Santa" });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = HttpClient.PostAsync("http://localhost:44388/login", requestContent).Result;
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
-            TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(responseBodyContent);
-            return token.token;
+            TokenWithStatusResponse token = JsonConvert.DeserializeObject<TokenWithStatusResponse>(responseBodyContent);
+            return token.Token;
         }
 
         [Fact]
@@ -58,10 +58,10 @@ namespace NaivartUnitTest
             };
 
             var TroopAPIModels = new List<TroopAPIModel>();
-            var TroopAPIModel = new TroopAPIModel() { Id = 1, Level = 1, Hp = 1, Attack = 2, Defense = 1, Started_at = 12345789, Finished_at = 12399999 };
+            var TroopAPIModel = new TroopAPIModel() { Id = 1, Level = 1, Hp = 1, Attack = 2, Defense = 1, StartedAt = 12345789, FinishedAt = 12399999 };
             TroopAPIModels.Add(TroopAPIModel);
 
-            var TroopAPIResponse = new TroopAPIResponse()
+            var TroopAPIResponse = new TroopsResponse()
             {
                 Kingdom = kingdomAPIModel,
                 Troops = TroopAPIModels
@@ -70,7 +70,7 @@ namespace NaivartUnitTest
             //act
             var response = HttpClient.SendAsync(request).Result;
             var responseData = response.Content.ReadAsStringAsync().Result;
-            var responseDataObj = JsonConvert.DeserializeObject<TroopAPIResponse>(responseData);
+            var responseDataObj = JsonConvert.DeserializeObject<TroopsResponse>(responseData);
 
             //assert
             Assert.True(response.IsSuccessStatusCode);
@@ -90,7 +90,7 @@ namespace NaivartUnitTest
             //act
             var response = HttpClient.SendAsync(request).Result;
             var responseData = response.Content.ReadAsStringAsync().Result;
-            var responseDataObj = JsonConvert.DeserializeObject<TroopAPIResponse>(responseData);
+            var responseDataObj = JsonConvert.DeserializeObject<TroopsResponse>(responseData);
 
             //assert
             Assert.Equal(expectedStatusCode, response.StatusCode);
@@ -102,7 +102,7 @@ namespace NaivartUnitTest
         public void CreateTroopsEndpoint_DifferentKingdomIdInRouteThanLoggedUser_ShouldReturnUnauthorized()
         {
             var expectedStatusCode = HttpStatusCode.Unauthorized;
-            var inputObj = JsonConvert.SerializeObject(new CreateTroopAPIRequest() { Quantity = 2, Type = "knight"});
+            var inputObj = JsonConvert.SerializeObject(new CreateTroopRequest() { Quantity = 2, Type = "knight"});
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage();

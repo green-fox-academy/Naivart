@@ -4,6 +4,6 @@ namespace Naivart.Models.APIModels.Leaderboards
 {
     public class LeaderboardKingdomsAPIResponse
     {
-        public List<LeaderboardKingdomAPIModel> results { get; set; }
+        public List<LeaderboardKingdomAPIModel> Results { get; set; }
     }
 }
