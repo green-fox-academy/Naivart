@@ -167,22 +167,22 @@ namespace Naivart.Services
 
                     if (academy == null) //There is no academy in Kingdom
                     {
-                        result = "You have to build Academy first.";
+                        result = "You have to build Academy first!";
                         return statusCode = 400;
                     }
                     else if (troop == null) //There are not any troop of this type
                     {
-                        result = $"You dont have any {type} in your army to upgrade.";
-                        return statusCode = 400;
-                    }
-                    else if (troop.TroopType.Level >= academy.Level) //Academy upgrade required
-                    {
-                        result = "Upgrade Academy first.";
+                        result = "You don't have any troop of this type in your army!";
                         return statusCode = 400;
                     }
                     else if (troop.TroopType.Level >= 20) //Max. level reached
                     {
-                        result = $"{type} reached maximum level.";
+                        result = "Maximum level reached!";
+                        return statusCode = 400;
+                    }
+                    else if (troop.TroopType.Level >= academy.Level) //Academy upgrade required
+                    {
+                        result = "Upgrade Academy first!";
                         return statusCode = 400;
                     }
 
@@ -196,12 +196,12 @@ namespace Naivart.Services
                     result = "ok";
                     return statusCode = 200;
                 }
-                result = "This kingdom does not belong to authenticated player";
+                result = "This kingdom doesn't belong to authenticated player";
                 return statusCode = 401;
             }
             catch (Exception)
             {
-                result = "Data could not be read";
+                result = "Data couldn't be read";
                 return statusCode = 500;
             }
         }

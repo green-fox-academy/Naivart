@@ -58,7 +58,7 @@ namespace NaivartUnitTest
             };
 
             var TroopAPIModels = new List<TroopAPIModel>();
-            var TroopAPIModel = new TroopAPIModel() { Id = 1, Level = 1, Hp = 10, Attack = 1, Defense = 2, Started_at = 12345789, Finished_at = 12399999 };
+            var TroopAPIModel = new TroopAPIModel() { Id = 1, Level = 3, Hp = 32, Attack = 5, Defense = 6, Started_at = 12345789, Finished_at = 12399999 };
             TroopAPIModels.Add(TroopAPIModel);
 
             var TroopAPIResponse = new TroopAPIResponse()
