@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Naivart.Models.Entities
+﻿namespace Naivart.Models.Entities
 {
     public class Resource
     {

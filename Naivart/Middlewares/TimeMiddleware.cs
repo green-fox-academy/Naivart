@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Naivart.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Naivart.Middlewares
@@ -20,13 +17,11 @@ namespace Naivart.Middlewares
         public Task Invoke(HttpContext httpContext, TimeService timeService)
         {
             var kingdomId = httpContext.Request.RouteValues["id"];
-            
             if (kingdomId is not null)
             {
                 long.TryParse(kingdomId.ToString(), out long result);
                 timeService.UpdateResources(result);
             }
-
             return _next(httpContext);
         }
     }

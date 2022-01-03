@@ -44,7 +44,7 @@ namespace NaivartUnitTest
                 Location = locationAPIModel
             };
 
-            var kingdomAPIResponse = new KingdomAPIResponse()
+            var kingdomAPIResponse = new KingdomsResponse()
             {
                 Kingdoms = new List<KingdomAPIModel>() { kingdomAPIModel }
             };
@@ -52,7 +52,7 @@ namespace NaivartUnitTest
             //act
             var response = HttpClient.SendAsync(request).Result;
             var responseData = response.Content.ReadAsStringAsync().Result;
-            var responseDataObj = JsonConvert.DeserializeObject<KingdomAPIResponse>(responseData);
+            var responseDataObj = JsonConvert.DeserializeObject<KingdomsResponse>(responseData);
 
             //assert
             Assert.True(response.IsSuccessStatusCode);
@@ -69,7 +69,7 @@ namespace NaivartUnitTest
             request.RequestUri = new Uri("https://localhost:44311/kingdoms");
             request.Method = HttpMethod.Get;
 
-            var kingdomAPIResponse = new KingdomAPIResponse()
+            var kingdomAPIResponse = new KingdomsResponse()
             {
                 Kingdoms = new List<KingdomAPIModel>()
             };
@@ -77,7 +77,7 @@ namespace NaivartUnitTest
             //act
             var response = HttpClient.SendAsync(request).Result;
             var responseData = response.Content.ReadAsStringAsync().Result;
-            var responseDataObj = JsonConvert.DeserializeObject<KingdomAPIResponse>(responseData);
+            var responseDataObj = JsonConvert.DeserializeObject<KingdomsResponse>(responseData);
 
             //assert
             Assert.Equal(expectedStatusCode, response.StatusCode);

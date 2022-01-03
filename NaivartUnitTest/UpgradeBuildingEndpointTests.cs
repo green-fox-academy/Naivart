@@ -21,13 +21,13 @@ namespace NaivartUnitTest
         }
         public string GetToken(string username, string password)
         {
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = username, password = password });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = username, Password = password });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = HttpClient.PostAsync("http://localhost:5467/login", requestContent).Result;
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
-            TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(responseBodyContent);
-            return token.token;
+            TokenWithStatusResponse token = JsonConvert.DeserializeObject<TokenWithStatusResponse>(responseBodyContent);
+            return token.Token;
         }
 
         [Fact]
@@ -50,13 +50,13 @@ namespace NaivartUnitTest
             //act
             var response1 = HttpClient.SendAsync(request1).Result;
             var responseData1 = response1.Content.ReadAsStringAsync().Result;
-            var originalBuilding = JsonConvert.DeserializeObject<BuildingResponse>
+            var originalBuilding = JsonConvert.DeserializeObject<BuildingsResponse>
                 (responseData1).Buildings.Find(b => b.Id == 1);
             originalBuilding.Level += 1; //expected building level after upgrade
 
             var response2 = HttpClient.SendAsync(request2).Result;
             var responseData2 = response2.Content.ReadAsStringAsync().Result;
-            var upgradedBuilding = JsonConvert.DeserializeObject<BuildingsForResponse>
+            var upgradedBuilding = JsonConvert.DeserializeObject<BuildingAPIModel>
                 (responseData2);
 
             //assert
@@ -82,7 +82,7 @@ namespace NaivartUnitTest
             //act
             var response = HttpClient.SendAsync(request).Result;
             var responseData = response.Content.ReadAsStringAsync().Result;
-            var actualError = JsonConvert.DeserializeObject<StatusForError>(responseData).error;
+            var actualError = JsonConvert.DeserializeObject<ErrorResponse>(responseData).Error;
 
             //assert
             Assert.False(response.IsSuccessStatusCode);
@@ -105,7 +105,7 @@ namespace NaivartUnitTest
             //act
             var response = HttpClient.SendAsync(request).Result;
             var responseData = response.Content.ReadAsStringAsync().Result;
-            var actualError = JsonConvert.DeserializeObject<StatusForError>(responseData).error;
+            var actualError = JsonConvert.DeserializeObject<ErrorResponse>(responseData).Error;
 
             //assert
             Assert.False(response.IsSuccessStatusCode);
