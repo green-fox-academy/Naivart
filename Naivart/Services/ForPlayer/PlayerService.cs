@@ -5,6 +5,7 @@ using Naivart.Models.BuildingTypes;
 using Naivart.Models.Entities;
 using System;
 using System.Linq;
+using System.Web.Helpers;
 
 namespace Naivart.Services
 {
@@ -18,16 +19,21 @@ namespace Naivart.Services
             DbContext = dbContext;
         }
 
-        public Player RegisterPlayer(string username, string password, string kingdomName)
+        public Player RegisterPlayer(string username, string pass, string kingdomName)
         {
-            if (password.Length < 8
+            if (pass.Length < 8
                 || String.IsNullOrWhiteSpace(username)
                 || IsInDbWithThisUsername(username))
             {
                 return null;
             }
 
-            Player player = new Player() { Username = username, Password = password };
+            //install Microsoft.AspNet.WebPages nuget
+            string salt = Crypto.GenerateSalt();
+            string password = pass + salt;
+            string hashedPassword = Crypto.HashPassword(password);
+
+            Player player = new Player() { Username = username, Password = hashedPassword, Salt = salt };
             Kingdom kingdom = new Kingdom();
 
             //check if given kingdom name (and username) is not empty or already exists in database 
@@ -44,7 +50,7 @@ namespace Naivart.Services
             CreateBasicBuidlings(DbKingdom.Id); //creates basic buildings and save to Db 
 
             return DbContext.Players.Include(x => x.Kingdom).FirstOrDefault
-                (x => x.Username == username && x.Password == password);
+                (x => x.Username == username && x.Password == hashedPassword);
         }
 
         public Kingdom FindKingdomByName(string kingdomName)

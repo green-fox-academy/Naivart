@@ -8,6 +8,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
+using System.Web.Helpers;
 
 namespace Naivart.Services
 {
@@ -51,7 +52,8 @@ namespace Naivart.Services
         {
             try
             {
-                return DbContext.Players.Any(x => x.Username == name && x.Password == password);
+                var player = DbContext.Players.FirstOrDefault(x => x.Username == name);
+                return Crypto.VerifyHashedPassword(player.Password, password);
             }
             catch (Exception e)
             {
