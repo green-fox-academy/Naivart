@@ -35,7 +35,7 @@ namespace NaivartUnitTest
         {
             //arrange
             string username = "Adam";
-            string password = "Santa";
+            string password = "Santa123";
 
             var request1 = new HttpRequestMessage(); //actual state of all kingdom buildings
             request1.RequestUri = new Uri("https://localhost:44311/kingdoms/1/buildings");
@@ -72,7 +72,7 @@ namespace NaivartUnitTest
         {
             //arrange
             string username = "Adam";
-            string password = "Santa";
+            string password = "Santa123";
             string expectedError = "Data could not be read";
             var request = new HttpRequestMessage();
             request.RequestUri = new Uri("https://localhost:44311/kingdoms/1/buildings/3");
@@ -95,7 +95,7 @@ namespace NaivartUnitTest
         {
             //arrange
             string username = "Honza";
-            string password = "Doktor";
+            string password = "Doktor123";
             string expectedError = "You don't have enough gold to upgrade that!";
             var request = new HttpRequestMessage();
             request.RequestUri = new Uri("https://localhost:44311/kingdoms/4/buildings/2");
