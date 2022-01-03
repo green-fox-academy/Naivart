@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNet.WebPages" Version="3.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.12" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
@@ -23,6 +22,7 @@
     </PackageReference>
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.0" />
+    <PackageReference Include="System.Web.Helpers.Crypto" Version="3.2.3" />
   </ItemGroup>
 
 </Project>
