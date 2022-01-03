@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Kingdom;
 using Naivart.Models.APIModels.Troops;
 using Naivart.Services;
 using System;
@@ -176,6 +177,12 @@ namespace Naivart.Controllers
                 out int status, out string result);
             return status != 200 ? StatusCode(status, new ErrorResponse() { Error = result })
                                      : Ok(model);
+        }
+
+        [HttpPost("kingdoms/{id}/battles")]
+        public IActionResult Battles([FromRoute] long id, [FromBody] BattleTargetRequest input)
+        {
+            return Ok();
         }
     }
 }
