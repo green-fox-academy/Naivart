@@ -48,7 +48,7 @@ namespace NaivartUnitTest
 
         public string GetToken()
         {
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = "Adam", Password = "Santa" });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = "Adam", Password = "Santa123" });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = httpClient.PostAsync("http://localhost:5467/login", requestContent).Result;

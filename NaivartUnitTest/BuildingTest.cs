@@ -33,7 +33,7 @@ namespace NaivartUnitTest
         public void BuildingGetEndpoint_ShouldReturnOk()
         {
             var request = new HttpRequestMessage();
-            var tokenResult = GetToken("Adam", "Santa");
+            var tokenResult = GetToken("Adam", "Santa123");
 
             var inputObj = JsonConvert.SerializeObject(new KingdomAPIModel() { Kingdom_Id = 1 }); 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
@@ -63,7 +63,7 @@ namespace NaivartUnitTest
         public void CreateBuilding_ShouldReturnUnauthorized()
         {
             var expectedStatusCode = HttpStatusCode.Unauthorized;
-            var tokenResult = GetToken("Adam", "Santa");
+            var tokenResult = GetToken("Adam", "Santa123");
             var inputObj = JsonConvert.SerializeObject(new AddBuildingRequest() { Type = "farm" });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
 

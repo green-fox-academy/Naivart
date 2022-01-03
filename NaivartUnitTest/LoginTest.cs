@@ -26,7 +26,7 @@ namespace NaivartUnitTest
             string statusExpected = "ok";
             string tokenExpected = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
             var statusCodeExpected = HttpStatusCode.OK;
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = "Adam", Password = "Santa" });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = "Adam", Password = "Santa123" });
            
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = httpClient.PostAsync("http://localhost:5467/login", requestContent).Result;
@@ -42,7 +42,7 @@ namespace NaivartUnitTest
 
         [Theory]
         [InlineData("Adam", "qojqodqj")]    //if username is correct, but password incorrect
-        [InlineData("qojdoqwf44q8", "Santa")]   //if username is incorrect, but password correct
+        [InlineData("qojdoqwf44q8", "Santa123")]   //if username is incorrect, but password correct
         [InlineData("qojdoqwf44q8", "qw5d1qw51q5qa")]   //if both incorrect
         public void PostInvalidPlayer_ReturnStatus401AndMessage(string usernameInput, string passwordInput)
         {

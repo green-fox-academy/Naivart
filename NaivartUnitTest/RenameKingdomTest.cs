@@ -24,12 +24,12 @@ namespace NaivartUnitTest
             if (returnValidToken)
             {
                 playerLogin.Username = "Pavel";
-                playerLogin.Password = "Bigshock";
+                playerLogin.Password = "Bigshock123";
             }
             else
             {
                 playerLogin.Username = "Adam";
-                playerLogin.Password = "Santa";
+                playerLogin.Password = "Santa123";
             }
             var inputObj = JsonConvert.SerializeObject(playerLogin);
 
