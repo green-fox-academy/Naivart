@@ -57,8 +57,9 @@ namespace Naivart.Services
                 {
                     return false;
                 }
-                password = password + player.Salt;
-                return Crypto.VerifyHashedPassword(player.Password, password);
+                password = password + player.Salt;  //connect input password with salt
+                //check if input pasword is same as hashed password in database, return bool
+                return Crypto.VerifyHashedPassword(player.Password, password);     
             }
             catch (Exception e)
             {
