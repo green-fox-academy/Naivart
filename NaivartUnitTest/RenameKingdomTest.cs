@@ -23,21 +23,21 @@ namespace NaivartUnitTest
             PlayerLogin playerLogin = new PlayerLogin();
             if (returnValidToken)
             {
-                playerLogin.username = "Pavel";
-                playerLogin.password = "Bigshock";
+                playerLogin.Username = "Pavel";
+                playerLogin.Password = "Bigshock";
             }
             else
             {
-                playerLogin.username = "Adam";
-                playerLogin.password = "Santa";
+                playerLogin.Username = "Adam";
+                playerLogin.Password = "Santa";
             }
             var inputObj = JsonConvert.SerializeObject(playerLogin);
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = HttpClient.PostAsync("http://localhost:44388/login", requestContent).Result;
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
-            TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(responseBodyContent);
-            return token.token;
+            TokenWithStatusResponse token = JsonConvert.DeserializeObject<TokenWithStatusResponse>(responseBodyContent);
+            return token.Token;
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace NaivartUnitTest
             var request = new HttpRequestMessage();
             var inputObj = JsonConvert.SerializeObject(new RenameKingdomRequest()
             {
-                kingdomName = $"kingdomNameTest{rInt}"
+                KingdomName = $"kingdomNameTest{rInt}"
             });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("https://localhost:44388/kingdoms/2");
@@ -67,7 +67,7 @@ namespace NaivartUnitTest
 
             //assert
             Assert.Equal(expectedStatusCode, response.StatusCode);
-            Assert.Equal(kingdomNameExpected, renameKingdomResponse.kingdomName);
+            Assert.Equal(kingdomNameExpected, renameKingdomResponse.KingdomName);
         }
 
         [Theory]
@@ -81,7 +81,7 @@ namespace NaivartUnitTest
             string ErrorExpected = errorExpectedInput;
             var inputObj = JsonConvert.SerializeObject(new RenameKingdomRequest()
             {
-                kingdomName = kingdomNameInput
+                KingdomName = kingdomNameInput
             });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("https://localhost:44388/kingdoms/2");
@@ -96,7 +96,7 @@ namespace NaivartUnitTest
 
             //assert
             Assert.Equal(expectedStatusCode, response.StatusCode);
-            Assert.Equal(ErrorExpected, errorResponse.error);
+            Assert.Equal(ErrorExpected, errorResponse.Error);
         }
 
 
@@ -109,7 +109,7 @@ namespace NaivartUnitTest
             string ErrorExpected = "This kingdom does not belong to authenticated player";
             var inputObj = JsonConvert.SerializeObject(new RenameKingdomRequest()
             {
-                kingdomName = "KnigdomNameTest"
+                KingdomName = "KnigdomNameTest"
             });
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("https://localhost:44388/kingdoms/2");
@@ -124,7 +124,7 @@ namespace NaivartUnitTest
 
             //assert
             Assert.Equal(expectedStatusCode, response.StatusCode);
-            Assert.Equal(ErrorExpected, errorResponse.error);
+            Assert.Equal(ErrorExpected, errorResponse.Error);
         }
     }
 }

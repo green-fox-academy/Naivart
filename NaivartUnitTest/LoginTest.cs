@@ -26,17 +26,17 @@ namespace NaivartUnitTest
             string statusExpected = "ok";
             string tokenExpected = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
             var statusCodeExpected = HttpStatusCode.OK;
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = "Adam", password = "Santa" });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = "Adam", Password = "Santa" });
            
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = httpClient.PostAsync("http://localhost:5467/login", requestContent).Result;
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
-            TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(responseBodyContent);
-            var resultTokenSplit = token.token.Split(".");
+            TokenWithStatusResponse token = JsonConvert.DeserializeObject<TokenWithStatusResponse>(responseBodyContent);
+            var resultTokenSplit = token.Token.Split(".");
             var resultToken = resultTokenSplit[0];
 
             Assert.Equal(statusCodeExpected, response.StatusCode);
-            Assert.Equal(statusExpected, token.status);
+            Assert.Equal(statusExpected, token.Status);
             Assert.Equal(tokenExpected, resultToken);
         }
 
@@ -48,15 +48,15 @@ namespace NaivartUnitTest
         {
             string messageExpected = "Username and/or password was incorrect!";
             var statusCodeExpected = HttpStatusCode.Unauthorized;
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = usernameInput, password = passwordInput });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = usernameInput, Password = passwordInput });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = httpClient.PostAsync("http://localhost:5467/login", requestContent).Result;
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
-            StatusForError statusError = JsonConvert.DeserializeObject<StatusForError>(responseBodyContent);
+            ErrorResponse statusError = JsonConvert.DeserializeObject<ErrorResponse>(responseBodyContent);
 
             Assert.Equal(statusCodeExpected, response.StatusCode);
-            Assert.Equal(messageExpected, statusError.error);
+            Assert.Equal(messageExpected, statusError.Error);
         }
 
         //[Fact]
@@ -68,15 +68,15 @@ namespace NaivartUnitTest
         {
             string messageExpected = "Field username and/or field password was empty!";
             var statusCodeExpected = HttpStatusCode.BadRequest;
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = usernameInput, password = passwordInput });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = usernameInput, Password = passwordInput });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = httpClient.PostAsync("http://localhost:5467/login", requestContent).Result;
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
-            StatusForError statusError = JsonConvert.DeserializeObject<StatusForError>(responseBodyContent);
+            ErrorResponse statusError = JsonConvert.DeserializeObject<ErrorResponse>(responseBodyContent);
 
             Assert.Equal(statusCodeExpected, response.StatusCode);
-            Assert.Equal(messageExpected, statusError.error);
+            Assert.Equal(messageExpected, statusError.Error);
         }
     }
 }

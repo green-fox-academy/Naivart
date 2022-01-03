@@ -30,7 +30,7 @@ namespace NaivartUnitTest
             string messageExpected = "One or both coordinates are out of valid range (0-99).";
             var statusCodeExpected = HttpStatusCode.BadRequest;
             var request = new HttpRequestMessage();
-            var inputObj = JsonConvert.SerializeObject(new KingdomLocationInput() { coordinateX = coordinateX, coordinateY = coordinateY, kingdomId = 1 });
+            var inputObj = JsonConvert.SerializeObject(new KingdomLocationInput() { CoordinateX = coordinateX, CoordinateY = coordinateY, KingdomId = 1 });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("https://localhost:44385/registration");
@@ -40,10 +40,10 @@ namespace NaivartUnitTest
             var response = httpClient.SendAsync(request).Result;
 
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
-            StatusForError statusError = JsonConvert.DeserializeObject<StatusForError>(responseBodyContent);
+            ErrorResponse statusError = JsonConvert.DeserializeObject<ErrorResponse>(responseBodyContent);
 
             Assert.Equal(statusCodeExpected, response.StatusCode);
-            Assert.Equal(messageExpected, statusError.error);
+            Assert.Equal(messageExpected, statusError.Error);
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace NaivartUnitTest
             string messageExpected = "Given coordinates are already taken!";
             var statusCodeExpected = HttpStatusCode.BadRequest;
             var request = new HttpRequestMessage();
-            var inputObj = JsonConvert.SerializeObject(new KingdomLocationInput() { coordinateX = 15, coordinateY = 30, kingdomId = 1 });
+            var inputObj = JsonConvert.SerializeObject(new KingdomLocationInput() { CoordinateX = 15, CoordinateY = 30, KingdomId = 1 });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("https://localhost:44385/registration");
@@ -62,10 +62,10 @@ namespace NaivartUnitTest
             var response = httpClient.SendAsync(request).Result;
 
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
-            StatusForError statusError = JsonConvert.DeserializeObject<StatusForError>(responseBodyContent);
+            ErrorResponse statusError = JsonConvert.DeserializeObject<ErrorResponse>(responseBodyContent);
 
             Assert.Equal(statusCodeExpected, response.StatusCode);
-            Assert.Equal(messageExpected, statusError.error);
+            Assert.Equal(messageExpected, statusError.Error);
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace NaivartUnitTest
         {
             var statusCodeExpected = HttpStatusCode.Unauthorized;
             var request = new HttpRequestMessage();
-            var inputObj = JsonConvert.SerializeObject(new KingdomLocationInput() { coordinateX = 15, coordinateY = 30, kingdomId = 1 });
+            var inputObj = JsonConvert.SerializeObject(new KingdomLocationInput() { CoordinateX = 15, CoordinateY = 30, KingdomId = 1 });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             request.RequestUri = new Uri("https://localhost:44385/registration");
@@ -82,20 +82,20 @@ namespace NaivartUnitTest
             var response = httpClient.SendAsync(request).Result;
 
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
-            StatusForError statusError = JsonConvert.DeserializeObject<StatusForError>(responseBodyContent);
+            ErrorResponse statusError = JsonConvert.DeserializeObject<ErrorResponse>(responseBodyContent);
 
             Assert.Equal(statusCodeExpected, response.StatusCode);
         }
 
         public string GetToken()
         {
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = "Adam", password = "Santa" });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = "Adam", Password = "Santa" });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = httpClient.PostAsync("http://localhost:5467/login", requestContent).Result;
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
-            TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(responseBodyContent);
-            return token.token;
+            TokenWithStatusResponse token = JsonConvert.DeserializeObject<TokenWithStatusResponse>(responseBodyContent);
+            return token.Token;
         }
     }
 }
