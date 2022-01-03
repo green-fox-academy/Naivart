@@ -44,7 +44,7 @@ namespace NaivartUnitTest
             request.Content = requestContent;
 
             //act
-            request.Headers.Add("Authorization", $"Bearer {GetToken("Pavel","Bigshock")}");
+            request.Headers.Add("Authorization", $"Bearer {GetToken("Pavel","Bigshock123")}");
             var response = HttpClient.SendAsync(request).Result;
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
             UpgradeTroopsResponse upgradeTroopsResponse = JsonConvert.DeserializeObject<UpgradeTroopsResponse>(responseBodyContent);
@@ -56,11 +56,11 @@ namespace NaivartUnitTest
         }
 
         [Theory]
-        [InlineData("https://localhost:44388/kingdoms/4/troops", "Honza","Doktor","recruit", "You have to build Academy first!")]
-        [InlineData("https://localhost:44388/kingdoms/1/troops", "Adam", "Santa","knight", "You don't have any troop of this type in your army!")]
-        [InlineData("https://localhost:44388/kingdoms/1/troops", "Adam","Santa","recruit", "Upgrade Academy first!")]
-        [InlineData("https://localhost:44388/kingdoms/2/troops", "Pavel", "Bigshock","archer", "Maximum level reached!")]
-        [InlineData("https://localhost:44388/kingdoms/3/troops", "Míra", "Komín","knight", "You don't have enough gold to upgrade this type of troops!")]
+        [InlineData("https://localhost:44388/kingdoms/4/troops", "Honza","Doktor123","recruit", "You have to build Academy first!")]
+        [InlineData("https://localhost:44388/kingdoms/1/troops", "Adam", "Santa123","knight", "You don't have any troop of this type in your army!")]
+        [InlineData("https://localhost:44388/kingdoms/1/troops", "Adam","Santa123","recruit", "Upgrade Academy first!")]
+        [InlineData("https://localhost:44388/kingdoms/2/troops", "Pavel", "Bigshock123","archer", "Maximum level reached!")]
+        [InlineData("https://localhost:44388/kingdoms/3/troops", "Míra", "Komín123","knight", "You don't have enough gold to upgrade this type of troops!")]
         public void UnsuccessfulOperations_ShouldReturnBadRequest(string uriInput, string username, string password,string troopType,string expectedErrorMessage)
         {
             //arrange
@@ -97,7 +97,7 @@ namespace NaivartUnitTest
             request.Content = requestContent;
 
             //act
-            request.Headers.Add("Authorization", $"Bearer {GetToken("Pavel", "Bigshock")}");
+            request.Headers.Add("Authorization", $"Bearer {GetToken("Pavel", "Bigshock123")}");
             var response = HttpClient.SendAsync(request).Result;
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
             ErrorResponse errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseBodyContent);
