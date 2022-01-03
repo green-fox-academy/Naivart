@@ -19,9 +19,9 @@ namespace Naivart.Services
             DbContext = dbContext;
         }
 
-        public Player RegisterPlayer(string username, string pass, string kingdomName)
+        public Player RegisterPlayer(string username, string password, string kingdomName)
         {
-            if (pass.Length < 8
+            if (password.Length < 8
                 || String.IsNullOrWhiteSpace(username)
                 || IsInDbWithThisUsername(username))
             {
@@ -30,7 +30,7 @@ namespace Naivart.Services
 
             //install Microsoft.AspNet.WebPages nuget
             string salt = Crypto.GenerateSalt();
-            string password = pass + salt;
+            password = password + salt;
             string hashedPassword = Crypto.HashPassword(password);
 
             Player player = new Player() { Username = username, Password = hashedPassword, Salt = salt };
