@@ -53,6 +53,7 @@ namespace Naivart.Services
             try
             {
                 var player = DbContext.Players.FirstOrDefault(x => x.Username == name);
+                password = password + player.Salt;
                 return Crypto.VerifyHashedPassword(player.Password, password);
             }
             catch (Exception e)
