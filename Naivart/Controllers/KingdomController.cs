@@ -182,6 +182,7 @@ namespace Naivart.Controllers
         [HttpPost("kingdoms/{id}/battles")]
         public IActionResult Battles([FromRoute] long id, [FromBody] BattleTargetRequest input)
         {
+            KingdomService.Battle(input, id, HttpContext.User.Identity.Name, out int status, out string error);
             return Ok();
         }
     }

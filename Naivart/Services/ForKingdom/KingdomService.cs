@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Kingdom;
 using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.Entities;
 using System;
@@ -299,6 +300,29 @@ namespace Naivart.Services
                 error = "Data could not be read";
                 status = 500;
                 return null;
+            }
+        }
+
+        public void Battle(BattleTargetRequest targetKingdom, long attackerId, string tokenUsername, out int status, out string error)
+        {
+            try
+            {
+                if (IsUserKingdomOwner(attackerId, tokenUsername))
+                {
+                    error = "ok";
+                    status = 200; 
+
+                }
+                else
+                {
+                    error = "This kingdom does not belong to authenticated player";
+                    status = 401;
+                }
+            }
+            catch
+            {
+                error = "Data could not be read";
+                status = 500;
             }
         }
     }
