@@ -21,13 +21,13 @@ namespace NaivartUnitTest
 
         public string GetToken(string username, string password)
         {
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { username = username, password = password });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = username, Password = password });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = HttpClient.PostAsync("http://localhost:44388/login", requestContent).Result;
             string responseBodyContent = response.Content.ReadAsStringAsync().Result;
-            TokenWithStatus token = JsonConvert.DeserializeObject<TokenWithStatus>(responseBodyContent);
-            return token.token;
+            TokenWithStatusResponse token = JsonConvert.DeserializeObject<TokenWithStatusResponse>(responseBodyContent);
+            return token.Token;
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace NaivartUnitTest
 
             //asert
             Assert.Equal(expectedStatusCode, response.StatusCode);
-            Assert.Equal(expectedErrorMessage, errorResponse.error);
+            Assert.Equal(expectedErrorMessage, errorResponse.Error);
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace NaivartUnitTest
 
             //asert
             Assert.Equal(expectedStatusCode, response.StatusCode);
-            Assert.Equal(expectedErrorMessage, errorResponse.error);
+            Assert.Equal(expectedErrorMessage, errorResponse.Error);
 
         }
     }
