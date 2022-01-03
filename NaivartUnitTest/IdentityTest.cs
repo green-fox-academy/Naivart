@@ -34,7 +34,7 @@ namespace NaivartUnitTest
         public void AuthPostEndpoint_ShouldReturnOkFromToken()
         {
             var request = new HttpRequestMessage();
-            var tokenResult = GetToken("Adam", "Santa");
+            var tokenResult = GetToken("Adam", "Santa123");
 
             var inputObj2 = JsonConvert.SerializeObject(new PlayerIdentity() { Token = tokenResult });
             StringContent requestContent2 = new(inputObj2, Encoding.UTF8, "application/json");
@@ -68,7 +68,7 @@ namespace NaivartUnitTest
             long kingdomIdExpected = 1;
             string kingdomNameExpected = "Igala";
             var statusCodeExpected = HttpStatusCode.OK;
-            var tokenResult = GetToken("Adam", "Santa");
+            var tokenResult = GetToken("Adam", "Santa123");
 
 
             var inputObj2 = JsonConvert.SerializeObject(new PlayerIdentity() { Token = tokenResult });
