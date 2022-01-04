@@ -23,7 +23,7 @@ namespace NaivartUnitTest
 
         public string GetToken()
         {
-            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = "Adam", Password = "Santa" });
+            var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = "Adam", Password = "Santa123" });
 
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
             var response = HttpClient.PostAsync("http://localhost:44388/login", requestContent).Result;
@@ -58,7 +58,7 @@ namespace NaivartUnitTest
             };
 
             var TroopAPIModels = new List<TroopAPIModel>();
-            var TroopAPIModel = new TroopAPIModel() { Id = 1, Level = 1, Hp = 1, Attack = 2, Defense = 1, StartedAt = 12345789, FinishedAt = 12399999 };
+            var TroopAPIModel = new TroopAPIModel() { Id = 1, Level = 3, Hp = 32, Attack = 5, Defense = 6, StartedAt = 12345789, FinishedAt = 12399999 };
             TroopAPIModels.Add(TroopAPIModel);
 
             var TroopAPIResponse = new TroopsResponse()

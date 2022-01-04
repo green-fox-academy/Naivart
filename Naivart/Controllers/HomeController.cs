@@ -33,7 +33,7 @@ namespace Naivart.Controllers
         {
             string tokenOrMessage = LoginService.Authenticate(player, out int statusCode);
             if (statusCode != 200)
-            {
+            {   
                 var output = new ErrorResponse() { Error = tokenOrMessage };
                 return StatusCode(statusCode, output);
             }
