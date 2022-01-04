@@ -179,6 +179,20 @@ namespace Naivart.Controllers
                                      : Ok(model);
         }
 
+        [Authorize]
+        [HttpPut("kingdoms/{id}/troops")]
+        public IActionResult UpgradeTroops([FromRoute] long id, [FromBody] UpgradeTroopsRequest input)
+        {
+            var troop = TroopService.UpgradeTroops(id, HttpContext.User.Identity.Name, input.Type, out string result, out int statusCode);
+            if (statusCode != 200)
+            {
+                var errorResponse = new ErrorResponse() { Error = result };
+                return StatusCode(statusCode, errorResponse);
+            }
+            var upgradeTroopsResponse = new UpgradeTroopsResponse() { status = "ok" };
+            return Ok(upgradeTroopsResponse);
+        }
+
         [HttpPost("kingdoms/{id}/battles")]
         public IActionResult Battles([FromRoute] long id, [FromBody] BattleTargetRequest input)
         {

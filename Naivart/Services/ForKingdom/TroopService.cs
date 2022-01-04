@@ -5,7 +5,6 @@ using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
-using Naivart.Models.TroopTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,61 +42,59 @@ namespace Naivart.Services
             return troopAPIModels;
         }
 
-        public List<TroopInfo> CreateTroops(int goldAmount, string troopType, int troopAmount,
-            long kingdomId, out bool isPossibleToCreate)
+        public List<TroopInfo> CreateTroops(int goldAmount, string troopType, int troopAmount, long kingdomId, out bool isPossibleToCreate)
         {
-            var model = TroopFactory(troopType, goldAmount, troopAmount, out int totalCost); //get troop stats based on type, if no golds returns null
+            var troop = KingdomService.GetById(kingdomId).Troops.FirstOrDefault(x => x.TroopType.Type == troopType);
+            var createdTroop = TroopFactory(troopType, goldAmount, troopAmount, troop.TroopType.Level, out int totalCost);    //get troop stats based on type, if no golds returns null
             var resultModel = new List<TroopInfo>();
-            if (model == null)
+            if (createdTroop != null)
             {
-                isPossibleToCreate = false;
-                return resultModel;
-            }
-
-            for (int i = 0; i < troopAmount; i++) //create troops number based on troop amount
-            {
-                var resultTroop = mapper.Map<Troop>(model);
-                resultTroop.KingdomId = kingdomId;
-                DbContext.Troops.Add(resultTroop);
+                for (int i = 0; i < troopAmount; i++)   //create troops number based on troop amount
+                {
+                    //var resultTroop = mapper.Map<Troop>(createdTroop);
+                    //resultTroop.KingdomId = kingdomId;
+                    createdTroop.KingdomId = kingdomId;
+                    DbContext.Troops.Add(createdTroop);
+                    DbContext.SaveChanges();
+                    var infoTroop = mapper.Map<TroopInfo>(createdTroop);
+                    resultModel.Add(infoTroop);
+                }
+                var kingdomModel = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
+                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= totalCost;   //reduce owner gold by total cost
                 DbContext.SaveChanges();
-                var infoTroop = mapper.Map<TroopInfo>(resultTroop);
-                resultModel.Add(infoTroop);
+
+                isPossibleToCreate = true;
+                return resultModel; //returns list of created troops
             }
-            var kingdomModel = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
-            kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= totalCost; //reduce owner gold by total cost
-            DbContext.SaveChanges();
-            isPossibleToCreate = true;
-            return resultModel; //returns list of created troops
+            isPossibleToCreate = false;
+            return resultModel;
         }
 
-        public List<TroopInfo> TroopCreateRequest(CreateTroopRequest input, long kingdomId, 
-            string username, out int status, out string result)
+        public List<TroopInfo> TroopCreateRequest(CreateTroopRequest input, long kingdomId, string username, out int status, out string result)
         {
             var troopsCreated = new List<TroopInfo>();
             try
             {
-                if (!AuthService.IsKingdomOwner(kingdomId, username))
+                if (AuthService.IsKingdomOwner(kingdomId, username))
                 {
-                    status = 401;
-                    result = "This kingdom does not belong to authenticated player";
+                    int goldAmount = KingdomService.GetGoldAmount(kingdomId);
+                    troopsCreated = CreateTroops(goldAmount, input.Type, input.Quantity, kingdomId, out bool isPossibleToCreate);
+
+                    if (isPossibleToCreate)
+                    {
+                        status = 200;
+                        result = "ok";
+                        return troopsCreated;
+                    }
+                    status = 400;
+                    result = "You don't have enough gold to train all these units!";
                     return troopsCreated;
                 }
-
-                int goldAmount = KingdomService.GetGoldAmount(kingdomId);
-                troopsCreated = CreateTroops(goldAmount, input.Type, input.Quantity, kingdomId,
-                    out bool isPossibleToCreate);
-
-                if (isPossibleToCreate)
-                {
-                    status = 200;
-                    result = "ok";
-                    return troopsCreated;
-                }
-                status = 400;
-                result = "You don't have enough gold to train all these units!";
+                status = 401;
+                result = "This kingdom does not belong to authenticated player";
                 return troopsCreated;
             }
-            catch
+            catch (Exception)
             {
                 status = 500;
                 result = "Data could not be read";
@@ -105,25 +102,20 @@ namespace Naivart.Services
             }
         }
 
-        public TroopModel TroopFactory(string troopType, int goldAmount, int troopAmount, out int totalCost)
+        public Troop TroopFactory(string troopType, int goldAmount, int troopAmount, long troopTypeLevel, out int totalCost)
         {
-            switch (troopType) //decide which type is about to be created and gives him proper stats
+            if (troopTypeLevel == 0) //If there are no troops of its type, set type level to 1 
             {
-                case "recruit":
-                    TroopModel recruit = new Recruit();
-                    totalCost = (recruit.GoldCost * troopAmount);
-                    return totalCost <= goldAmount ? recruit : null;
-                case "archer":
-                    TroopModel archer = new Archer();
-                    totalCost = (archer.GoldCost * troopAmount);
-                    return totalCost <= goldAmount ? archer : null;
-                case "knight":
-                    TroopModel knight = new Knight();
-                    totalCost = (knight.GoldCost * troopAmount);
-                    return totalCost <= goldAmount ? knight : null;
+                troopTypeLevel = 1;
             }
-            totalCost = 0;
-            return null; //if you dont have money returns null
+            var troopStats = DbContext.TroopTypes.Where(x => x.Type == troopType && x.Level == troopTypeLevel).FirstOrDefault();
+
+            Troop troop = new Troop()
+            {
+                TroopTypeId = troopStats.Id
+            };
+            totalCost = (troop.TroopType.GoldCost * troopAmount);
+            return totalCost <= goldAmount ? troop : null;
         }
 
         public List<LeaderboardTroopAPIModel> GetTroopsLeaderboard(out int status, out string error)
@@ -154,6 +146,73 @@ namespace Naivart.Services
                 status = 500;
                 return null;
             }
+        }
+
+        public int UpgradeTroops(long kingdomId, string username, string type, out string result, out int statusCode)
+        {
+            try
+            {
+                if (!AuthService.IsKingdomOwner(kingdomId, username))
+                {
+                    result = "This kingdom doesn't belong to authenticated player";
+                    return statusCode = 401;
+                }
+                int goldAmount = KingdomService.GetGoldAmount(kingdomId);
+                var kingdom = KingdomService.GetById(kingdomId);
+                var academy = kingdom.Buildings.Where(t => String.Equals(t.Type, "Academy", StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
+                //Find the proper type of troop for detect the current level
+                var troop = kingdom.Troops.Where(x => String.Equals(x.TroopType.Type, type, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
+
+                if (academy == null) //There is no academy in Kingdom
+                {
+                    result = "You have to build Academy first!";
+                    return statusCode = 400;
+                }
+                else if (troop == null) //There are not any troop of this type
+                {
+                    result = "You don't have any troop of this type in your army!";
+                    return statusCode = 400;
+                }
+                else if (troop.TroopType.Level >= 20) //Max. level reached
+                {
+                    result = "Maximum level reached!";
+                    return statusCode = 400;
+                }
+                else if (troop.TroopType.Level >= academy.Level) //Academy upgrade required
+                {
+                    result = "Upgrade Academy first!";
+                    return statusCode = 400;
+                }
+
+                var upgradedStats = DbContext.TroopTypes.Where(t => t.Type == type && t.Level == troop.TroopType.Level + 1).FirstOrDefault(); //Get stats of particular troop type one level higher than now
+                if (goldAmount < upgradedStats.GoldCost) //Lack of gold 
+                {
+                    result = "You don't have enough gold to upgrade this type of troops!";
+                    return statusCode = 400;
+                }
+                LevelUp(kingdom, type, upgradedStats); //Everything ok - upgrade all troops of its type
+                result = "ok";
+                return statusCode = 200;
+            }
+            catch (Exception)
+            {
+                result = "Data couldn't be read";
+                return statusCode = 500;
+            }
+        }
+
+        public void LevelUp(Kingdom kingdom, string type, TroopType upgradedStats)
+        {
+            //Reduce owner gold by upgrade gold cost
+            kingdom.Resources.FirstOrDefault(t => t.Type == "gold")
+                .Amount -= upgradedStats.GoldCost;
+
+            foreach (Troop troop in kingdom.Troops.Where(x => String.Equals(x.TroopType.Type, type, StringComparison.CurrentCultureIgnoreCase)).ToList()) //Upgrade all units of its type
+            {
+                troop.TroopTypeId++;
+            }
+            DbContext.Update(kingdom);
+            DbContext.SaveChanges();
         }
     }
 }

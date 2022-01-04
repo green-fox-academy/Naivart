@@ -17,6 +17,7 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public LoginService LoginService { get; set; }
+        public BuildingService BuildingService { get; set; }
         public KingdomService(IMapper mapper, ApplicationDbContext dbContext,
                               AuthService authService, LoginService loginService)
         {
@@ -37,6 +38,7 @@ namespace Naivart.Services
                     .Include(k => k.Buildings)
                     .Include(k => k.Resources)
                     .Include(k => k.Troops)
+                    .ThenInclude(k=>k.TroopType)
                     .ToList();
             }
             catch
@@ -50,7 +52,7 @@ namespace Naivart.Services
             var kingdom = new Kingdom();
             try
             {
-                return kingdom = GetAll().Where(k => k.Id == id).FirstOrDefault();
+                return kingdom = GetAll().FirstOrDefault(k => k.Id == id);
             }
             catch
             {

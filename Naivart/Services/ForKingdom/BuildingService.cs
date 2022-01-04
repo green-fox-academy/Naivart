@@ -153,7 +153,7 @@ namespace Naivart.Services
                 }
 
                 var building = KingdomService.GetById(kingdomId).Buildings
-                    .Where(b => b.Id == buildingId).FirstOrDefault();
+                    .FirstOrDefault(b => b.Id == buildingId);
                 building.Level += 1;
                 DbContext.SaveChanges();
                 statusCode = 200;
