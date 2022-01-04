@@ -25,8 +25,8 @@ namespace Naivart
                 .ForMember(dest => dest.Ruler, opt => opt.MapFrom(src => src.Player.Username))
                 .ForMember(dest => dest.Kingdom, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.Buildings_points, opt => opt.MapFrom(src => src.Buildings.Sum(i => i.Level)))
-                .ForMember(dest => dest.Troops_points, opt => opt.MapFrom(src => src.Troops.Sum(ad => ad.Attack + ad.Defense)))
-                .ForMember(dest => dest.Total_points, opt => opt.MapFrom(src => src.Buildings.Sum(i => i.Level) + src.Troops.Sum(ad => ad.Attack + ad.Defense)));
+                .ForMember(dest => dest.Troops_points, opt => opt.MapFrom(src => src.Troops.Sum(ad => ad.TroopType.Attack + ad.TroopType.Defense)))
+                .ForMember(dest => dest.Total_points, opt => opt.MapFrom(src => src.Buildings.Sum(i => i.Level) + src.Troops.Sum(ad => ad.TroopType.Attack + ad.TroopType.Defense)));
         }
     }
 }
