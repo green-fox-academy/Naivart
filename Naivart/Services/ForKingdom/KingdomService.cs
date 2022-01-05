@@ -38,7 +38,7 @@ namespace Naivart.Services
                     .Include(k => k.Buildings)
                     .Include(k => k.Resources)
                     .Include(k => k.Troops)
-                    .ThenInclude(k=>k.TroopType)
+                    .ThenInclude(k => k.TroopType)
                     .ToList();
             }
             catch
@@ -312,8 +312,8 @@ namespace Naivart.Services
                 if (IsUserKingdomOwner(attackerId, tokenUsername))
                 {
                     error = "ok";
-                    status = 200; 
-
+                    status = 200;
+                    StartBattle(targetKingdom, FindPlayerInfoByKingdomId(attackerId));
                 }
                 else
                 {
@@ -326,6 +326,41 @@ namespace Naivart.Services
                 error = "Data could not be read";
                 status = 500;
             }
+        }
+
+        public void StartBattle(BattleTargetRequest targetKingdom, Kingdom attacker)
+        {
+            if (!TroopQuantityCheck(targetKingdom, attacker) || targetKingdom.Target.KingdomId == attacker.Id)
+            {
+                //Bad quantity or you attack yourself
+            }
+
+        }
+
+        public bool TroopQuantityCheck(BattleTargetRequest targetKingdom, Kingdom attacker)
+        {
+            var troopQuantity = GetTroopQuantity(attacker.Troops);
+            if (targetKingdom.Troops.All(x => troopQuantity.ContainsKey(x.Type)))
+            {
+                return targetKingdom.Troops.All(x => troopQuantity[x.Type] >= x.Quantity);
+            }
+            return false;
+        }
+
+        public Dictionary<string, int> GetTroopQuantity(List<Troop> input)
+        {
+            var troopQuantity = input.ToDictionary(x => x.TroopType.Type, y => 0);
+            foreach (var troop in input)
+            {
+                troopQuantity[troop.TroopType.Type]++;
+            }
+            return troopQuantity;
+        }
+           
+
+        public Kingdom FindPlayerInfoByKingdomId(long kingdomId)
+        {
+            return DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Troops).ThenInclude(x => x.TroopType).FirstOrDefault();
         }
     }
 }
