@@ -58,6 +58,7 @@ namespace Naivart.Services
                     DbContext.SaveChanges();
                     var infoTroop = mapper.Map<TroopInfo>(createdTroop);
                     resultModel.Add(infoTroop);
+                    createdTroop = TroopFactory(troopType, troop.TroopType.Level);
                 }
                 var kingdomModel = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
                 kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= totalCost;   //reduce owner gold by total cost
@@ -112,10 +113,27 @@ namespace Naivart.Services
 
             Troop troop = new Troop()
             {
-                TroopTypeId = troopStats.Id
+                TroopTypeId = troopStats.Id,
+                TroopType = troopStats
             };
             totalCost = (troop.TroopType.GoldCost * troopAmount);
             return totalCost <= goldAmount ? troop : null;
+        }
+
+        public Troop TroopFactory(string troopType, long troopTypeLevel)
+        {
+            if (troopTypeLevel == 0) //If there are no troops of its type, set type level to 1 
+            {
+                troopTypeLevel = 1;
+            }
+            var troopStats = DbContext.TroopTypes.Where(x => x.Type == troopType && x.Level == troopTypeLevel).FirstOrDefault();
+
+            Troop troop = new Troop()
+            {
+                TroopTypeId = troopStats.Id,
+                TroopType = troopStats
+            };
+            return troop;
         }
 
         public List<LeaderboardTroopAPIModel> GetTroopsLeaderboard(out int status, out string error)

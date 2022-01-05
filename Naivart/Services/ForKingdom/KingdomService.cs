@@ -4,6 +4,7 @@ using Naivart.Database;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Kingdom;
 using Naivart.Models.APIModels.Leaderboards;
+using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -340,19 +341,35 @@ namespace Naivart.Services
         public bool TroopQuantityCheck(BattleTargetRequest targetKingdom, Kingdom attacker)
         {
             var troopQuantity = GetTroopQuantity(attacker.Troops);
-            if (targetKingdom.Troops.All(x => troopQuantity.ContainsKey(x.Type)))
+            //if (targetKingdom.Troops.All(x => troopQuantity.ContainsKey(x.Type)))
+            //{
+            //    return targetKingdom.Troops.All(x => troopQuantity[x.Type] >= x.Quantity);
+            //}
+            if ()
             {
-                return targetKingdom.Troops.All(x => troopQuantity[x.Type] >= x.Quantity);
+
             }
             return false;
         }
 
-        public Dictionary<string, int> GetTroopQuantity(List<Troop> input)
+        public List<TroopBattleInfo> GetTroopQuantity(List<Troop> input)
         {
-            var troopQuantity = input.ToDictionary(x => x.TroopType.Type, y => 0);
+            var troopQuantity = new List<TroopBattleInfo>();
             foreach (var troop in input)
             {
-                troopQuantity[troop.TroopType.Type]++;
+                if (troopQuantity.Any(x => x.Type == troop.TroopType.Type && x.Level == troop.TroopType.Level))
+                {
+                    troopQuantity.FirstOrDefault(x => x.Type == troop.TroopType.Type && x.Level == troop.TroopType.Level).Quantity++;
+                }
+                else
+                {
+                    troopQuantity.Add(new TroopBattleInfo()
+                    {
+                        Type = troop.TroopType.Type,
+                        Quantity = 1,
+                        Level = troop.TroopType.Level
+                    });
+                }
             }
             return troopQuantity;
         }
