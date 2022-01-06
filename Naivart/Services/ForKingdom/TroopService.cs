@@ -45,7 +45,16 @@ namespace Naivart.Services
         public List<TroopInfo> CreateTroops(int goldAmount, string troopType, int troopAmount, long kingdomId, out bool isPossibleToCreate)
         {
             var troop = KingdomService.GetById(kingdomId).Troops.FirstOrDefault(x => x.TroopType.Type == troopType);
-            var createdTroop = TroopFactory(troopType, goldAmount, troopAmount, troop.TroopType.Level, out int totalCost);    //get troop stats based on type, if no golds returns null
+            int troopLevel;
+            if (troop is null)
+            {
+                troopLevel = 1;
+            }
+            else
+            {
+                troopLevel = troop.TroopType.Level;
+            }
+            var createdTroop = TroopFactory(troopType, goldAmount, troopAmount, troopLevel, out int totalCost);    //get troop stats based on type, if no golds returns null
             var resultModel = new List<TroopInfo>();
             if (createdTroop != null)
             {
@@ -58,7 +67,7 @@ namespace Naivart.Services
                     DbContext.SaveChanges();
                     var infoTroop = mapper.Map<TroopInfo>(createdTroop);
                     resultModel.Add(infoTroop);
-                    createdTroop = TroopFactory(troopType, troop.TroopType.Level);
+                    createdTroop = TroopFactory(troopType, troopLevel);
                 }
                 var kingdomModel = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
                 kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= totalCost;   //reduce owner gold by total cost
@@ -105,10 +114,6 @@ namespace Naivart.Services
 
         public Troop TroopFactory(string troopType, int goldAmount, int troopAmount, long troopTypeLevel, out int totalCost)
         {
-            if (troopTypeLevel == 0) //If there are no troops of its type, set type level to 1 
-            {
-                troopTypeLevel = 1;
-            }
             var troopStats = DbContext.TroopTypes.Where(x => x.Type == troopType && x.Level == troopTypeLevel).FirstOrDefault();
 
             Troop troop = new Troop()
