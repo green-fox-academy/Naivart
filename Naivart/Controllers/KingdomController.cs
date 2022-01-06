@@ -117,12 +117,17 @@ namespace Naivart.Controllers
             if (!KingdomService.IsUserKingdomOwner(kingdomId, HttpContext.User.Identity.Name))
             {
                 return Unauthorized(new ErrorResponse()
-                { Error = "This kingdom does not belong to authenticated player" });
+                { Error = "This kingdom does not belong to authenticated player!" });
             }
 
-            var operation = "upgrade building";
-            var upgradedBuilding = BuildingService.UpgradeBuilding
-                (kingdomId, buildingId, operation, out int statusCode, out string error);
+            if (!KingdomService.GetById(kingdomId).Buildings.Any(b => b.Id == buildingId))
+            {
+                return BadRequest(new ErrorResponse()
+                { Error = "There is no such building in this kingdom!" });
+            }
+
+            var upgradedBuilding = BuildingService.UpgradeBuilding (kingdomId, buildingId,
+                out int statusCode, out string error);
             return statusCode != 200 ? StatusCode(statusCode, new ErrorResponse() { Error = error })
                                      : Ok(upgradedBuilding);
         }

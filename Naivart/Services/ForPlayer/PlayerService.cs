@@ -47,7 +47,7 @@ namespace Naivart.Services
             player.KingdomId = DbKingdom.Id;
             var newPlayer = DbContext.Players.Add(player).Entity;
             DbContext.SaveChanges();
-            CreateBasicBuidlings(DbKingdom.Id); //creates basic buildings and save to Db 
+            CreateBasicBuildings(DbKingdom.Id); //creates basic buildings and save to Db 
 
             return DbContext.Players.Include(x => x.Kingdom).FirstOrDefault
                 (x => x.Username == username && x.Password == hashedPassword);
@@ -86,7 +86,7 @@ namespace Naivart.Services
             }
         }
 
-        public void CreateBasicBuidlings(long kingdomId)
+        public void CreateBasicBuildings(long kingdomId)
         {
             DbContext.Buildings.Add(new Building()
             {

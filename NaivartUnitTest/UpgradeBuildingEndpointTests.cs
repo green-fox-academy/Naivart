@@ -43,7 +43,7 @@ namespace NaivartUnitTest
             request1.Method = HttpMethod.Get;
 
             var request2 = new HttpRequestMessage(); //upgrade request for particular building
-            request2.RequestUri = new Uri("https://localhost:44311/kingdoms/1/buildings/1");
+            request2.RequestUri = new Uri("https://localhost:44311/kingdoms/1/buildings/2");
             request2.Headers.Add("Authorization", $"Bearer {GetToken(username, password)}");
             request2.Method = HttpMethod.Put;
 
@@ -51,7 +51,7 @@ namespace NaivartUnitTest
             var response1 = HttpClient.SendAsync(request1).Result;
             var responseData1 = response1.Content.ReadAsStringAsync().Result;
             var originalBuilding = JsonConvert.DeserializeObject<BuildingsResponse>
-                (responseData1).Buildings.Find(b => b.Id == 1);
+                (responseData1).Buildings.Find(b => b.Id == 2);
             originalBuilding.Level += 1; //expected building level after upgrade
 
             var response2 = HttpClient.SendAsync(request2).Result;
@@ -73,7 +73,7 @@ namespace NaivartUnitTest
             //arrange
             string username = "Adam";
             string password = "Santa123";
-            string expectedError = "Data could not be read";
+            string expectedError = "There is no such building in this kingdom!";
             var request = new HttpRequestMessage();
             request.RequestUri = new Uri("https://localhost:44311/kingdoms/1/buildings/3");
             request.Headers.Add("Authorization", $"Bearer {GetToken(username, password)}");
@@ -86,7 +86,7 @@ namespace NaivartUnitTest
 
             //assert
             Assert.False(response.IsSuccessStatusCode);
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal(expectedError, actualError);
         }
 
@@ -94,11 +94,11 @@ namespace NaivartUnitTest
         public void UpgradeBuildingEndpoint_NegativeCase2ShouldPass() //insufficient gold for upgrade
         {
             //arrange
-            string username = "Honza";
-            string password = "Doktor123";
+            string username = "Fro";
+            string password = "Liška123";
             string expectedError = "You don't have enough gold to upgrade that!";
             var request = new HttpRequestMessage();
-            request.RequestUri = new Uri("https://localhost:44311/kingdoms/4/buildings/2");
+            request.RequestUri = new Uri("https://localhost:44311/kingdoms/5/buildings/10");
             request.Headers.Add("Authorization", $"Bearer {GetToken(username, password)}");
             request.Method = HttpMethod.Put;
 

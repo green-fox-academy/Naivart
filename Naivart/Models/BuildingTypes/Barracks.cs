@@ -4,8 +4,8 @@
     {
         public Barracks()
         {
-            GoldCost = 250;
-            RequestTownhallLevel = 2;
+            GoldCost = 500;
+            RequestTownhallLevel = 5;
             Type = "barracks";
             Level = 1;
             Hp = 250;
