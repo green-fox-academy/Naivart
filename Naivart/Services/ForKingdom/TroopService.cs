@@ -63,6 +63,7 @@ namespace Naivart.Services
                     //var resultTroop = mapper.Map<Troop>(createdTroop);
                     //resultTroop.KingdomId = kingdomId;
                     createdTroop.KingdomId = kingdomId;
+                    createdTroop.Status = "town";
                     DbContext.Troops.Add(createdTroop);
                     DbContext.SaveChanges();
                     var infoTroop = mapper.Map<TroopInfo>(createdTroop);
