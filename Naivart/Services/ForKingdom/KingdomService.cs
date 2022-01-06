@@ -19,13 +19,15 @@ namespace Naivart.Services
         public AuthService AuthService { get; set; }
         public LoginService LoginService { get; set; }
         public BuildingService BuildingService { get; set; }
+        public TimeService TimeService { get; set; }
         public KingdomService(IMapper mapper, ApplicationDbContext dbContext,
-                              AuthService authService, LoginService loginService)
+                              AuthService authService, LoginService loginService, TimeService timeService)
         {
             this.mapper = mapper;
             DbContext = dbContext;
             AuthService = authService;
             LoginService = loginService;
+            TimeService = timeService;
         }
 
         public List<Kingdom> GetAll()
@@ -340,6 +342,30 @@ namespace Naivart.Services
                 //TODO
                 //take Troops to battle (true/false?) send them to new battle DB, create new Battle Id, save battle result into DB
                 //send back troops that survived or kill that did not
+                var battle = new Battle()
+                {
+                    AttackerId = attacker.Id,
+                    DefenderId = targetKingdom.Target.KingdomId,
+                    BattleType = targetKingdom.BattleType,
+                    StartedAt = TimeService.GetUnixTimeNow(),
+                    FinishedAt = CountTravelTime(targetKingdom.Target.KingdomId, attacker.Id)
+                };
+                this.DbContext.Battles.Add(battle);
+                this.DbContext.SaveChanges();
+
+                var attackerTroops = GetTroopLevels(attacker.Troops); 
+                var attackingTroops = new List<AttackerTroops>();
+                foreach (var troop in targetKingdom.Troops)
+                {
+                    DbContext.AttackerTroops.Add(new AttackerTroops()
+                    {
+                        Type = troop.Type,
+                        Quantity = troop.Quantity,
+                        Level = attackerTroops.FirstOrDefault(x => x.Type == troop.Type).Level,
+                        BattleId = battle.Id
+                    });
+                    DbContext.SaveChanges();
+                }
             }
         }
 
@@ -374,11 +400,43 @@ namespace Naivart.Services
             }
             return troopQuantity;
         }
-           
 
         public Kingdom FindPlayerInfoByKingdomId(long kingdomId)
         {
             return DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Troops).ThenInclude(x => x.TroopType).FirstOrDefault();
+        }
+
+        public long CountTravelTime(long kingdomIdDef, long kingdomIdAtt)
+        {
+            var locationDef = DbContext.Kingdoms.Where(x => x.Id == kingdomIdDef).Include(x => x.Location)
+                .FirstOrDefault().Location;
+            var locationAtt = DbContext.Kingdoms.Where(x => x.Id == kingdomIdAtt).Include(x => x.Location)
+                .FirstOrDefault().Location;
+
+            double resultA = (locationAtt.CoordinateX - locationDef.CoordinateX) * (locationAtt.CoordinateX - locationDef.CoordinateX)
+                            + (locationAtt.CoordinateY - locationDef.CoordinateY) * (locationAtt.CoordinateY - locationDef.CoordinateY);
+            double resultB = Math.Sqrt(resultA);
+            //travel speed 1 = 10min => longest distance takes about 24hours
+            double resultC = Math.Round((resultB * 600) + TimeService.GetUnixTimeNow());
+            
+            return Convert.ToInt64(resultC);
+        }
+
+        public List<TroopBattleInfo> GetTroopLevels(List<Troop> input)
+        {
+            var output = new List<TroopBattleInfo>();
+            foreach (var troop in input)
+            {
+                if (!output.Any(x => x.Type == troop.TroopType.Type && x.Level == troop.TroopType.Level))
+                {
+                    output.Add(new TroopBattleInfo()
+                    {
+                        Type = troop.TroopType.Type,
+                        Level = troop.TroopType.Level
+                    });
+                }
+            }
+            return output;
         }
     }
 }
