@@ -49,7 +49,7 @@ namespace Naivart.Services
             player.KingdomId = DbKingdom.Id;
             var newPlayer = DbContext.Players.Add(player).Entity;
             DbContext.SaveChanges();
-            CreateBasicBuidlings(DbKingdom.Id); //creates basic buildings and save to Db 
+            CreateBasicBuildings(DbKingdom.Id); //creates basic buildings and save to Db 
             CreateResources(DbKingdom.Id);  //add resources to player (1000 gold and 0 food)
 
             return DbContext.Players.Include(x => x.Kingdom).FirstOrDefault
