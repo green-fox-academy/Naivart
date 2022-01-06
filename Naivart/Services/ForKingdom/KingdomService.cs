@@ -366,6 +366,7 @@ namespace Naivart.Services
                     });
                     DbContext.SaveChanges();
                 }
+                //TODO now it should change status to attack for kingdom troops
             }
         }
 
