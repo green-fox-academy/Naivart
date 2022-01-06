@@ -13,10 +13,12 @@ namespace Naivart.Services
     {
         private readonly IMapper mapper;
         private ApplicationDbContext DbContext { get; }
-        public PlayerService(IMapper mapper, ApplicationDbContext dbContext)
+        public TimeService TimeService { get; set; }
+        public PlayerService(IMapper mapper, ApplicationDbContext dbContext, TimeService timeService)
         {
             this.mapper = mapper;
             DbContext = dbContext;
+            TimeService = timeService;
         }
 
         public Player RegisterPlayer(string username, string password, string kingdomName)
@@ -48,6 +50,7 @@ namespace Naivart.Services
             var newPlayer = DbContext.Players.Add(player).Entity;
             DbContext.SaveChanges();
             CreateBasicBuidlings(DbKingdom.Id); //creates basic buildings and save to Db 
+            CreateResources(DbKingdom.Id);  //add resources to player (1000 gold and 0 food)
 
             return DbContext.Players.Include(x => x.Kingdom).FirstOrDefault
                 (x => x.Username == username && x.Password == hashedPassword);
@@ -109,6 +112,29 @@ namespace Naivart.Services
             var kingdomMine = mapper.Map<Building>(mine);
             kingdomMine.KingdomId = kingdomId;
             DbContext.Buildings.Add(kingdomMine);
+            DbContext.SaveChanges();
+        }
+
+        public void CreateResources(long kingdomId)
+        {
+            DbContext.Resources.Add(new Resource()
+            {
+                Type = "food",
+                Amount = 0,
+                Generation = 1,
+                UpdatedAt = TimeService.GetUnixTimeNow(),
+                KingdomId = kingdomId
+            });
+            DbContext.SaveChanges();
+            
+            DbContext.Resources.Add(new Resource()
+            {
+                Type = "gold",
+                Amount = 1000,
+                Generation = 1,
+                UpdatedAt = TimeService.GetUnixTimeNow(),
+                KingdomId = kingdomId
+            });
             DbContext.SaveChanges();
         }
     }
