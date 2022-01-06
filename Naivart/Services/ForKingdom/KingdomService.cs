@@ -335,7 +335,12 @@ namespace Naivart.Services
             {
                 //Bad quantity or you attack yourself
             }
-
+            else
+            {
+                //TODO
+                //take Troops to battle (true/false?) send them to new battle DB, create new Battle Id, save battle result into DB
+                //send back troops that survived or kill that did not
+            }
         }
 
         public bool TroopQuantityCheck(BattleTargetRequest targetKingdom, Kingdom attacker)
