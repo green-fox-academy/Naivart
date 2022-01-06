@@ -100,8 +100,8 @@ namespace Naivart.Services
                         return mine;
                     }
                     return null;
-                case "walls":
-                    BuildingModel walls = new Walls();
+                case "ramparts":
+                    BuildingModel walls = new Ramparts();
                     if (walls.GoldCost <= goldAmount && walls.RequestTownhallLevel <= townHallLevel)
                     {
                         return walls;
@@ -140,21 +140,50 @@ namespace Naivart.Services
             return response;
         }
 
-        public BuildingAPIModel UpgradeBuilding(long kingdomId, long buildingId, string operation,
-            out int statusCode, out string error)
+        public BuildingAPIModel UpgradeBuilding(long kingdomId, long buildingId, out int statusCode, 
+            out string error)
         {
             try
             {
-                if (!KingdomService.IsEnoughGoldFor(KingdomService.GetGoldAmount(kingdomId), operation))
+                var kingdom = KingdomService.GetById(kingdomId);
+                var building = kingdom.Buildings.FirstOrDefault(b => b.Id == buildingId);
+
+                if (!KingdomService.IsEnoughGoldFor(KingdomService.GetGoldAmount(kingdomId), 
+                    building.BuildingTypeId))
                 {
                     statusCode = 400;
                     error = "You don't have enough gold to upgrade that!";
                     return new BuildingAPIModel();
                 }
 
-                var building = KingdomService.GetById(kingdomId).Buildings
-                    .FirstOrDefault(b => b.Id == buildingId);
-                building.Level += 1;
+                if (building.Type is not "townhall" && GetTownhallLevel(kingdomId) <= building.Level)
+                {
+                    statusCode = 403;
+                    error = "Building's level cannot be higher than the townhall's!";
+                    return new BuildingAPIModel();
+                }
+
+                if (building.Level == 10)
+                {
+                    statusCode = 400;
+                    error = "This building has already reached max level!";
+                    return new BuildingAPIModel();
+                }
+
+                var upgradedBuilding = DbContext.BuildingTypes.Find(building.BuildingTypeId + 1);
+                kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= upgradedBuilding.GoldCost;
+
+                if (upgradedBuilding.Type == "farm")
+                {
+                    kingdom.Resources.FirstOrDefault(r => r.Type == "food").Generation += 1;
+                }
+                else if (upgradedBuilding.Type == "mine")
+                {
+                    kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
+                }
+
+                building.Level = upgradedBuilding.Level;
+                building.Hp = upgradedBuilding.Hp;
                 DbContext.SaveChanges();
                 statusCode = 200;
                 error = string.Empty;

@@ -6,6 +6,7 @@ namespace Naivart.Database
     public class ApplicationDbContext : DbContext
     {
         public DbSet<Building> Buildings { get; set; }
+        public DbSet<BuildingType> BuildingTypes { get; set; }
         public DbSet<Kingdom> Kingdoms { get; set; }
         public DbSet<Location> Locations { get; set; }
         public DbSet<Player> Players { get; set; }
@@ -53,6 +54,12 @@ namespace Naivart.Database
                 .HasOne<TroopType>(t => t.TroopType)
                 .WithMany(t => t.Troops)
                 .HasForeignKey(t => t.TroopTypeId)
+                .IsRequired(true);
+
+            modelBuilder.Entity<Building>()
+                .HasOne<BuildingType>(b => b.BuildingType)
+                .WithMany(bt => bt.Buildings)
+                .HasForeignKey(b => b.BuildingTypeId)
                 .IsRequired(true);
         }
     }

@@ -8,7 +8,7 @@
             RequestTownhallLevel = 1;
             Type = "mine";
             Level = 1;
-            Hp = 50;
+            Hp = 150;
         }
     }
 }

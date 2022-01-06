@@ -13,5 +13,7 @@ namespace Naivart.Models.Entities
         public long FinishedAt { get; set; }
         public long KingdomId { get; set; }
         public Kingdom Kingdom { get; set; }
+        public long BuildingTypeId { get; set; }
+        public BuildingType BuildingType { get; set; }
     }
 }

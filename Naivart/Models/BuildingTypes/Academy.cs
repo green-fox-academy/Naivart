@@ -4,8 +4,8 @@
     {
         public Academy()
         {
-            GoldCost = 300;
-            RequestTownhallLevel = 4;
+            GoldCost = 700;
+            RequestTownhallLevel = 5;
             Type = "academy";
             Level = 1;
             Hp = 200;

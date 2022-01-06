@@ -4,11 +4,11 @@
     {
         public Farm()
         {
-            GoldCost = 300;
+            GoldCost = 100;
             RequestTownhallLevel = 1;
             Type = "farm";
             Level = 1;
-            Hp = 50;
+            Hp = 100;
         }
     }
 }
