@@ -101,6 +101,7 @@ namespace Naivart.Services
                             battle.Result = "attacker won";
                             long travelTime = battle.FinishedAt - battle.StartedAt - (GetUnixTimeNow() - battle.FinishedAt);
                             battle.FinishedAt += travelTime;
+                            battle.Status = "on way back";
                         
                             DbContext.Battles.Update(battle);
                             DbContext.SaveChanges();
@@ -182,11 +183,8 @@ namespace Naivart.Services
                 DbContext.SaveChanges();
             }
 
-            foreach (var troop in input)
-            {
-                DbContext.Remove(troop);
-                DbContext.SaveChanges();
-            }
+            DbContext.RemoveRange(input);
+            DbContext.SaveChanges();
         }
     }
 }
