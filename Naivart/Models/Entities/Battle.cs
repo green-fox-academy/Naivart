@@ -12,6 +12,7 @@ namespace Naivart.Models.Entities
         public long DefenderId { get; set; }
         public string BattleType { get; set; }
         public string Result { get; set; }
+        public string Status { get; set; }
         public long StartedAt { get; set; }
         public long FinishedAt { get; set; }
         public int GoldStolen { get; set; }

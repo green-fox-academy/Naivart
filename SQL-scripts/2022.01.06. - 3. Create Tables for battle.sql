@@ -5,6 +5,7 @@ CREATE TABLE `Battles` (
           `DefenderId` bigint NOT NULL,
           `BattleType` longtext CHARACTER SET utf8mb4 NULL,
 		  `Result` longtext CHARACTER SET utf8mb4 NULL,
+		  `Status` longtext CHARACTER SET utf8mb4 NULL,
           `StartedAt` bigint NOT NULL,
           `FinishedAt` bigint NOT NULL,
           `GoldStolen` int NOT NULL,

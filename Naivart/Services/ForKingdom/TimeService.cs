@@ -91,12 +91,16 @@ namespace Naivart.Services
                         DbContext.Battles.Update(battle);
                         DbContext.SaveChanges();
 
-                        //TODO dead troops list
+                        //TODO dead troops list and decrease number of resources for defender
+                    }
+                    else    //defender won
+                    {
+                        //TODO dead troops list, resources stolen stays on 0
                     }
                 }
                 if (battle.Result is not null && battle.FinishedAt <= GetUnixTimeNow())
                 {
-                    //TODO add stolen resources, delete troops based on troopsLost
+                    //TODO add stolen resources, delete troops based on troopsLost, battle status (on way attack, on way home, done)
                 }
             }
         }
