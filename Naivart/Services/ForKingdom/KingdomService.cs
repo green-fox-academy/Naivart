@@ -382,7 +382,7 @@ namespace Naivart.Services
 
         public bool TroopQuantityCheck(BattleTargetRequest targetKingdom, Kingdom attacker)
         {
-            var troopQuantity = GetTroopQuantity(attacker.Troops);
+            var troopQuantity = GetTroopQuantity(attacker.Troops.Where(x => x.Status == "town").ToList());
 
             return targetKingdom.Troops.All(x => troopQuantity.Select(x => x.Type).Contains(x.Type)) &&  
                     //checks if you have all types of troops needed

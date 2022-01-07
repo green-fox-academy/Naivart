@@ -161,7 +161,7 @@ namespace Naivart.Services
                             battle.Result = "attacker lost";
                             long travelTime = battle.FinishedAt - battle.StartedAt - (GetUnixTimeNow() - battle.FinishedAt);
                             battle.FinishedAt += travelTime;
-                            battle.Status = "on way back";
+                            battle.Status = "done";
 
                             DbContext.Battles.Update(battle);
                             DbContext.SaveChanges();
@@ -177,12 +177,15 @@ namespace Naivart.Services
                             {
                                 var defenderTroops = GetTroopQuantity(defender.Troops);
                                 var troopsForRemove = new List<Troop>();
-                                var lostTroops = battle.DeadTroops.Where(x => !x.IsAttacker && x.BattleId == battle.Id).ToList();
 
                                 foreach (var troop in defenderTroops)
                                 {
                                     quantity = troop.Quantity;
                                     attResult = Convert.ToInt32(Math.Round(quantity * (difference / 100)));
+                                    if (attResult == 0)
+                                    {
+                                        attResult = 1;
+                                    }
 
                                     if (attResult < troop.Quantity) //if attResult is lower then decrease attacker troops
                                     {
@@ -197,16 +200,15 @@ namespace Naivart.Services
                                         DbContext.SaveChanges();
                                     }
                                 }
+                                var lostTroops = DbContext.TroopsLost
+                                                    .Where(x => !(x.IsAttacker) && x.BattleId == battle.Id).ToList();
                                 foreach (var troop in lostTroops)
                                 {
-                                    for (int i = 0; i < troop.Quantity; i++)
-                                    {
-                                        var defTroop = defender.Troops
-                                            .FirstOrDefault(x => x.TroopType.Type == troop.Type);
-                                        troopsForRemove.Add(defTroop);
-                                    }
+                                    troopsForRemove = defender.Troops
+                                        .Where(x => x.TroopType.Type == troop.Type).Take(troop.Quantity).ToList();
                                 }
                                 DbContext.Troops.RemoveRange(troopsForRemove);
+                                DbContext.SaveChanges();
                             }
                         }
                     }
@@ -289,11 +291,8 @@ namespace Naivart.Services
                     Quantity = troops.Quantity
                 });
 
-                for (int i = 0; i < troops.Quantity; i++)
-                {
-                    var attTroop = attacker.Troops.FirstOrDefault(x => x.TroopType.Type == troops.Type && x.Status == "attack");
-                    troopsForRemove.Add(attTroop);
-                }
+                troopsForRemove = attacker.Troops.Where(x => x.TroopType.Type == troops.Type && x.Status == "attack")
+                    .Take(troops.Quantity).ToList();
             }
 
             foreach (var troops in deadTroops)
@@ -302,7 +301,7 @@ namespace Naivart.Services
                 DbContext.SaveChanges();
             }
             
-            DbContext.Troops.RemoveRange(troopsForRemove);
+            DbContext.Troops.RemoveRange(troopsForRemove);  //save change TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         }
         public void SaveAndRemoveTroopsLostDefender(List<Troop> input, long battleId)
         {
