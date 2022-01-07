@@ -19,6 +19,12 @@ namespace Naivart.Services
         {
             return DateTimeOffset.Now.ToUnixTimeSeconds();
         }
+
+        public void UpdateAll(long kingdomId)
+        {
+            UpdateResources(kingdomId);
+            UpdateBattle(kingdomId);
+        }
         
         public void UpdateResources(long kingdomId)
         {
@@ -107,7 +113,7 @@ namespace Naivart.Services
                             DbContext.SaveChanges();
 
                             //saving dead troops list of DEFENDER and remove from kingdom
-                            SaveAndRemoveTroopsLost(defender.Troops);
+                            SaveAndRemoveTroopsLostDefender(defender.Troops, battle.Id);
 
                             //saving dead troops list of ATTACKER and remove from kingdom
                             double points = difference;
@@ -120,9 +126,17 @@ namespace Naivart.Services
                                 {
                                     quantity = troop.Quantity;
                                     attResult = Convert.ToInt32(Math.Round(quantity * (difference / 100)));
-                                    if (attResult < troop.Quantity) //if attResult is higher then all troops survived
+                                    if (attResult < troop.Quantity) //if attResult is lower then decrease attacker troops
                                     {
-
+                                        var lostTroop = new TroopsLost()
+                                        {
+                                            IsAttacker = true,
+                                            BattleId = battle.Id,
+                                            Type = troop.Type,
+                                            Quantity = troop.Quantity - attResult
+                                        };
+                                        DbContext.TroopsLost.Add(lostTroop);
+                                        DbContext.SaveChanges();
                                     }
                                 }
                             }
@@ -135,12 +149,13 @@ namespace Naivart.Services
                     if (battle.Result is not null && battle.FinishedAt <= GetUnixTimeNow())
                     {
                         //TODO add stolen resources, delete troops based on troopsLost, battle status (on way attack, on way home, done)
+                        
                     }
 
                 }
             }
         }
-        public void SaveAndRemoveTroopsLost(List<Troop> input)
+        public void SaveAndRemoveTroopsLostDefender(List<Troop> input, long battleId)
         {
             var deadTroops = new List<TroopsLost>();
             foreach (var troop in input)
@@ -153,6 +168,8 @@ namespace Naivart.Services
                 {
                     deadTroops.Add(new TroopsLost()
                     {
+                        BattleId = battleId,
+                        IsAttacker = false,
                         Type = troop.TroopType.Type,
                         Quantity = 1
                     });
