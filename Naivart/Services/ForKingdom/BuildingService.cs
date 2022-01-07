@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Buildings;
 using Naivart.Models.APIModels.Leaderboards;
-using Naivart.Models.BuildingTypes;
 using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -17,15 +16,13 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
-        public PlayerService PlayerService { get; set; }
         public BuildingService(IMapper mapper, ApplicationDbContext dbContext, AuthService authService,
-                               KingdomService kingdomService, PlayerService playerService)
+                               KingdomService kingdomService)
         {
             this.mapper = mapper;
             DbContext = dbContext;
             AuthService = authService;
             KingdomService = kingdomService;
-            PlayerService = playerService;
         }
 
         public List<BuildingAPIModel> ListOfBuildingsMapping(List<Building> buildings)
@@ -44,71 +41,67 @@ namespace Naivart.Services
             return buildingAPIModels;
         }
 
-        public AddBuildingResponse AddBuilding(AddBuildingRequest input, long kingdomId,
-            string username, out int status)
+        public BuildingResponse AddBuilding(BuildingRequest request, long kingdomId,
+            out int statusCode, out string error)
         {
-            var response = new AddBuildingResponse();
             try
             {
-                if (!AuthService.IsKingdomOwner(kingdomId, username))
+                var buildingType = DbContext.BuildingTypes.FirstOrDefault //getting required building level 1 information 
+                    (bt => bt.Type == request.Type && bt.Level == 1);
+                var kingdom = KingdomService.GetById(kingdomId);
+                var requiredTownhallLevel = buildingType.RequiredTownhallLevel;
+
+                if ((buildingType.Type == "academy" && kingdom.Buildings.Any(b => b.Type == "academy"))
+                   || (buildingType.Type == "ramparts" && kingdom.Buildings.Any(b => b.Type == "ramparts"))
+                   || buildingType.Type == "townhall") //checking for buildings that can be built only once 
                 {
-                    status = 401;
-                    return response;
+                    statusCode = 403;
+                    error = $"You can have only one {buildingType.Type}!";
+                    return new BuildingResponse();
                 }
-                int goldAmount = KingdomService.GetGoldAmount(kingdomId);
-                int townHallLevel = GetTownhallLevel(kingdomId);
-                response = CreateBuilding(goldAmount, input.Type, townHallLevel, kingdomId,
-                    out bool isPossibleToCreate);
-                status = isPossibleToCreate ? 200 : 400;
-                return response;
+
+                if (GetTownhallLevel(kingdomId) != requiredTownhallLevel) //checking required townhall level
+                {
+                    statusCode = 400;
+                    error = $"You need to have townhall level {requiredTownhallLevel} to build that!";
+                    return new BuildingResponse();
+                }
+
+                if (!KingdomService.IsEnoughGoldFor(KingdomService.GetGoldAmount(kingdomId), //checking resources in the kingdom
+                    buildingType.Id))
+                {
+                    statusCode = 400;
+                    error = "You don't have enough gold to build that!";
+                    return new BuildingResponse();
+                }
+
+                var buildingModel = mapper.Map<BuildingModel>(buildingType); //mapping model for creating building
+                buildingModel.BuildingTypeId = buildingType.Id;
+                buildingModel.KingdomId = kingdom.Id;
+
+                Building building = mapper.Map<Building>(buildingModel); //creating building using reverse mapping
+                kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= buildingType.GoldCost; //charging for creating building
+                if (building.Type == "farm")
+                {
+                    kingdom.Resources.FirstOrDefault(r => r.Type == "food").Generation += 1;
+                }
+                else if (building.Type == "mine")                                                   //upgrading food/gold generation
+                {
+                    kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
+                }
+                DbContext.Buildings.Add(building);
+                DbContext.SaveChanges();
+
+                statusCode = 200;
+                error = string.Empty;
+                return mapper.Map<BuildingResponse>(building); //mapping in order to give required response format
             }
             catch
             {
-                status = 500;
-                return response;
+                statusCode = 500;
+                error = "Data could not be read";
+                return null;
             }
-        }
-        public BuildingModel BuildingCreation(int goldAmount, string buildingtype, int townHallLevel)
-        {
-            switch (buildingtype)
-            {
-                case "academy":
-                    BuildingModel academy = new Academy();
-                    if (academy.GoldCost <= goldAmount && academy.RequestTownhallLevel <= townHallLevel)
-                    {
-                        return academy;
-                    }
-                    return null;
-                case "barracks":
-                    BuildingModel barracks = new Barracks();
-                    if (barracks.GoldCost <= goldAmount && barracks.RequestTownhallLevel <= townHallLevel)
-                    {
-                        return barracks;
-                    }
-                    return null;
-                case "farm":
-                    BuildingModel farm = new Farm();
-                    if (farm.GoldCost <= goldAmount && farm.RequestTownhallLevel <= townHallLevel)
-                    {
-                        return farm;
-                    }
-                    return null;
-                case "mine":
-                    BuildingModel mine = new Mine();
-                    if (mine.GoldCost <= goldAmount && mine.RequestTownhallLevel <= townHallLevel)
-                    {
-                        return mine;
-                    }
-                    return null;
-                case "ramparts":
-                    BuildingModel walls = new Ramparts();
-                    if (walls.GoldCost <= goldAmount && walls.RequestTownhallLevel <= townHallLevel)
-                    {
-                        return walls;
-                    }
-                    return null;
-            }
-            return null;
         }
 
         public int GetTownhallLevel(long kingdomId)
@@ -117,30 +110,7 @@ namespace Naivart.Services
             return kingdom.Buildings.Where(p => p.Type == "townhall").FirstOrDefault().Level;
         }
 
-        public AddBuildingResponse CreateBuilding(int goldAmount, string buildingType, int townHallLevel,
-            long kingdomId, out bool isPossibleToCreate)
-        {
-            var buildingModel = BuildingCreation(goldAmount, buildingType, townHallLevel);
-            var response = new AddBuildingResponse();
-            if (buildingModel == null)
-            {
-                isPossibleToCreate = false;
-                return response;
-            }
-
-            var building = mapper.Map<Building>(buildingModel);
-            building.KingdomId = kingdomId;
-            DbContext.Buildings.Add(building);
-            DbContext.SaveChanges();
-            response = mapper.Map<AddBuildingResponse>(building);
-            var kingdom = KingdomService.GetById(kingdomId);
-            kingdom.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= buildingModel.GoldCost;
-            DbContext.SaveChanges();
-            isPossibleToCreate = true;
-            return response;
-        }
-
-        public BuildingAPIModel UpgradeBuilding(long kingdomId, long buildingId, out int statusCode, 
+        public BuildingAPIModel UpgradeBuilding(long kingdomId, long buildingId, out int statusCode,
             out string error)
         {
             try
@@ -148,7 +118,7 @@ namespace Naivart.Services
                 var kingdom = KingdomService.GetById(kingdomId);
                 var building = kingdom.Buildings.FirstOrDefault(b => b.Id == buildingId);
 
-                if (!KingdomService.IsEnoughGoldFor(KingdomService.GetGoldAmount(kingdomId), 
+                if (!KingdomService.IsEnoughGoldFor(KingdomService.GetGoldAmount(kingdomId),
                     building.BuildingTypeId))
                 {
                     statusCode = 400;
@@ -182,6 +152,7 @@ namespace Naivart.Services
                     kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
                 }
 
+                building.BuildingTypeId = upgradedBuilding.Id;
                 building.Level = upgradedBuilding.Level;
                 building.Hp = upgradedBuilding.Hp;
                 DbContext.SaveChanges();
@@ -224,6 +195,33 @@ namespace Naivart.Services
                 error = "Data could not be read";
                 status = 500;
                 return null;
+            }
+        }
+
+        public bool IsBuildingTypeDefined(string type)
+        {
+            return DbContext.BuildingTypes.Any(bt => bt.Type == type);
+        }
+
+        public void AddBasicBuilding(BuildingRequest request, long kingdomId) //similar to AddBuilding method, but modified for player registration
+        {
+            try
+            {
+                var buildingType = DbContext.BuildingTypes.FirstOrDefault
+                    (bt => bt.Type == request.Type && bt.Level == 1);
+                var kingdom = KingdomService.GetById(kingdomId);
+
+                var buildingModel = mapper.Map<BuildingModel>(buildingType);
+                buildingModel.BuildingTypeId = buildingType.Id;
+                buildingModel.KingdomId = kingdom.Id;
+
+                Building building = mapper.Map<Building>(buildingModel);
+                DbContext.Buildings.Add(building);
+                DbContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
             }
         }
     }

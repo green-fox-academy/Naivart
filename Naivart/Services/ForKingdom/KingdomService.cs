@@ -16,7 +16,7 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public LoginService LoginService { get; set; }
-        public BuildingService BuildingService { get; set; }
+        //public BuildingService BuildingService { get; set; }
         public KingdomService(IMapper mapper, ApplicationDbContext dbContext,
                               AuthService authService, LoginService loginService)
         {

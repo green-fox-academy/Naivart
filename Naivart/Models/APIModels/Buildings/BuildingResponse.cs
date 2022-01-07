@@ -1,8 +1,8 @@
 ﻿namespace Naivart.Models.APIModels
 {
-    public class AddBuildingResponse
+    public class BuildingResponse
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         public string Type { get; set; }
         public int Level { get; set; }
         public int Hp { get; set; }
