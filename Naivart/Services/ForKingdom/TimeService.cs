@@ -64,7 +64,8 @@ namespace Naivart.Services
                     var attacker = DbContext.Kingdoms.Where(x => x.Id == battle.AttackerId).Include(x => x.Troops)
                                             .ThenInclude(x => x.TroopType).Include(x => x.Resources).FirstOrDefault();
 
-                    if (battle.Result is null && battle.FinishedAt <= GetUnixTimeNow()) //If fight didn't start yet and it's already time for it
+                    //If fight didn't start yet and it's already time for it
+                    if (battle.Result is null && battle.FinishedAt <= GetUnixTimeNow() && battle.Status != "done") 
                     {
                         foreach (var troops in battle.AttackingTroops)
                         {
@@ -201,12 +202,48 @@ namespace Naivart.Services
                             }
                         }
                     }
-                    if (battle.Result is not null && battle.FinishedAt <= GetUnixTimeNow())
+                    //if true, then troops are comming back to town after battle with stolen resources
+                    if (battle.Result is not null && battle.FinishedAt <= GetUnixTimeNow() && battle.Status != "done")     
                     {
-                        //TODO add stolen resources, delete troops based on troopsLost, battle status (on way attack, on way home, done)
-                        
-                    }
+                        battle.Status = "done";
+                        DbContext.Battles.Update(battle);
+                        DbContext.SaveChanges();
 
+                        var attackTroops = battle.DeadTroops;
+                        var troopsForRemove = new List<Troop>();
+                        var troopsForUpdate = new List<Troop>();
+
+                        foreach (var troop in attackTroops)
+                        {
+                            for (int i = 0; i < troop.Quantity; i++)
+                            {
+                                var attTroop = attacker.Troops
+                                    .FirstOrDefault(x => x.TroopType.Type == troop.Type && x.Status == "attack");
+                                troopsForRemove.Add(attTroop);
+                            }
+                        }
+                        DbContext.Troops.RemoveRange(troopsForRemove);
+
+                        attacker.Resources.FirstOrDefault(x => x.Type == "gold").Amount += battle.GoldStolen;
+                        attacker.Resources.FirstOrDefault(x => x.Type == "food").Amount += battle.FoodStolen;
+
+                        DbContext.Update(attacker);
+                        DbContext.SaveChanges();
+
+                        foreach (var troop in attackTroops)
+                        {
+                            for (int i = 0; i < battle.AttackingTroops
+                                .FirstOrDefault(x => x.Type == troop.Type).Quantity - troop.Quantity; i++)
+                            {
+                                var attTroop = attacker.Troops
+                                    .FirstOrDefault(x => x.TroopType.Type == troop.Type && x.Status == "attack");
+                                attTroop.Status = "town";
+                                troopsForUpdate.Add(attTroop);
+                            }
+                        }
+                        DbContext.UpdateRange(troopsForUpdate);
+                        DbContext.SaveChanges();
+                    }
                 }
             }
         }
