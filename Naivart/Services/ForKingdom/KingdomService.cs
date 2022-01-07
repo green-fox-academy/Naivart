@@ -347,6 +347,7 @@ namespace Naivart.Services
                     AttackerId = attacker.Id,
                     DefenderId = targetKingdom.Target.KingdomId,
                     BattleType = targetKingdom.BattleType,
+                    Status = "on way attack",
                     StartedAt = TimeService.GetUnixTimeNow(),
                     FinishedAt = CountTravelTime(targetKingdom.Target.KingdomId, attacker.Id)
                 };
@@ -365,8 +366,17 @@ namespace Naivart.Services
                         BattleId = battle.Id
                     });
                     DbContext.SaveChanges();
+                    
+                    //change all attacking troops status to attack that are in town currently
+                    for (int i = 0; i < troop.Quantity; i++)
+                    {
+                        var troopStatus = attacker.Troops
+                                              .FirstOrDefault(x => x.TroopType.Type == troop.Type && x.Status == "town");
+                        troopStatus.Status = "attack";
+                        DbContext.Update(troopStatus);
+                        DbContext.SaveChanges();
+                    }
                 }
-                //TODO now it should change status to attack for kingdom troops
             }
         }
 
@@ -414,10 +424,11 @@ namespace Naivart.Services
             var locationAtt = DbContext.Kingdoms.Where(x => x.Id == kingdomIdAtt).Include(x => x.Location)
                 .FirstOrDefault().Location;
 
+            //analytic geometry - difference between two points
             double resultA = (locationAtt.CoordinateX - locationDef.CoordinateX) * (locationAtt.CoordinateX - locationDef.CoordinateX)
                             + (locationAtt.CoordinateY - locationDef.CoordinateY) * (locationAtt.CoordinateY - locationDef.CoordinateY);
             double resultB = Math.Sqrt(resultA);
-            //travel speed 1 = 10min => longest distance takes about 24hours
+            //travel speed 1 point = 10min => longest distance takes about 24hours
             double resultC = Math.Round((resultB * 600) + TimeService.GetUnixTimeNow());
             
             return Convert.ToInt64(resultC);
