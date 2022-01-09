@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
-using Naivart.Models.BuildingTypes;
+using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Helpers;
 
@@ -13,11 +14,14 @@ namespace Naivart.Services
     {
         private readonly IMapper mapper;
         private ApplicationDbContext DbContext { get; }
+        public BuildingService BuildingService { get; set; }
         public TimeService TimeService { get; set; }
-        public PlayerService(IMapper mapper, ApplicationDbContext dbContext, TimeService timeService)
+        public PlayerService(IMapper mapper, ApplicationDbContext dbContext, BuildingService
+                             buildingService, TimeService timeService)
         {
             this.mapper = mapper;
             DbContext = dbContext;
+            BuildingService = buildingService;
             TimeService = timeService;
         }
 
@@ -91,28 +95,16 @@ namespace Naivart.Services
 
         public void CreateBasicBuildings(long kingdomId)
         {
-            DbContext.Buildings.Add(new Building()
+            var townhallRequest = new BuildingRequest() { Type = "townhall" };
+            var farmRequest = new BuildingRequest() { Type = "farm" };
+            var mineRequest = new BuildingRequest() { Type = "mine" };
+            var basicBuildings = new List<BuildingRequest> 
+                { townhallRequest, farmRequest, mineRequest };
+
+            foreach (var building in basicBuildings)
             {
-                Type = "townhall",
-                Hp = 50,
-                Level = 1,
-                StartedAt = 12345789,
-                FinishedAt = 12399999,
-                KingdomId = kingdomId
-            });
-            DbContext.SaveChanges();
-
-            var farm = new Farm();
-            var kingdomFarm = mapper.Map<Building>(farm);
-            kingdomFarm.KingdomId = kingdomId;
-            DbContext.Buildings.Add(kingdomFarm);
-            DbContext.SaveChanges();
-
-            var mine = new Mine();
-            var kingdomMine = mapper.Map<Building>(mine);
-            kingdomMine.KingdomId = kingdomId;
-            DbContext.Buildings.Add(kingdomMine);
-            DbContext.SaveChanges();
+                BuildingService.AddBasicBuilding(building, kingdomId);
+            }
         }
 
         public void CreateResources(long kingdomId)
@@ -126,7 +118,7 @@ namespace Naivart.Services
                 KingdomId = kingdomId
             });
             DbContext.SaveChanges();
-            
+
             DbContext.Resources.Add(new Resource()
             {
                 Type = "gold",
