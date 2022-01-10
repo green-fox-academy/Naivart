@@ -103,11 +103,28 @@ namespace Naivart.Controllers
 
         [Authorize]
         [HttpPost("kingdoms/{id}/buildings")]
-        public IActionResult AddBuilding([FromRoute] long id, [FromBody] AddBuildingRequest input)
+        public IActionResult AddBuilding([FromRoute] long id, [FromBody] BuildingRequest request)
         {
-            var response = BuildingService.AddBuilding(input, id, HttpContext.User.Identity.Name,
-                out int status);
-            return status != 200 ? StatusCode(status) : Ok(response);
+            if (!KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
+            {
+                return Unauthorized(new ErrorResponse()
+                { Error = "This kingdom does not belong to authenticated player!" });
+            }
+
+            if (string.IsNullOrEmpty(request.Type))
+            {
+                return BadRequest(new ErrorResponse() { Error = "Type is required." });
+            }
+
+            if (!BuildingService.IsBuildingTypeDefined(request.Type))
+            {
+                return BadRequest(new ErrorResponse() { Error = "Type is unknown." });
+            }
+
+            var response = BuildingService.AddBuilding(request, id, out int statusCode, 
+                out string error);
+            return statusCode != 200 ? StatusCode(statusCode, new ErrorResponse() { Error = error })
+                                     : Ok(response);
         }
 
         [Authorize]
@@ -117,12 +134,17 @@ namespace Naivart.Controllers
             if (!KingdomService.IsUserKingdomOwner(kingdomId, HttpContext.User.Identity.Name))
             {
                 return Unauthorized(new ErrorResponse()
-                { Error = "This kingdom does not belong to authenticated player" });
+                { Error = "This kingdom does not belong to authenticated player!" });
             }
 
-            var operation = "upgrade building";
-            var upgradedBuilding = BuildingService.UpgradeBuilding
-                (kingdomId, buildingId, operation, out int statusCode, out string error);
+            if (!KingdomService.GetById(kingdomId).Buildings.Any(b => b.Id == buildingId))
+            {
+                return BadRequest(new ErrorResponse()
+                { Error = "There is no such building in this kingdom!" });
+            }
+
+            var upgradedBuilding = BuildingService.UpgradeBuilding (kingdomId, buildingId,
+                out int statusCode, out string error);
             return statusCode != 200 ? StatusCode(statusCode, new ErrorResponse() { Error = error })
                                      : Ok(upgradedBuilding);
         }

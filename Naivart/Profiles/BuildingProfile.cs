@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Buildings;
 using Naivart.Models.APIModels.Leaderboards;
-using Naivart.Models.BuildingTypes;
 using Naivart.Models.Entities;
 using System.Linq;
 
@@ -15,19 +15,27 @@ namespace Naivart.Profiles
         }
     }
 
-    public class AddBuildingProfile : Profile
+    public class BuildingPlanProfile : Profile
     {
-        public AddBuildingProfile()
+        public BuildingPlanProfile()
+        {
+            CreateMap<BuildingType, BuildingModel>();
+        }
+    }
+
+    public class BuildingCreationProfile : Profile 
+    {
+        public BuildingCreationProfile()
         {
             CreateMap<Building, BuildingModel>().ReverseMap();
         }
     }
 
-    public class AddBuildingResponseProfile : Profile
+    public class BuildingResponseProfile : Profile
     {
-        public AddBuildingResponseProfile()
+        public BuildingResponseProfile()
         {
-            CreateMap<Building, AddBuildingResponse>().ReverseMap();
+            CreateMap<Building, BuildingResponse>();
         }
     }
 
