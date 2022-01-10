@@ -230,7 +230,7 @@ namespace Naivart.Controllers
         public IActionResult BattleResult([FromRoute] long kingdomId, long id)
         {
             var model = KingdomService
-                                        .BattleInfo(id, kingdomId, HttpContext.User.Identity.Name, out int status, out string result);
+                                       .BattleInfo(id, kingdomId, HttpContext.User.Identity.Name, out int status, out string result);
             return status != 200 ? StatusCode(status, new ErrorResponse() { Error = result })
              : Ok(model);
         }

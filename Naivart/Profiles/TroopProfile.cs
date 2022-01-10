@@ -42,12 +42,4 @@ namespace Naivart.Profiles
                 .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Troops.Sum(ad => ad.TroopType.Attack + ad.TroopType.Defense)));
         }
     }
-
-    public class TroopLostProfile : Profile
-    {
-        public TroopLostProfile()
-        {
-            CreateMap<TroopsLost, LostTroopsAPI>();
-        }
-    }
 }
