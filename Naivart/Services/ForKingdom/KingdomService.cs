@@ -552,7 +552,8 @@ namespace Naivart.Services
         {
             try
             {
-                return DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Troops).ThenInclude(x => x.TroopType).FirstOrDefault();
+                return DbContext.Kingdoms.Where(x => x.Id == kingdomId)
+                                        .Include(x => x.Troops).ThenInclude(x => x.TroopType).FirstOrDefault();
             }
             catch (Exception e)
             {

@@ -69,8 +69,8 @@ namespace Naivart.Services
 
                         foreach (var troops in battle.AttackingTroops)
                         {
-                            totalDamage += DbContext.TroopTypes.FirstOrDefault(x => x.Type == troops.Type && x.Level == troops.Level).Attack 
-                                            * 6 * troops.Quantity;      //total damage is calculated based on attack * quantity * 6
+                            totalDamage += DbContext.TroopTypes.FirstOrDefault(x => x.Type == troops.Type && x.Level == troops.Level)
+                                .Attack * 6 * troops.Quantity;      //total damage is calculated based on attack * quantity * 6
                         }
 
                         //total defense is troops HP + defense
@@ -243,7 +243,8 @@ namespace Naivart.Services
                         DbContext.Battles.Update(battle);
                         DbContext.SaveChanges();
 
-                        var attackTroops = battle.DeadTroops.Where(x => x.IsAttacker && x.BattleId == battle.Id).ToList();
+                        var attackTroops = battle.DeadTroops
+                                                        .Where(x => x.IsAttacker && x.BattleId == battle.Id).ToList();
                         var troopsForRemove = new List<Troop>();
                         var troopsForUpdate = new List<Troop>();
 
@@ -286,7 +287,8 @@ namespace Naivart.Services
             {
                 if (troopQuantity.Any(x => x.Type == troop.TroopType.Type && x.Level == troop.TroopType.Level))
                 {
-                    troopQuantity.FirstOrDefault(x => x.Type == troop.TroopType.Type && x.Level == troop.TroopType.Level).Quantity++;
+                    troopQuantity.FirstOrDefault(x => x.Type == troop.TroopType.Type && x.Level == troop.TroopType.Level)
+                                    .Quantity++;
                 }
                 else
                 {
