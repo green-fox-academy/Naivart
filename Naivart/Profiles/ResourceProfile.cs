@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Kingdom;
 using Naivart.Models.Entities;
 
 namespace Naivart.Profiles

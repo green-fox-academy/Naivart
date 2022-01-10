@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Kingdom;
 using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
@@ -39,6 +40,14 @@ namespace Naivart.Profiles
                 .ForMember(dest => dest.Total_defense, opt => opt.MapFrom(src => src.Troops.Sum(d => d.TroopType.Defense)))
                 .ForMember(dest => dest.Total_attack, opt => opt.MapFrom(src => src.Troops.Sum(a => a.TroopType.Attack)))
                 .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Troops.Sum(ad => ad.TroopType.Attack + ad.TroopType.Defense)));
+        }
+    }
+
+    public class TroopLostProfile : Profile
+    {
+        public TroopLostProfile()
+        {
+            CreateMap<TroopsLost, LostTroopsAPI>();
         }
     }
 }

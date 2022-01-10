@@ -308,40 +308,164 @@ namespace Naivart.Services
             }
         }
 
-        public void Battle(BattleTargetRequest targetKingdom, long attackerId, string tokenUsername, out int status, out string error)
+        public BattleTargetRespond Battle(BattleTargetRequest targetKingdom, long attackerId, string tokenUsername, out int status, out string error)
         {
             try
             {
-                if (IsUserKingdomOwner(attackerId, tokenUsername))
+                var attacker = FindPlayerInfoByKingdomId(attackerId);
+                if(!DoesKingdomExist(targetKingdom.Target.KingdomId))
+                {
+                    error = "Target kingdom doesn't exist";
+                    status = 404;
+                    return null;
+                }
+                else if (targetKingdom.Target.KingdomId == attacker.Id)
+                {
+                    error = "You can't attack your own kingdom";
+                    status = 405;
+                    return null;
+                }
+                else if (!TroopQuantityCheck(targetKingdom, attacker))
+                {
+                    error = "You don't have enough troops";
+                    status = 404;
+                    return null;
+                }
+                else if (IsUserKingdomOwner(attackerId, tokenUsername))
                 {
                     error = "ok";
                     status = 200;
-                    StartBattle(targetKingdom, FindPlayerInfoByKingdomId(attackerId));
+                    return StartBattle(targetKingdom, attacker);
                 }
                 else
                 {
                     error = "This kingdom does not belong to authenticated player";
                     status = 401;
+                    return null;
                 }
             }
             catch
             {
                 error = "Data could not be read";
                 status = 500;
+                return null;
             }
         }
 
-        public void StartBattle(BattleTargetRequest targetKingdom, Kingdom attacker)
+        public BattleResultRespond BattleInfo(long battleId, long kingdomId, string tokenUsername, out int status, out string error)
         {
-            if (!TroopQuantityCheck(targetKingdom, attacker) || targetKingdom.Target.KingdomId == attacker.Id)
+            try
             {
-                //Bad quantity or you attack yourself
+                if (!DoesBattleExist(battleId))
+                {
+                    error = "Battle doesn't exist";
+                    status = 404;
+                    return null;
+                }
+                else if (!IsKingdomInBattle(battleId, kingdomId))
+                {
+                    error = "Kingdom didn't fight in selected battle";
+                    status = 401;
+                    return null;
+                }
+                else if (!IsUserKingdomOwner(kingdomId, tokenUsername))
+                {
+                    error = "This kingdom does not belong to authenticated player";
+                    status = 401;
+                    return null;
+                }
+                else
+                {
+                    error = "ok";
+                    status = 200;
+                    return GetBattleInfo(battleId);
+                }
             }
-            else
+            catch
             {
-                //TODO
-                //take Troops to battle (true/false?) send them to new battle DB, create new Battle Id, save battle result into DB
-                //send back troops that survived or kill that did not
+                error = "Data could not be read";
+                status = 500;
+                return null;
+            }
+        }
+
+        public bool IsKingdomInBattle(long battleId, long kingdomId)
+        {
+            try
+            {
+                return DbContext.Battles.Any(x => x.Id == battleId && (x.AttackerId == kingdomId || x.DefenderId == kingdomId));
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
+        }
+
+        public bool DoesBattleExist(long battleId)
+        {
+            try
+            {
+                return DbContext.Battles.Any(x => x.Id == battleId);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
+        }
+
+        public BattleResultRespond GetBattleInfo(long battleId)
+        {
+            try
+            {
+                var result = new BattleResultRespond();
+                var battle = DbContext.Battles.FirstOrDefault(x => x.Id == battleId);
+                var lostTroopsAttacker = DbContext.TroopsLost
+                                                        .Where(x => x.BattleId == battleId && x.IsAttacker).ToList();
+                var lostTroopsDefender = DbContext.TroopsLost
+                                                        .Where(x => x.BattleId == battleId && !(x.IsAttacker)).ToList();
+                var stolenResources = new ResourceStolen() { Food = battle.FoodStolen, Gold = battle.GoldStolen};
+
+                var modelAttackerTroopsLost = new List<LostTroopsAPI>();
+                foreach (var item in lostTroopsAttacker)
+                {
+                    modelAttackerTroopsLost.Add(mapper.Map<LostTroopsAPI>(item));
+                }
+            
+                var modelDefenderTroopsLost = new List<LostTroopsAPI>();
+                foreach (var item in lostTroopsAttacker)
+                {
+                    modelDefenderTroopsLost.Add(mapper.Map<LostTroopsAPI>(item));
+                }
+
+                var attackerInfo = new AttackerInfo() { ResourceStolen = stolenResources, TroopsLost = modelAttackerTroopsLost};
+                var defenderInfo = new DefenderInfo() { TroopsLost = modelDefenderTroopsLost};
+
+                result = mapper.Map<BattleResultRespond>(battle);
+                result.Attacker = attackerInfo;
+                result.Defender = defenderInfo;
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
+        }
+        public bool DoesKingdomExist(long kingdomId)
+        {
+            try
+            {
+                return DbContext.Kingdoms.Any(x => x.Id == kingdomId);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
+        }
+
+        public BattleTargetRespond StartBattle(BattleTargetRequest targetKingdom, Kingdom attacker)
+        {
+            try
+            {
                 var battle = new Battle()
                 {
                     AttackerId = attacker.Id,
@@ -371,12 +495,21 @@ namespace Naivart.Services
                     for (int i = 0; i < troop.Quantity; i++)
                     {
                         var troopStatus = attacker.Troops
-                                              .FirstOrDefault(x => x.TroopType.Type == troop.Type && x.Status == "town");
+                                                .FirstOrDefault(x => x.TroopType.Type == troop.Type && x.Status == "town");
                         troopStatus.Status = "attack";
                         DbContext.Update(troopStatus);
                         DbContext.SaveChanges();
                     }
                 }
+                return new BattleTargetRespond() 
+                { 
+                    BattleId = battle.Id,
+                    ResolutionTime = battle.FinishedAt
+                };
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
             }
         }
 
@@ -414,24 +547,38 @@ namespace Naivart.Services
 
         public Kingdom FindPlayerInfoByKingdomId(long kingdomId)
         {
-            return DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Troops).ThenInclude(x => x.TroopType).FirstOrDefault();
+            try
+            {
+                return DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Troops).ThenInclude(x => x.TroopType).FirstOrDefault();
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
         }
 
         public long CountTravelTime(long kingdomIdDef, long kingdomIdAtt)
         {
-            var locationDef = DbContext.Kingdoms.Where(x => x.Id == kingdomIdDef).Include(x => x.Location)
-                .FirstOrDefault().Location;
-            var locationAtt = DbContext.Kingdoms.Where(x => x.Id == kingdomIdAtt).Include(x => x.Location)
-                .FirstOrDefault().Location;
+            try
+            {
+                var locationDef = DbContext.Kingdoms.Where(x => x.Id == kingdomIdDef).Include(x => x.Location)
+                    .FirstOrDefault().Location;
+                var locationAtt = DbContext.Kingdoms.Where(x => x.Id == kingdomIdAtt).Include(x => x.Location)
+                    .FirstOrDefault().Location;
 
-            //analytic geometry - difference between two points
-            double resultA = (locationAtt.CoordinateX - locationDef.CoordinateX) * (locationAtt.CoordinateX - locationDef.CoordinateX)
-                            + (locationAtt.CoordinateY - locationDef.CoordinateY) * (locationAtt.CoordinateY - locationDef.CoordinateY);
-            double resultB = Math.Sqrt(resultA);
-            //travel speed 1 point = 10min => longest distance takes about 24hours
-            double resultC = Math.Round((resultB * 600) + TimeService.GetUnixTimeNow());
+                //analytic geometry - difference between two points
+                double resultA = (locationAtt.CoordinateX - locationDef.CoordinateX) * (locationAtt.CoordinateX - locationDef.CoordinateX)
+                                + (locationAtt.CoordinateY - locationDef.CoordinateY) * (locationAtt.CoordinateY - locationDef.CoordinateY);
+                double resultB = Math.Sqrt(resultA);
+                //travel speed 1 point = 10min => longest distance takes about 24hours
+                double resultC = Math.Round((resultB * 600) + TimeService.GetUnixTimeNow());
             
-            return Convert.ToInt64(resultC);
+                return Convert.ToInt64(resultC);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
         }
 
         public List<TroopBattleInfo> GetTroopLevels(List<Troop> input)
