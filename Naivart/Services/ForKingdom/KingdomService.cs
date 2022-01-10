@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.Entities;
@@ -16,14 +17,16 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public LoginService LoginService { get; set; }
+        private IUnitOfWork UnitOfWork { get; set; }
         //public BuildingService BuildingService { get; set; }
         public KingdomService(IMapper mapper, ApplicationDbContext dbContext,
-                              AuthService authService, LoginService loginService)
+                              AuthService authService, LoginService loginService, IUnitOfWork unitOfWork)
         {
             this.mapper = mapper;
             DbContext = dbContext;
             AuthService = authService;
             LoginService = loginService;
+            UnitOfWork = unitOfWork;
         }
 
         public List<Kingdom> GetAll()

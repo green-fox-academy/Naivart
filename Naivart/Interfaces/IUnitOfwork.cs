@@ -12,6 +12,7 @@ namespace Naivart.Interfaces
         ITroopRepository Troops { get; }
         IResourceRepository Resources { get; }
         ITroopTypeRepository TroopTypes{ get; }
+
         int Complete();
     }
 }

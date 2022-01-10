@@ -1,6 +1,4 @@
-﻿using Naivart.Models.APIModels;
-using Naivart.Models.Entities;
-using System.Collections.Generic;
+﻿using Naivart.Models.Entities;
 
 namespace Naivart.Interfaces
 {

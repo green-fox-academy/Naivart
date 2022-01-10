@@ -8,6 +8,7 @@ namespace Naivart.Interfaces
 {
     public interface IKingdomRepository : IRepository<Kingdom>
     {
-
+        List<Kingdom> GetAll();
+        Kingdom RenameKingdom(long kingdomId, string newKingdomName);
     }
 }

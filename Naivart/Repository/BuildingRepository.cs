@@ -8,6 +8,7 @@ namespace Naivart.Repository
     {
         public BuildingRepository(ApplicationDbContext context) : base(context)
         {
+
         }
     }
 }
