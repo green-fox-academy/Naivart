@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Repository
 {
-    public class ResourcesRepository
+    public class ResourceRepository
     {
     }
 }

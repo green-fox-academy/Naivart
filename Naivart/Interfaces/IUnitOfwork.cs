@@ -8,5 +8,9 @@ namespace Naivart.Interfaces
         IBuildingRepository Buildings { get; }
         ILocationRepository Locations { get; }
         IPlayerRepository Players { get; }
+        ITroopRepository Troops { get; }
+        IResourceRepository Resources { get; }
+        ITroopTypeRepository TroopTypes{ get; }
+
     }
 }
