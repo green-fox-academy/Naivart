@@ -214,7 +214,8 @@ namespace Naivart.Controllers
             var upgradeTroopsResponse = new UpgradeTroopsResponse() { status = "ok" };
             return Ok(upgradeTroopsResponse);
         }
-
+        
+        [Authorize]
         [HttpPost("kingdoms/{id}/battles")]
         public IActionResult Battles([FromRoute] long id, [FromBody] BattleTargetRequest input)
         {
@@ -223,7 +224,8 @@ namespace Naivart.Controllers
             return status != 200 ? StatusCode(status, new ErrorResponse() { Error = result })
                          : Ok(model);
         }
-
+        
+        [Authorize]
         [HttpGet("kingdoms/{kingdomId}/battles/{id}")]
         public IActionResult BattleResult([FromRoute] long kingdomId, long id)
         {
