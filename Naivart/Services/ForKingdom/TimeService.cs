@@ -48,7 +48,6 @@ namespace Naivart.Services
 
         public void UpdateBattle(long kingdomId)
         {
-            //TODO there should be security so it wont give exception (if defender troops == 0 handle exceptions)
             //check if kingdom is in or have any battles
             if (DbContext.Battles.Any(x => x.AttackerId == kingdomId || x.DefenderId == kingdomId)) 
             {
@@ -171,7 +170,6 @@ namespace Naivart.Services
                         }
                         else    //defender won
                         {
-                            //TODO dead troops list, resources stolen stays on 0
                             int difference = totalDefense - totalDamage;
 
                             //update battle and time when troops get back to town
