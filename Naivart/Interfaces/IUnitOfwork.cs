@@ -6,11 +6,12 @@ namespace Naivart.Interfaces
     {
         IKingdomRepository Kingdoms { get; }
         IBuildingRepository Buildings { get; }
+        IBuildingTypeRepository BuildingTypes { get; }
         ILocationRepository Locations { get; }
         IPlayerRepository Players { get; }
         ITroopRepository Troops { get; }
         IResourceRepository Resources { get; }
         ITroopTypeRepository TroopTypes{ get; }
-
+        int Complete();
     }
 }

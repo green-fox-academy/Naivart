@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Naivart.Database;
+using Naivart.Interfaces;
+using Naivart.Models.Entities;
 
 namespace Naivart.Repository
 {
-    public class LocationRepository
+    public class LocationRepository : Repository<Location>, ILocationRepository
     {
+        public LocationRepository(ApplicationDbContext context) : base(context)
+        {
+        }
     }
 }

@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Naivart.Database;
+using Naivart.Interfaces;
+using Naivart.Models.Entities;
 
 namespace Naivart.Repository
 {
-    public class TroopTypeRepository
+    public class TroopTypeRepository : Repository<TroopType>,ITroopTypeRepository
     {
+        public TroopTypeRepository(ApplicationDbContext context) : base(context)
+        {
+        }
     }
 }
