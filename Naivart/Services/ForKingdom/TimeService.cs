@@ -74,7 +74,9 @@ namespace Naivart.Services
                         }
 
                         //total defense is troops HP + defense
-                        totalDefense = defender.Troops.Sum(x => x.TroopType.Defense) + defender.Troops.Sum(x => x.TroopType.Hp);
+                        totalDefense = defender.Troops.Where(x => x.Status == "town")
+                                                    .Sum(x => x.TroopType.Defense) + defender.Troops
+                                                    .Sum(x => x.TroopType.Hp);
                     
                         if (totalDamage >= totalDefense) //if attacker won then true
                         {
@@ -229,7 +231,8 @@ namespace Naivart.Services
                             foreach (var troop in lostTroops)
                             {
                                 troopsForRemove = defender.Troops
-                                    .Where(x => x.TroopType.Type == troop.Type).Take(troop.Quantity).ToList();
+                                    .Where(x => x.TroopType.Type == troop.Type && x.Status == "town")
+                                    .Take(troop.Quantity).ToList();
                                 DbContext.Troops.RemoveRange(troopsForRemove);
                                 DbContext.SaveChanges();
                             }
