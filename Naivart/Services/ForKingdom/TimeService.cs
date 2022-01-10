@@ -142,7 +142,7 @@ namespace Naivart.Services
                             {
                                 attResult = dif / ap;
                                 quantityResult = troop.Quantity * attResult;
-                                if (Math.Round(quantityResult) != troop.Quantity)
+                                if (Math.Round(quantityResult) != troop.Quantity || Math.Round(quantityResult) != 0)
                                 {
                                     var lostTroop = new TroopsLost()
                                     {
@@ -154,7 +154,7 @@ namespace Naivart.Services
                                     DbContext.TroopsLost.Add(lostTroop);
                                     DbContext.SaveChanges();
                                 }
-                                else
+                                else if (Math.Round(quantityResult) != 0)
                                 {
                                     var lostTroop = new TroopsLost()
                                     {
@@ -201,7 +201,7 @@ namespace Naivart.Services
                                 attResult = dif / dp;
                                 quantityResult = troop.Quantity * attResult;
 
-                                if (Math.Round(quantityResult) != troop.Quantity) 
+                                if (Math.Round(quantityResult) != troop.Quantity || Math.Round(quantityResult) != 0) 
                                 {
                                     var lostTroop = new TroopsLost()
                                     {
@@ -213,7 +213,7 @@ namespace Naivart.Services
                                     DbContext.TroopsLost.Add(lostTroop);
                                     DbContext.SaveChanges();
                                 }
-                                else
+                                else if(Math.Round(quantityResult) != 0)
                                 {
                                     var lostTroop = new TroopsLost()
                                     {
