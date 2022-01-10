@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
-using Naivart.Models.BuildingTypes;
+using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Helpers;
 
@@ -13,10 +14,15 @@ namespace Naivart.Services
     {
         private readonly IMapper mapper;
         private ApplicationDbContext DbContext { get; }
-        public PlayerService(IMapper mapper, ApplicationDbContext dbContext)
+        public BuildingService BuildingService { get; set; }
+        public TimeService TimeService { get; set; }
+        public PlayerService(IMapper mapper, ApplicationDbContext dbContext, BuildingService
+                             buildingService, TimeService timeService)
         {
             this.mapper = mapper;
             DbContext = dbContext;
+            BuildingService = buildingService;
+            TimeService = timeService;
         }
 
         public Player RegisterPlayer(string username, string password, string kingdomName)
@@ -47,7 +53,8 @@ namespace Naivart.Services
             player.KingdomId = DbKingdom.Id;
             var newPlayer = DbContext.Players.Add(player).Entity;
             DbContext.SaveChanges();
-            CreateBasicBuidlings(DbKingdom.Id); //creates basic buildings and save to Db 
+            CreateBasicBuildings(DbKingdom.Id); //creates basic buildings and save to Db 
+            CreateResources(DbKingdom.Id);  //add resources to player (1000 gold and 0 food)
 
             return DbContext.Players.Include(x => x.Kingdom).FirstOrDefault
                 (x => x.Username == username && x.Password == hashedPassword);
@@ -86,29 +93,40 @@ namespace Naivart.Services
             }
         }
 
-        public void CreateBasicBuidlings(long kingdomId)
+        public void CreateBasicBuildings(long kingdomId)
         {
-            DbContext.Buildings.Add(new Building()
+            var townhallRequest = new BuildingRequest() { Type = "townhall" };
+            var farmRequest = new BuildingRequest() { Type = "farm" };
+            var mineRequest = new BuildingRequest() { Type = "mine" };
+            var basicBuildings = new List<BuildingRequest> 
+                { townhallRequest, farmRequest, mineRequest };
+
+            foreach (var building in basicBuildings)
             {
-                Type = "townhall",
-                Hp = 50,
-                Level = 1,
-                StartedAt = 12345789,
-                FinishedAt = 12399999,
+                BuildingService.AddBasicBuilding(building, kingdomId);
+            }
+        }
+
+        public void CreateResources(long kingdomId)
+        {
+            DbContext.Resources.Add(new Resource()
+            {
+                Type = "food",
+                Amount = 0,
+                Generation = 1,
+                UpdatedAt = TimeService.GetUnixTimeNow(),
                 KingdomId = kingdomId
             });
             DbContext.SaveChanges();
 
-            var farm = new Farm();
-            var kingdomFarm = mapper.Map<Building>(farm);
-            kingdomFarm.KingdomId = kingdomId;
-            DbContext.Buildings.Add(kingdomFarm);
-            DbContext.SaveChanges();
-
-            var mine = new Mine();
-            var kingdomMine = mapper.Map<Building>(mine);
-            kingdomMine.KingdomId = kingdomId;
-            DbContext.Buildings.Add(kingdomMine);
+            DbContext.Resources.Add(new Resource()
+            {
+                Type = "gold",
+                Amount = 1000,
+                Generation = 1,
+                UpdatedAt = TimeService.GetUnixTimeNow(),
+                KingdomId = kingdomId
+            });
             DbContext.SaveChanges();
         }
     }

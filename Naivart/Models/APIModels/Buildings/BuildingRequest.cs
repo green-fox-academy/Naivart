@@ -1,6 +1,6 @@
 ﻿namespace Naivart.Models.APIModels
 {
-    public class AddBuildingRequest
+    public class BuildingRequest
     {
         public string Type { get; set; }
     }

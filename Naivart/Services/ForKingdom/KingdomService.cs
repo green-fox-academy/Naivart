@@ -18,7 +18,6 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public LoginService LoginService { get; set; }
-        public BuildingService BuildingService { get; set; }
         public TimeService TimeService { get; set; }
         public KingdomService(IMapper mapper, ApplicationDbContext dbContext,
                               AuthService authService, LoginService loginService, TimeService timeService)
@@ -35,7 +34,7 @@ namespace Naivart.Services
             var kingdoms = new List<Kingdom>();
             try
             {
-                return kingdoms = DbContext.Kingdoms
+                return DbContext.Kingdoms
                     .Include(k => k.Player)
                     .Include(k => k.Location)
                     .Include(k => k.Buildings)
@@ -246,7 +245,7 @@ namespace Naivart.Services
         {
             try
             {
-                return DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId)
+                return DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId)?
                                         .Username == username;
             }
             catch (Exception e)
@@ -255,13 +254,17 @@ namespace Naivart.Services
             }
         }
 
-        public bool IsEnoughGoldFor(int goldAmount, string operation)
+        public bool IsEnoughGoldFor(int goldAmount, long buildingTypeId)
         {
-            var operations = new Dictionary<string, int>()
+            try
             {
-                ["upgrade building"] = 10
-            };
-            return goldAmount >= operations[operation];
+                return goldAmount >= DbContext.BuildingTypes.FirstOrDefault
+                    (bt => bt.Id == buildingTypeId + 1).GoldCost;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
         }
 
         public int GetGoldAmount(long kingdomId)
