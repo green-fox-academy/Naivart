@@ -356,10 +356,10 @@ namespace Naivart.Services
         {
             try
             {
-                if (!DoesBattleExist(battleId))
+                if (!IsUserKingdomOwner(kingdomId, tokenUsername))
                 {
-                    error = "Battle doesn't exist";
-                    status = 404;
+                    error = "This kingdom does not belong to authenticated player";
+                    status = 401;
                     return null;
                 }
                 else if (!IsKingdomInBattle(battleId, kingdomId))
@@ -368,10 +368,10 @@ namespace Naivart.Services
                     status = 401;
                     return null;
                 }
-                else if (!IsUserKingdomOwner(kingdomId, tokenUsername))
+                else if (!DoesBattleExist(battleId))
                 {
-                    error = "This kingdom does not belong to authenticated player";
-                    status = 401;
+                    error = "Battle doesn't exist";
+                    status = 404;
                     return null;
                 }
                 else
