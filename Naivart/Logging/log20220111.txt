@@ -5,3 +5,101 @@
 2022-01-11 15:22:57.906 +01:00 [INF] Content root path: D:\Users\camer\source\repos\Naivart\Naivart\Naivart
 2022-01-11 15:22:57.949 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5467/ - -
 2022-01-11 15:22:58.254 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5467/ - - - 404 - - 306.7235ms
+2022-01-11 15:29:06.070 +01:00 [INF] Starting web host
+2022-01-11 15:29:07.467 +01:00 [DBG] Hosting starting
+2022-01-11 15:29:07.536 +01:00 [INF] User profile is available. Using 'C:\Users\Adam\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2022-01-11 15:29:07.545 +01:00 [DBG] Reading data from file 'C:\Users\Adam\AppData\Local\ASP.NET\DataProtection-Keys\key-d9810b88-94d3-42e8-9458-c0662c2bc442.xml'.
+2022-01-11 15:29:07.572 +01:00 [DBG] Found key {d9810b88-94d3-42e8-9458-c0662c2bc442}.
+2022-01-11 15:29:07.589 +01:00 [DBG] Considering key {d9810b88-94d3-42e8-9458-c0662c2bc442} with expiration date 2022-02-18 12:32:14Z as default key.
+2022-01-11 15:29:07.600 +01:00 [DBG] Forwarded activator type request from Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiXmlDecryptor, Microsoft.AspNetCore.DataProtection, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60 to Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiXmlDecryptor, Microsoft.AspNetCore.DataProtection, Culture=neutral, PublicKeyToken=adb9793829ddae60
+2022-01-11 15:29:07.603 +01:00 [DBG] Decrypting secret element using Windows DPAPI.
+2022-01-11 15:29:07.604 +01:00 [DBG] Forwarded activator type request from Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptorDeserializer, Microsoft.AspNetCore.DataProtection, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60 to Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptorDeserializer, Microsoft.AspNetCore.DataProtection, Culture=neutral, PublicKeyToken=adb9793829ddae60
+2022-01-11 15:29:07.607 +01:00 [DBG] Opening CNG algorithm 'AES' from provider 'null' with chaining mode CBC.
+2022-01-11 15:29:07.612 +01:00 [DBG] Opening CNG algorithm 'SHA256' from provider 'null' with HMAC.
+2022-01-11 15:29:07.616 +01:00 [DBG] Using key {d9810b88-94d3-42e8-9458-c0662c2bc442} as the default key.
+2022-01-11 15:29:07.617 +01:00 [DBG] Key ring with default key {d9810b88-94d3-42e8-9458-c0662c2bc442} was loaded during application startup.
+2022-01-11 15:29:07.801 +01:00 [DBG] Loaded hosting startup assembly Naivart
+2022-01-11 15:29:07.802 +01:00 [INF] Application started. Press Ctrl+C to shut down.
+2022-01-11 15:29:07.803 +01:00 [INF] Hosting environment: Development
+2022-01-11 15:29:07.811 +01:00 [INF] Content root path: D:\Users\camer\source\repos\Naivart\Naivart\Naivart
+2022-01-11 15:29:07.811 +01:00 [DBG] Hosting started
+2022-01-11 15:29:07.853 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5467/ - -
+2022-01-11 15:29:07.856 +01:00 [DBG] Wildcard detected, all requests with hosts will be allowed.
+2022-01-11 15:29:07.858 +01:00 [DBG] The request path / does not match a supported file type
+2022-01-11 15:29:07.904 +01:00 [DBG] No candidates found for the request path '/'
+2022-01-11 15:29:07.905 +01:00 [DBG] Request did not match any endpoints
+2022-01-11 15:29:08.020 +01:00 [DBG] AuthenticationScheme: Bearer was not authenticated.
+2022-01-11 15:29:08.236 +01:00 [DBG] An 'IServiceProvider' was created for internal use by Entity Framework.
+2022-01-11 15:29:08.354 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5467/ - - - 404 - - 503.6463ms
+2022-01-11 15:29:09.047 +01:00 [INF] Request starting HTTP/1.1 POST http://localhost:5467/login application/json 53
+2022-01-11 15:29:09.053 +01:00 [DBG] POST requests are not supported
+2022-01-11 15:29:09.059 +01:00 [DBG] 1 candidate(s) found for the request path '/login'
+2022-01-11 15:29:09.063 +01:00 [DBG] Endpoint 'Naivart.Controllers.HomeController.Login (Naivart)' with route pattern 'login' is valid for the request path '/login'
+2022-01-11 15:29:09.063 +01:00 [DBG] Request matched endpoint 'Naivart.Controllers.HomeController.Login (Naivart)'
+2022-01-11 15:29:09.071 +01:00 [DBG] AuthenticationScheme: Bearer was not authenticated.
+2022-01-11 15:29:09.090 +01:00 [INF] Executing endpoint 'Naivart.Controllers.HomeController.Login (Naivart)'
+2022-01-11 15:29:09.099 +01:00 [DBG] Registered model binder providers, in the following order: ["Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BinderTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ServicesModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.HeaderModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.FloatingPointTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.EnumTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.SimpleTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CancellationTokenModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ByteArrayModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.FormFileModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.FormCollectionModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.KeyValuePairModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DictionaryModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ArrayModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinderProvider"]
+2022-01-11 15:29:09.126 +01:00 [INF] Route matched with {action = "Login", controller = "Home"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Login(Naivart.Models.APIModels.PlayerLogin) on controller Naivart.Controllers.HomeController (Naivart).
+2022-01-11 15:29:09.127 +01:00 [DBG] Execution plan of authorization filters (in the following order): ["None"]
+2022-01-11 15:29:09.127 +01:00 [DBG] Execution plan of resource filters (in the following order): ["Microsoft.AspNetCore.Mvc.ViewFeatures.Filters.SaveTempDataFilter"]
+2022-01-11 15:29:09.128 +01:00 [DBG] Execution plan of action filters (in the following order): ["Microsoft.AspNetCore.Mvc.Filters.ControllerActionFilter (Order: -2147483648)","Microsoft.AspNetCore.Mvc.ModelBinding.UnsupportedContentTypeFilter (Order: -3000)"]
+2022-01-11 15:29:09.128 +01:00 [DBG] Execution plan of exception filters (in the following order): ["None"]
+2022-01-11 15:29:09.129 +01:00 [DBG] Execution plan of result filters (in the following order): ["Microsoft.AspNetCore.Mvc.ViewFeatures.Filters.SaveTempDataFilter"]
+2022-01-11 15:29:09.131 +01:00 [DBG] Executing controller factory for controller Naivart.Controllers.HomeController (Naivart)
+2022-01-11 15:29:09.356 +01:00 [DBG] Executed controller factory for controller Naivart.Controllers.HomeController (Naivart)
+2022-01-11 15:29:09.365 +01:00 [DBG] Attempting to bind parameter 'player' of type 'Naivart.Models.APIModels.PlayerLogin' ...
+2022-01-11 15:29:09.368 +01:00 [DBG] Attempting to bind parameter 'player' of type 'Naivart.Models.APIModels.PlayerLogin' using the name '' in request data ...
+2022-01-11 15:29:09.369 +01:00 [DBG] Selected input formatter 'Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter' for content type 'application/json'.
+2022-01-11 15:29:09.398 +01:00 [DBG] JSON input formatter succeeded, deserializing to type 'Naivart.Models.APIModels.PlayerLogin'
+2022-01-11 15:29:09.399 +01:00 [DBG] Done attempting to bind parameter 'player' of type 'Naivart.Models.APIModels.PlayerLogin'.
+2022-01-11 15:29:09.400 +01:00 [DBG] Done attempting to bind parameter 'player' of type 'Naivart.Models.APIModels.PlayerLogin'.
+2022-01-11 15:29:09.401 +01:00 [DBG] Attempting to validate the bound parameter 'player' of type 'Naivart.Models.APIModels.PlayerLogin' ...
+2022-01-11 15:29:09.403 +01:00 [DBG] Done attempting to validate the bound parameter 'player' of type 'Naivart.Models.APIModels.PlayerLogin'.
+2022-01-11 15:29:10.062 +01:00 [WRN] Sensitive data logging is enabled. Log entries and exception messages may include sensitive application data; this mode should only be enabled during development.
+2022-01-11 15:29:10.236 +01:00 [INF] Entity Framework Core 5.0.12 initialized 'ApplicationDbContext' using provider 'Pomelo.EntityFrameworkCore.MySql' with options: SensitiveDataLoggingEnabled DetailedErrorsEnabled ServerVersion 8.0-mysql 
+2022-01-11 15:29:10.282 +01:00 [DBG] Compiling query expression: 
+'DbSet<Player>()
+    .FirstOrDefault(x => x.Username == __name_0)'
+2022-01-11 15:29:10.513 +01:00 [DBG] Generated query execution expression: 
+'queryContext => new SingleQueryingEnumerable<Player>(
+    (RelationalQueryContext)queryContext, 
+    RelationalCommandCache.SelectExpression(
+        Projection Mapping:
+            EmptyProjectionMember -> Dictionary<IProperty, int> { [Property: Player.Id (long) Required PK AfterSave:Throw ValueGenerated.OnAdd, 0], [Property: Player.KingdomId (long) Required FK Index, 1], [Property: Player.Password (string), 2], [Property: Player.Salt (string), 3], [Property: Player.Username (string), 4], }
+        SELECT TOP(1) p.Id, p.KingdomId, p.Password, p.Salt, p.Username
+        FROM Players AS p
+        WHERE p.Username == @__name_0), 
+    Func<QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator, Player>, 
+    Naivart.Database.ApplicationDbContext, 
+    False, 
+    True
+)
+    .SingleOrDefault()'
+2022-01-11 15:29:10.562 +01:00 [DBG] Creating DbCommand for 'ExecuteReader'.
+2022-01-11 15:29:10.570 +01:00 [DBG] Created DbCommand for 'ExecuteReader' (6ms).
+2022-01-11 15:29:10.605 +01:00 [DBG] Opening connection to database 'naivart' on server 'localhost'.
+2022-01-11 15:29:10.841 +01:00 [DBG] Opened connection to database 'naivart' on server 'localhost'.
+2022-01-11 15:29:10.851 +01:00 [DBG] Executing DbCommand [Parameters=[@__name_0='Adam' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `p`.`Id`, `p`.`KingdomId`, `p`.`Password`, `p`.`Salt`, `p`.`Username`
+FROM `Players` AS `p`
+WHERE `p`.`Username` = @__name_0
+LIMIT 1
+2022-01-11 15:29:10.933 +01:00 [INF] Executed DbCommand (82ms) [Parameters=[@__name_0='Adam' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `p`.`Id`, `p`.`KingdomId`, `p`.`Password`, `p`.`Salt`, `p`.`Username`
+FROM `Players` AS `p`
+WHERE `p`.`Username` = @__name_0
+LIMIT 1
+2022-01-11 15:29:10.987 +01:00 [DBG] Context 'ApplicationDbContext' started tracking 'Player' entity with key '{Id: 1}'.
+2022-01-11 15:29:11.036 +01:00 [DBG] A data reader was disposed.
+2022-01-11 15:29:11.040 +01:00 [DBG] Closing connection to database 'naivart' on server 'localhost'.
+2022-01-11 15:29:11.043 +01:00 [DBG] Closed connection to database 'naivart' on server 'localhost'.
+2022-01-11 15:29:11.204 +01:00 [DBG] List of registered output formatters, in the following order: ["Microsoft.AspNetCore.Mvc.Formatters.HttpNoContentOutputFormatter","Microsoft.AspNetCore.Mvc.Formatters.StringOutputFormatter","Microsoft.AspNetCore.Mvc.Formatters.StreamOutputFormatter","Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonOutputFormatter"]
+2022-01-11 15:29:11.207 +01:00 [DBG] No information found on request to perform content negotiation.
+2022-01-11 15:29:11.208 +01:00 [DBG] Attempting to select an output formatter without using a content type as no explicit content types were specified for the response.
+2022-01-11 15:29:11.208 +01:00 [DBG] Attempting to select the first formatter in the output formatters list which can write the result.
+2022-01-11 15:29:11.210 +01:00 [DBG] Selected output formatter 'Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonOutputFormatter' and content type 'application/json' to write the response.
+2022-01-11 15:29:11.210 +01:00 [INF] Executing OkObjectResult, writing value of type 'Naivart.Models.APIModels.TokenWithStatusResponse'.
+2022-01-11 15:29:11.241 +01:00 [INF] Executed action Naivart.Controllers.HomeController.Login (Naivart) in 2106.2993ms
+2022-01-11 15:29:11.242 +01:00 [INF] Executed endpoint 'Naivart.Controllers.HomeController.Login (Naivart)'
+2022-01-11 15:29:11.243 +01:00 [DBG] 'ApplicationDbContext' disposed.
+2022-01-11 15:29:11.246 +01:00 [INF] Request finished HTTP/1.1 POST http://localhost:5467/login application/json 53 - 200 - application/json;+charset=utf-8 2198.7304ms
