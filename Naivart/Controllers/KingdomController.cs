@@ -215,22 +215,20 @@ namespace Naivart.Controllers
         
         [Authorize]
         [HttpPost("kingdoms/{id}/battles")]
-        public IActionResult Battles([FromRoute] long id, [FromBody] BattleTargetRequest input)
+        public async Task<IActionResult> BattlesAsync([FromRoute] long id, [FromBody] BattleTargetRequest input)
         {
-            var model = KingdomService
-                                       .Battle(input, id, HttpContext.User.Identity.Name, out int status, out string result);
-            return status != 200 ? StatusCode(status, new ErrorResponse() { Error = result })
-                         : Ok(model);
+            var model = await KingdomService.BattleAsync(input, id, HttpContext.User.Identity.Name);
+            return model.Item2 != 200 ? StatusCode(model.Item2, new ErrorResponse() { Error = model.Item3 })
+                                      : Ok(model.Item1);
         }
         
         [Authorize]
         [HttpGet("kingdoms/{kingdomId}/battles/{id}")]
-        public IActionResult BattleResult([FromRoute] long kingdomId, long id)
+        public async Task<IActionResult> BattleResultAsync([FromRoute] long kingdomId, long id)
         {
-            var model = KingdomService
-                                       .BattleInfo(id, kingdomId, HttpContext.User.Identity.Name, out int status, out string result);
-            return status != 200 ? StatusCode(status, new ErrorResponse() { Error = result })
-             : Ok(model);
+            var model = await KingdomService.BattleInfoAsync(id, kingdomId, HttpContext.User.Identity.Name);
+            return model.Item2 != 200 ? StatusCode(model.Item2, new ErrorResponse() { Error = model.Item3 })
+                                      : Ok(model.Item1);
         }
     }
 }

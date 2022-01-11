@@ -20,7 +20,7 @@ namespace Naivart.Middlewares
             if (kingdomId is not null)
             {
                 long.TryParse(kingdomId.ToString(), out long result);
-                timeService.UpdateAll(result);
+                await timeService.UpdateAllAsync(result);
             }
             return _next(httpContext);
         }

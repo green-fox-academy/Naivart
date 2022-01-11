@@ -35,7 +35,7 @@ namespace Naivart
     {
         public KingdomBattleProfile()
         {
-            CreateMap<Battle, BattleResultRespond>()
+            CreateMap<Battle, BattleResultResponse>()
            .ForMember(dest => dest.BattleId, opt => opt.MapFrom(src => src.Id))
            .ForMember(dest => dest.ResolutionTime, opt => opt.MapFrom(src => src.FinishedAt));
         }

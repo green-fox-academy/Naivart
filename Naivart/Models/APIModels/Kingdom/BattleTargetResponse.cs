@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Models.APIModels.Kingdom
 {
-    public class BattleTargetRespond
+    public class BattleTargetResponse
     {
         public long BattleId { get; set; }
         public long ResolutionTime { get; set; }

@@ -43,9 +43,10 @@ namespace Naivart.Services
             return troopAPIModels;
         }
 
-        public List<TroopInfo> CreateTroops(int goldAmount, string troopType, int troopAmount, long kingdomId, out bool isPossibleToCreate)
+        public async Task<ValueTuple<List<TroopInfo>, bool>> CreateTroopsAsync(int goldAmount, string troopType, int troopAmount, long kingdomId)
         {
-            var troop = KingdomService.GetById(kingdomId).Troops.FirstOrDefault(x => x.TroopType.Type == troopType);
+            var kingdom = await KingdomService.GetByIdAsync(kingdomId);
+            var troop = kingdom.Troops.FirstOrDefault(x => x.TroopType.Type == troopType);
             int troopLevel;
             if (troop is null)
             {
@@ -55,30 +56,30 @@ namespace Naivart.Services
             {
                 troopLevel = troop.TroopType.Level;
             }
-            var createdTroop = TroopFactory(troopType, goldAmount, troopAmount, troopLevel, out int totalCost);    //get troop stats based on type, if no golds returns null
+            var createdTroop = await TroopFactoryAsync(troopType, goldAmount, troopAmount, troopLevel); //get troop stats based on type, if no golds returns null
             var resultModel = new List<TroopInfo>();
-            if (result.Item1 != null)
+            if (createdTroop.Item1 != null)
             {
                 for (int i = 0; i < troopAmount; i++) //create troops number based on troop amount
                 {
-                   
-                    createdTroop.KingdomId = kingdomId;
-                    createdTroop.Status = "town";
-                    DbContext.Troops.Add(createdTroop);
-                    DbContext.SaveChanges();
+                    createdTroop.Item1.KingdomId = kingdomId;
+                    createdTroop.Item1.Status = "town";
+                    await DbContext.Troops.AddAsync(createdTroop.Item1);
+                    await DbContext.SaveChangesAsync();
                     var infoTroop = mapper.Map<TroopInfo>(createdTroop);
                     resultModel.Add(infoTroop);
-                    createdTroop = TroopFactory(troopType, troopLevel);
+                    createdTroop.Item1 = await TroopFactoryAsync(troopType, troopLevel);
                 }
-                var kingdomModel = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
-                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= totalCost;   //reduce owner gold by total cost
-                DbContext.SaveChanges();
+                var kingdomModel = await Task.FromResult(DbContext.Kingdoms.Where(x => x.Id == kingdomId)
+                                                    .Include(x => x.Resources).FirstOrDefault());
+                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= createdTroop.Item2; //reduce owner gold by total cost
+                await DbContext.SaveChangesAsync();
 
-                isPossibleToCreate = true;
-                return resultModel; //returns list of created troops
+                //isPossibleToCreate = true;
+                return (resultModel, true); //returns list of created troops and confirmation
             }
-            isPossibleToCreate = false;
-            return resultModel;
+            //isPossibleToCreate = false;
+            return (resultModel, false);
         }
 
         public async Task<ValueTuple<List<TroopInfo>, int, string>> TroopCreateRequestAsync(CreateTroopRequest input, long kingdomId, string username)
@@ -113,26 +114,28 @@ namespace Naivart.Services
             }
         }
 
-        public Troop TroopFactory(string troopType, int goldAmount, int troopAmount, long troopTypeLevel, out int totalCost)
+        public async Task<ValueTuple<Troop, int>> TroopFactoryAsync(string troopType, int goldAmount, int troopAmount, long troopTypeLevel)
         {
-            var troopStats = DbContext.TroopTypes.Where(x => x.Type == troopType && x.Level == troopTypeLevel).FirstOrDefault();
+            var troopStats = await Task.FromResult(DbContext.TroopTypes.Where(x => x.Type == troopType 
+             && x.Level == troopTypeLevel).FirstOrDefault());
 
             Troop troop = new Troop()
             {
                 TroopTypeId = troopStats.Id,
                 TroopType = troopStats
             };
-            totalCost = (troop.TroopType.GoldCost * troopAmount);
-            return totalCost <= goldAmount ? troop : null;
+            var totalCost = (troop.TroopType.GoldCost * troopAmount);
+            return totalCost <= goldAmount ? (troop, totalCost) : (null, totalCost);
         }
 
-        public Troop TroopFactory(string troopType, long troopTypeLevel)
+        public async Task<Troop> TroopFactoryAsync(string troopType, long troopTypeLevel)
         {
             if (troopTypeLevel == 0) //If there are no troops of its type, set type level to 1 
             {
                 troopTypeLevel = 1;
             }
-            var troopStats = DbContext.TroopTypes.Where(x => x.Type == troopType && x.Level == troopTypeLevel).FirstOrDefault();
+            var troopStats = await Task.FromResult(DbContext.TroopTypes.Where(x => x.Type == troopType 
+             && x.Level == troopTypeLevel).FirstOrDefault());
 
             Troop troop = new Troop()
             {
