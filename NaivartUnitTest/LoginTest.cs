@@ -23,7 +23,7 @@ namespace NaivartUnitTest
         [Fact]
         public void PostValidPlayer_ShouldReturnToken()
         {
-            string statusExpected = "ok";
+            string statusExpected = "OK";
             string tokenExpected = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
             var statusCodeExpected = HttpStatusCode.OK;
             var inputObj = JsonConvert.SerializeObject(new PlayerLogin() { Username = "Adam", Password = "Santa123" });

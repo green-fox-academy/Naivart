@@ -2,6 +2,7 @@
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Services;
+using System.Threading.Tasks;
 
 namespace Naivart.Controllers
 {
@@ -21,36 +22,39 @@ namespace Naivart.Controllers
         }
 
         [HttpGet("buildings")]
-        public IActionResult BuildingsLeaderboard()
+        public async Task<IActionResult> BuildingsLeaderboardAsync()
         {
-            LeaderboardBuildingsAPIResponse response = new()
+            var result = await BuildingService.GetBuildingsLeaderboardAsync();
+            var response = new LeaderboardBuildingsAPIResponse()
             {
-                Results = BuildingService.GetBuildingsLeaderboard(out int status, out string error)
+                Results = result.Item1
             };
-            return status != 200 ? StatusCode(status, new ErrorResponse() { Error = error })
-                                 : Ok(response);
+            return result.Item2 != 200 ? StatusCode(result.Item2, new ErrorResponse() { Error = result.Item3 })
+                                       : Ok(response);
         }
 
         [HttpGet("troops")]
-        public IActionResult TroopsLeaderboard()
+        public async Task<IActionResult> TroopsLeaderboardAsync()
         {
-            LeaderboardTroopsAPIResponse response = new()
+            var result = await TroopService.GetTroopsLeaderboardAsync();
+            var response = new LeaderboardTroopsAPIResponse()
             {
-                Results = TroopService.GetTroopsLeaderboard(out int status, out string error)
+                Results = result.Item1
             };
-            return status != 200 ? StatusCode(status, new ErrorResponse() { Error = error })
-                                 : Ok(response);
+            return result.Item2 != 200 ? StatusCode(result.Item2, new ErrorResponse() { Error = result.Item3 })
+                                       : Ok(response);
         }
 
         [HttpGet("kingdoms")]
-        public IActionResult KingdomsLeaderboard()
+        public async Task<IActionResult> KingdomsLeaderboardAsync()
         {
-            LeaderboardKingdomsAPIResponse response = new()
+            var result = await KingdomService.GetKingdomsLeaderboardAsync();
+            var response = new LeaderboardKingdomsAPIResponse()
             {
-                Results = KingdomService.GetKingdomsLeaderboard(out int status, out string error)
+                Results = result.Item1
             };
-            return status != 200 ? StatusCode(status, new ErrorResponse() { Error = error })
-                                  : Ok(response);
+            return result.Item2 != 200 ? StatusCode(result.Item2, new ErrorResponse() { Error = result.Item3 })
+                                       : Ok(response);
         }
     }
 }
