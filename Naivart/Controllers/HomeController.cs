@@ -23,9 +23,9 @@ namespace Naivart.Controllers
         }
 
         [HttpPost("auth")]
-        public IActionResult Auth([FromBody] PlayerIdentity token)
+        public async Task<IActionResult> AuthAsync([FromBody] PlayerIdentity token)
         {
-            var player = LoginService.GetTokenOwnerAsync(token);
+            var player = await LoginService.GetTokenOwnerAsync(token);
             return player == null ? Unauthorized() : Ok(player);
         }
 
