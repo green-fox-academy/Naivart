@@ -12,7 +12,8 @@ namespace Naivart
         {
             //CreateHostBuilder(args).Build().Run();
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .MinimumLevel.Information()
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
                 .WriteTo.File("Logging/log.txt",
@@ -24,12 +25,10 @@ namespace Naivart
             {
                 Log.Information("Starting web host");
                 CreateHostBuilder(args).Build().Run();
-                
             }
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Host terminated unexpectedly");
-                
             }
             finally
             {

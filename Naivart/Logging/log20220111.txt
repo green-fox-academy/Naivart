@@ -1,69 +1,7 @@
-2022-01-11 09:33:12.485 +01:00 [INF] Starting web host
-2022-01-11 09:33:13.405 +01:00 [INF] User profile is available. Using 'C:\Users\Adam\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
-2022-01-11 09:33:13.579 +01:00 [INF] Application started. Press Ctrl+C to shut down.
-2022-01-11 09:33:13.579 +01:00 [INF] Hosting environment: Development
-2022-01-11 09:33:13.579 +01:00 [INF] Content root path: D:\Users\camer\source\repos\Naivart\Naivart\Naivart
-2022-01-11 09:33:13.614 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5467/ - -
-2022-01-11 09:33:13.861 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5467/ - - - 404 - - 249.7499ms
-2022-01-11 09:33:18.806 +01:00 [INF] Request starting HTTP/1.1 POST http://localhost:5467/login application/json 53
-2022-01-11 09:33:18.828 +01:00 [INF] Executing endpoint 'Naivart.Controllers.HomeController.Login (Naivart)'
-2022-01-11 09:33:18.857 +01:00 [INF] Route matched with {action = "Login", controller = "Home"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Login(Naivart.Models.APIModels.PlayerLogin) on controller Naivart.Controllers.HomeController (Naivart).
-2022-01-11 09:33:19.544 +01:00 [WRN] Sensitive data logging is enabled. Log entries and exception messages may include sensitive application data; this mode should only be enabled during development.
-2022-01-11 09:33:19.670 +01:00 [INF] Entity Framework Core 5.0.12 initialized 'ApplicationDbContext' using provider 'Pomelo.EntityFrameworkCore.MySql' with options: SensitiveDataLoggingEnabled DetailedErrorsEnabled ServerVersion 8.0-mysql 
-2022-01-11 09:33:20.147 +01:00 [INF] Executed DbCommand (45ms) [Parameters=[@__name_0='Adam' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
-SELECT `p`.`Id`, `p`.`KingdomId`, `p`.`Password`, `p`.`Salt`, `p`.`Username`
-FROM `Players` AS `p`
-WHERE `p`.`Username` = @__name_0
-LIMIT 1
-2022-01-11 09:33:20.340 +01:00 [INF] Executing OkObjectResult, writing value of type 'Naivart.Models.APIModels.TokenWithStatusResponse'.
-2022-01-11 09:33:20.361 +01:00 [INF] Executed action Naivart.Controllers.HomeController.Login (Naivart) in 1499.5811ms
-2022-01-11 09:33:20.362 +01:00 [INF] Executed endpoint 'Naivart.Controllers.HomeController.Login (Naivart)'
-2022-01-11 09:33:20.365 +01:00 [INF] Request finished HTTP/1.1 POST http://localhost:5467/login application/json 53 - 200 - application/json;+charset=utf-8 1558.8170ms
-2022-01-11 09:35:26.311 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5467/kingdoms/1 - -
-2022-01-11 09:35:26.386 +01:00 [INF] Successfully validated the token.
-2022-01-11 09:35:26.391 +01:00 [INF] Authorization was successful.
-2022-01-11 09:35:26.419 +01:00 [INF] Entity Framework Core 5.0.12 initialized 'ApplicationDbContext' using provider 'Pomelo.EntityFrameworkCore.MySql' with options: SensitiveDataLoggingEnabled DetailedErrorsEnabled ServerVersion 8.0-mysql 
-2022-01-11 09:35:26.434 +01:00 [INF] Executed DbCommand (4ms) [Parameters=[@__kingdomId_0='1'], CommandType='"Text"', CommandTimeout='30']
-SELECT `r`.`Id`, `r`.`Amount`, `r`.`Generation`, `r`.`KingdomId`, `r`.`Type`, `r`.`UpdatedAt`
-FROM `Resources` AS `r`
-WHERE `r`.`KingdomId` = @__kingdomId_0
-2022-01-11 09:35:26.534 +01:00 [INF] Executed DbCommand (5ms) [Parameters=[@p5='1', @p0='2340', @p1='1', @p2='1', @p3='food' (Size = 4000), @p4='1641889661'], CommandType='"Text"', CommandTimeout='30']
-UPDATE `Resources` SET `Amount` = @p0, `Generation` = @p1, `KingdomId` = @p2, `Type` = @p3, `UpdatedAt` = @p4
-WHERE `Id` = @p5;
-SELECT ROW_COUNT();
-2022-01-11 09:35:26.551 +01:00 [INF] Executed DbCommand (2ms) [Parameters=[@p5='2', @p0='2080', @p1='1', @p2='1', @p3='gold' (Size = 4000), @p4='1641889663'], CommandType='"Text"', CommandTimeout='30']
-UPDATE `Resources` SET `Amount` = @p0, `Generation` = @p1, `KingdomId` = @p2, `Type` = @p3, `UpdatedAt` = @p4
-WHERE `Id` = @p5;
-SELECT ROW_COUNT();
-2022-01-11 09:35:26.554 +01:00 [INF] Executing endpoint 'Naivart.Controllers.KingdomController.KingdomInformation (Naivart)'
-2022-01-11 09:35:26.557 +01:00 [INF] Route matched with {action = "KingdomInformation", controller = "Kingdom"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult KingdomInformation(Int64) on controller Naivart.Controllers.KingdomController (Naivart).
-2022-01-11 09:35:26.565 +01:00 [INF] Executed DbCommand (1ms) [Parameters=[@__kingdomId_0='1'], CommandType='"Text"', CommandTimeout='30']
-SELECT `p`.`Id`, `p`.`KingdomId`, `p`.`Password`, `p`.`Salt`, `p`.`Username`
-FROM `Players` AS `p`
-WHERE `p`.`KingdomId` = @__kingdomId_0
-LIMIT 1
-2022-01-11 09:35:26.652 +01:00 [WRN] Compiling a query which loads related collections for more than one collection navigation either via 'Include' or through projection but no 'QuerySplittingBehavior' has been configured. By default Entity Framework will use 'QuerySplittingBehavior.SingleQuery' which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'
-2022-01-11 09:35:26.706 +01:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
-SELECT `k`.`Id`, `k`.`LocationId`, `k`.`Name`, `k`.`Population`, `p`.`Id`, `p`.`KingdomId`, `p`.`Password`, `p`.`Salt`, `p`.`Username`, `l`.`Id`, `l`.`CoordinateX`, `l`.`CoordinateY`, `b`.`Id`, `b`.`BuildingTypeId`, `b`.`FinishedAt`, `b`.`Hp`, `b`.`KingdomId`, `b`.`Level`, `b`.`StartedAt`, `b`.`Type`, `r`.`Id`, `r`.`Amount`, `r`.`Generation`, `r`.`KingdomId`, `r`.`Type`, `r`.`UpdatedAt`, `t1`.`Id`, `t1`.`Finished_at`, `t1`.`KingdomId`, `t1`.`Started_at`, `t1`.`TroopTypeId`, `t1`.`Id0`, `t1`.`Attack`, `t1`.`DailyFoodCost`, `t1`.`Defense`, `t1`.`GoldCost`, `t1`.`Hp`, `t1`.`Level`, `t1`.`Type`
-FROM `Kingdoms` AS `k`
-LEFT JOIN `Players` AS `p` ON `k`.`Id` = `p`.`KingdomId`
-LEFT JOIN `Locations` AS `l` ON `k`.`LocationId` = `l`.`Id`
-LEFT JOIN `Buildings` AS `b` ON `k`.`Id` = `b`.`KingdomId`
-LEFT JOIN `Resources` AS `r` ON `k`.`Id` = `r`.`KingdomId`
-LEFT JOIN (
-    SELECT `t`.`Id`, `t`.`Finished_at`, `t`.`KingdomId`, `t`.`Started_at`, `t`.`TroopTypeId`, `t0`.`Id` AS `Id0`, `t0`.`Attack`, `t0`.`DailyFoodCost`, `t0`.`Defense`, `t0`.`GoldCost`, `t0`.`Hp`, `t0`.`Level`, `t0`.`Type`
-    FROM `Troops` AS `t`
-    INNER JOIN `TroopTypes` AS `t0` ON `t`.`TroopTypeId` = `t0`.`Id`
-) AS `t1` ON `k`.`Id` = `t1`.`KingdomId`
-ORDER BY `k`.`Id`, `p`.`Id`, `l`.`Id`, `b`.`Id`, `r`.`Id`, `t1`.`Id`, `t1`.`Id0`
-2022-01-11 09:35:26.777 +01:00 [INF] Executing OkObjectResult, writing value of type 'Naivart.Models.APIModels.KingdomDetails'.
-2022-01-11 09:35:26.791 +01:00 [INF] Executed action Naivart.Controllers.KingdomController.KingdomInformation (Naivart) in 233.6995ms
-2022-01-11 09:35:26.791 +01:00 [INF] Executed endpoint 'Naivart.Controllers.KingdomController.KingdomInformation (Naivart)'
-2022-01-11 09:35:26.792 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5467/kingdoms/1 - - - 200 - application/json;+charset=utf-8 480.7818ms
-2022-01-11 09:42:46.934 +01:00 [INF] Starting web host
-2022-01-11 09:42:47.794 +01:00 [INF] User profile is available. Using 'C:\Users\Adam\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
-2022-01-11 09:42:47.980 +01:00 [INF] Application started. Press Ctrl+C to shut down.
-2022-01-11 09:42:47.980 +01:00 [INF] Hosting environment: Development
-2022-01-11 09:42:47.980 +01:00 [INF] Content root path: D:\Users\camer\source\repos\Naivart\Naivart\Naivart
-2022-01-11 09:42:48.016 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5467/ - -
-2022-01-11 09:42:48.304 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5467/ - - - 404 - - 289.1072ms
+2022-01-11 15:22:56.703 +01:00 [INF] Starting web host
+2022-01-11 15:22:57.697 +01:00 [INF] User profile is available. Using 'C:\Users\Adam\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2022-01-11 15:22:57.906 +01:00 [INF] Application started. Press Ctrl+C to shut down.
+2022-01-11 15:22:57.906 +01:00 [INF] Hosting environment: Development
+2022-01-11 15:22:57.906 +01:00 [INF] Content root path: D:\Users\camer\source\repos\Naivart\Naivart\Naivart
+2022-01-11 15:22:57.949 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5467/ - -
+2022-01-11 15:22:58.254 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5467/ - - - 404 - - 306.7235ms
