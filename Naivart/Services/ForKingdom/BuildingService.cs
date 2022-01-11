@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Buildings;
 using Naivart.Models.APIModels.Leaderboards;
@@ -16,13 +17,15 @@ namespace Naivart.Services
         private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
+        private IUnitOfWork UnitOfWork { get; set; }
         public BuildingService(IMapper mapper, ApplicationDbContext dbContext, AuthService authService,
-                               KingdomService kingdomService)
+                               KingdomService kingdomService, IUnitOfWork unitOfWork)
         {
             this.mapper = mapper;
             DbContext = dbContext;
             AuthService = authService;
             KingdomService = kingdomService;
+            UnitOfWork = unitOfWork;
         }
 
         public List<BuildingAPIModel> ListOfBuildingsMapping(List<Building> buildings)
@@ -89,8 +92,8 @@ namespace Naivart.Services
                 {
                     kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
                 }
-                DbContext.Buildings.Add(building);
-                DbContext.SaveChanges();
+                UnitOfWork.Buildings.Add(building);
+                UnitOfWork.Complete();
 
                 statusCode = 200;
                 error = string.Empty;
@@ -155,7 +158,7 @@ namespace Naivart.Services
                 building.BuildingTypeId = upgradedBuilding.Id;
                 building.Level = upgradedBuilding.Level;
                 building.Hp = upgradedBuilding.Hp;
-                DbContext.SaveChanges();
+                UnitOfWork.Complete();
                 statusCode = 200;
                 error = string.Empty;
                 return mapper.Map<BuildingAPIModel>(building);
@@ -200,7 +203,7 @@ namespace Naivart.Services
 
         public bool IsBuildingTypeDefined(string type)
         {
-            return DbContext.BuildingTypes.Any(bt => bt.Type == type);
+            return UnitOfWork.BuildingTypes.Any(bt => bt.Type == type);
         }
 
         public void AddBasicBuilding(BuildingRequest request, long kingdomId) //similar to AddBuilding method, but modified for player registration
@@ -216,8 +219,8 @@ namespace Naivart.Services
                 buildingModel.KingdomId = kingdom.Id;
 
                 Building building = mapper.Map<Building>(buildingModel);
-                DbContext.Buildings.Add(building);
-                DbContext.SaveChanges();
+                UnitOfWork.Buildings.Add(building);
+                UnitOfWork.Complete();
             }
             catch (Exception e)
             {

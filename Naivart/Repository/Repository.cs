@@ -1,4 +1,5 @@
-﻿using Naivart.Database;
+﻿using Microsoft.EntityFrameworkCore;
+using Naivart.Database;
 using Naivart.Interfaces;
 using System;
 using System.Collections.Generic;

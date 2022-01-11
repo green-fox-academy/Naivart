@@ -1,6 +1,7 @@
 ﻿using Naivart.Database;
 using Naivart.Interfaces;
 using Naivart.Models.Entities;
+using System;
 
 namespace Naivart.Repository
 {

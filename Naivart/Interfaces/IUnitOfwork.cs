@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Naivart.Models.Entities;
+using System;
 
 namespace Naivart.Interfaces
 {

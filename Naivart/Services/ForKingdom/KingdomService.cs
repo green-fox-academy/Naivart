@@ -163,11 +163,11 @@ namespace Naivart.Services
             try
             {
                 var model = new Location() { CoordinateX = input.CoordinateX, CoordinateY = input.CoordinateY };
-                DbContext.Locations.Add(model);
-                DbContext.SaveChanges();
+                UnitOfWork.Locations.Add(model);
+                UnitOfWork.Complete();
                 long locationId = DbContext.Locations.FirstOrDefault(x => x.CoordinateX == model.CoordinateX && x.CoordinateY == model.CoordinateY).Id;
                 DbContext.Kingdoms.FirstOrDefault(x => x.Id == input.KingdomId).LocationId = locationId;
-                DbContext.SaveChanges();
+                UnitOfWork.Complete();
             }
             catch (Exception e)
             {
