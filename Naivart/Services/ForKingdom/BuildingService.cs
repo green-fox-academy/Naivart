@@ -14,15 +14,13 @@ namespace Naivart.Services
     public class BuildingService
     {
         private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
-        private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
         private IUnitOfWork UnitOfWork { get; set; }
-        public BuildingService(IMapper mapper, ApplicationDbContext dbContext, AuthService authService,
+        public BuildingService(IMapper mapper, AuthService authService,
                                KingdomService kingdomService, IUnitOfWork unitOfWork)
         {
             this.mapper = mapper;
-            DbContext = dbContext;
             AuthService = authService;
             KingdomService = kingdomService;
             UnitOfWork = unitOfWork;
@@ -49,7 +47,7 @@ namespace Naivart.Services
         {
             try
             {
-                var buildingType = DbContext.BuildingTypes.FirstOrDefault //getting required building level 1 information 
+                var buildingType = UnitOfWork.BuildingTypes.FirstOrDefault //getting required building level 1 information 
                     (bt => bt.Type == request.Type && bt.Level == 1);
                 var kingdom = KingdomService.GetById(kingdomId);
                 var requiredTownhallLevel = buildingType.RequiredTownhallLevel;
@@ -93,7 +91,7 @@ namespace Naivart.Services
                     kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
                 }
                 UnitOfWork.Buildings.Add(building);
-                UnitOfWork.Complete();
+                UnitOfWork.CompleteAsync();
 
                 statusCode = 200;
                 error = string.Empty;
@@ -143,7 +141,7 @@ namespace Naivart.Services
                     return new BuildingAPIModel();
                 }
 
-                var upgradedBuilding = DbContext.BuildingTypes.Find(building.BuildingTypeId + 1);
+                var upgradedBuilding = UnitOfWork.BuildingTypes.FirstOrDefault(x => x.Id == building.BuildingTypeId + 1);
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= upgradedBuilding.GoldCost;
 
                 if (upgradedBuilding.Type == "farm")
@@ -158,7 +156,7 @@ namespace Naivart.Services
                 building.BuildingTypeId = upgradedBuilding.Id;
                 building.Level = upgradedBuilding.Level;
                 building.Hp = upgradedBuilding.Hp;
-                UnitOfWork.Complete();
+                UnitOfWork.CompleteAsync();
                 statusCode = 200;
                 error = string.Empty;
                 return mapper.Map<BuildingAPIModel>(building);
@@ -175,7 +173,7 @@ namespace Naivart.Services
         {
             try
             {
-                var allKingdoms = KingdomService.GetAll();
+                var allKingdoms = KingdomService.GetAllKingdoms();
                 if (!allKingdoms.Any())
                 {
                     error = "There are no kingdoms in Leaderboard";
@@ -210,7 +208,7 @@ namespace Naivart.Services
         {
             try
             {
-                var buildingType = DbContext.BuildingTypes.FirstOrDefault
+                var buildingType = UnitOfWork.BuildingTypes.FirstOrDefault
                     (bt => bt.Type == request.Type && bt.Level == 1);
                 var kingdom = KingdomService.GetById(kingdomId);
 
@@ -220,7 +218,7 @@ namespace Naivart.Services
 
                 Building building = mapper.Map<Building>(buildingModel);
                 UnitOfWork.Buildings.Add(building);
-                UnitOfWork.Complete();
+                UnitOfWork.CompleteAsync();
             }
             catch (Exception e)
             {

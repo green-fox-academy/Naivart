@@ -16,41 +16,23 @@ namespace Naivart.Services
     public class KingdomService
     {
         private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
-        private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public LoginService LoginService { get; set; }
         public TimeService TimeService { get; set; }
         private IUnitOfWork UnitOfWork { get; set; }
         //public BuildingService BuildingService { get; set; }
-        public KingdomService(IMapper mapper, ApplicationDbContext dbContext,
-                              AuthService authService, LoginService loginService, IUnitOfWork unitOfWork)
+        public KingdomService(IMapper mapper, AuthService authService, LoginService loginService, TimeService timeService, IUnitOfWork unitOfWork)
         {
             this.mapper = mapper;
-            DbContext = dbContext;
             AuthService = authService;
             LoginService = loginService;
             TimeService = timeService;
             UnitOfWork = unitOfWork;
         }
 
-        public List<Kingdom> GetAll()
+        public List<Kingdom> GetAllKingdoms()
         {
-            var kingdoms = new List<Kingdom>();
-            try
-            {
-                return DbContext.Kingdoms
-                    .Include(k => k.Player)
-                    .Include(k => k.Location)
-                    .Include(k => k.Buildings)
-                    .Include(k => k.Resources)
-                    .Include(k => k.Troops)
-                    .ThenInclude(k => k.TroopType)
-                    .ToList();
-            }
-            catch
-            {
-                return kingdoms;
-            }
+            return UnitOfWork.Kingdoms.GetAllKingdoms();
         }
 
         public Kingdom GetById(long id)
@@ -58,7 +40,7 @@ namespace Naivart.Services
             var kingdom = new Kingdom();
             try
             {
-                return kingdom = GetAll().FirstOrDefault(k => k.Id == id);
+                return kingdom = UnitOfWork.Kingdoms.GetAllKingdoms().FirstOrDefault(k => k.Id == id);
             }
             catch
             {
@@ -91,11 +73,7 @@ namespace Naivart.Services
 
         public Kingdom RenameKingdom(long kingdomId, string newKingdomName)
         {
-            Kingdom kingdom = GetById(kingdomId);
-            kingdom.Name = newKingdomName;
-            DbContext.Update(kingdom);
-            DbContext.SaveChanges();
-            return kingdom;
+            return UnitOfWork.Kingdoms.RenameKingdom(kingdomId,newKingdomName);
         }
 
         public string RegisterKingdom(KingdomLocationInput input, string usernameToken, out int status)
@@ -142,7 +120,7 @@ namespace Naivart.Services
         {
             try
             {
-                return DbContext.Locations.Any(x => x.CoordinateX == input.CoordinateX && x.CoordinateY == input.CoordinateY);
+                return UnitOfWork.Locations.Any(x => x.CoordinateX == input.CoordinateX && x.CoordinateY == input.CoordinateY);
             }
             catch (Exception e)
             {
@@ -154,7 +132,7 @@ namespace Naivart.Services
         {
             try
             {
-                return DbContext.Kingdoms.Any(x => x.Id == input.KingdomId && x.LocationId == null);
+                return UnitOfWork.Kingdoms.Any(x => x.Id == input.KingdomId && x.LocationId == null);
             }
             catch (Exception e)
             {
@@ -167,11 +145,11 @@ namespace Naivart.Services
             try
             {
                 var model = new Location() { CoordinateX = input.CoordinateX, CoordinateY = input.CoordinateY };
-                DbContext.Locations.Add(model);
-                DbContext.SaveChanges();
-                long locationId = DbContext.Locations.FirstOrDefault(x => x.CoordinateX == model.CoordinateX && x.CoordinateY == model.CoordinateY).Id;
-                DbContext.Kingdoms.FirstOrDefault(x => x.Id == input.KingdomId).LocationId = locationId;
-                DbContext.SaveChanges();
+                UnitOfWork.Locations.Add(model);
+                UnitOfWork.CompleteAsync();
+                long locationId = UnitOfWork.Locations.FirstOrDefault(x => x.CoordinateX == model.CoordinateX && x.CoordinateY == model.CoordinateY).Id;
+                UnitOfWork.Kingdoms.FirstOrDefault(x => x.Id == input.KingdomId).LocationId = locationId;
+                UnitOfWork.CompleteAsync();
             }
             catch (Exception e)
             {
@@ -249,7 +227,7 @@ namespace Naivart.Services
         {
             try
             {
-                return DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId)?
+                return UnitOfWork.Players.FirstOrDefault(x => x.KingdomId == kingdomId)?
                                         .Username == username;
             }
             catch (Exception e)
@@ -262,7 +240,7 @@ namespace Naivart.Services
         {
             try
             {
-                return goldAmount >= DbContext.BuildingTypes.FirstOrDefault
+                return goldAmount >= UnitOfWork.BuildingTypes.FirstOrDefault
                     (bt => bt.Id == buildingTypeId + 1).GoldCost;
             }
             catch (Exception e)
@@ -288,7 +266,7 @@ namespace Naivart.Services
         {
             try
             {
-                var allKingdoms = GetAll();
+                var allKingdoms = GetAllKingdoms();
                 if (allKingdoms.Count() == 0)
                 {
                     error = "There are no kingdoms in Leaderboard";
@@ -400,7 +378,7 @@ namespace Naivart.Services
         {
             try
             {
-                return DbContext.Battles.Any(x => x.Id == battleId && (x.AttackerId == kingdomId || x.DefenderId == kingdomId));
+                return UnitOfWork.Battles.Any(x => x.Id == battleId && (x.AttackerId == kingdomId || x.DefenderId == kingdomId));
             }
             catch (Exception e)
             {
@@ -412,7 +390,7 @@ namespace Naivart.Services
         {
             try
             {
-                return DbContext.Battles.Any(x => x.Id == battleId);
+                return UnitOfWork.Battles.Any(x => x.Id == battleId);
             }
             catch (Exception e)
             {
@@ -425,10 +403,10 @@ namespace Naivart.Services
             try
             {
                 var result = new BattleResultRespond();
-                var battle = DbContext.Battles.FirstOrDefault(x => x.Id == battleId);
-                var lostTroopsAttacker = DbContext.TroopsLost
+                var battle = UnitOfWork.Battles.FirstOrDefault(x => x.Id == battleId);
+                var lostTroopsAttacker = UnitOfWork.TroopsLost
                                                         .Where(x => x.BattleId == battleId && x.IsAttacker).ToList();
-                var lostTroopsDefender = DbContext.TroopsLost
+                var lostTroopsDefender = UnitOfWork.TroopsLost
                                                         .Where(x => x.BattleId == battleId && !(x.IsAttacker)).ToList();
                 var stolenResources = new ResourceStolen() { Food = battle.FoodStolen, Gold = battle.GoldStolen};
 
@@ -461,7 +439,7 @@ namespace Naivart.Services
         {
             try
             {
-                return DbContext.Kingdoms.Any(x => x.Id == kingdomId);
+                return UnitOfWork.Kingdoms.Any(x => x.Id == kingdomId);
             }
             catch (Exception e)
             {
@@ -482,21 +460,21 @@ namespace Naivart.Services
                     StartedAt = TimeService.GetUnixTimeNow(),
                     FinishedAt = CountTravelTime(targetKingdom.Target.KingdomId, attacker.Id)
                 };
-                this.DbContext.Battles.Add(battle);
-                this.DbContext.SaveChanges();
+                this.UnitOfWork.Battles.Add(battle);
+                this.UnitOfWork.CompleteAsync();
 
                 var attackerTroops = GetTroopLevels(attacker.Troops); 
                 var attackingTroops = new List<AttackerTroops>();
                 foreach (var troop in targetKingdom.Troops)
                 {
-                    DbContext.AttackerTroops.Add(new AttackerTroops()
+                    UnitOfWork.AttackerTroops.Add(new AttackerTroops()
                     {
                         Type = troop.Type,
                         Quantity = troop.Quantity,
                         Level = attackerTroops.FirstOrDefault(x => x.Type == troop.Type).Level,
                         BattleId = battle.Id
                     });
-                    DbContext.SaveChanges();
+                    UnitOfWork.CompleteAsync();
                     
                     //change all attacking troops status to attack that are in town currently
                     for (int i = 0; i < troop.Quantity; i++)
@@ -504,8 +482,8 @@ namespace Naivart.Services
                         var troopStatus = attacker.Troops
                                                 .FirstOrDefault(x => x.TroopType.Type == troop.Type && x.Status == "town");
                         troopStatus.Status = "attack";
-                        DbContext.Update(troopStatus);
-                        DbContext.SaveChanges();
+                        UnitOfWork.Troops.UpdateState(troopStatus);
+                        UnitOfWork.CompleteAsync();
                     }
                 }
                 return new BattleTargetRespond() 
@@ -555,24 +533,16 @@ namespace Naivart.Services
 
         public Kingdom FindPlayerInfoByKingdomId(long kingdomId)
         {
-            try
-            {
-                return DbContext.Kingdoms.Where(x => x.Id == kingdomId)
-                                        .Include(x => x.Troops).ThenInclude(x => x.TroopType).FirstOrDefault();
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Data could not be read", e);
-            }
+            return UnitOfWork.Kingdoms.FindPlayerInfoByKingdomId(kingdomId);
         }
 
         public long CountTravelTime(long kingdomIdDef, long kingdomIdAtt)
         {
             try
             {
-                var locationDef = DbContext.Kingdoms.Where(x => x.Id == kingdomIdDef).Include(x => x.Location)
+                var locationDef = UnitOfWork.Kingdoms.Include(x => x.Location).Where(x => x.Id == kingdomIdDef)
                     .FirstOrDefault().Location;
-                var locationAtt = DbContext.Kingdoms.Where(x => x.Id == kingdomIdAtt).Include(x => x.Location)
+                var locationAtt = UnitOfWork.Kingdoms.Include(x => x.Location).Where(x => x.Id == kingdomIdAtt)
                     .FirstOrDefault().Location;
 
                 //analytic geometry - difference between two points

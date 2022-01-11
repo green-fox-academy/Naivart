@@ -8,8 +8,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Middlewares;
 using Naivart.Models;
+using Naivart.Repository;
 using Naivart.Services;
 using System;
 using System.Text;
@@ -41,6 +43,20 @@ namespace Naivart
             services.AddTransient<ResourceService>();
             services.AddTransient<TimeService>();
             services.AddTransient<TroopService>();
+
+            services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+            services.AddTransient<IBuildingRepository, BuildingRepository>();
+            services.AddTransient<IBuildingTypeRepository, BuildingTypeRepository>();
+            services.AddTransient<IKingdomRepository, KingdomRepository>();
+            services.AddTransient<IPlayerRepository, PlayerRepository>();
+            services.AddTransient<IResourceRepository, ResourceRepository>();
+            services.AddTransient<ITroopRepository, TroopRepository>();
+            services.AddTransient<IBattleRepository, BattleRepository>();
+            services.AddTransient<ITroopsLostRepository, TroopsLostRepository>();
+            services.AddTransient<IAttackerTroopsRepository, AttackerTroopsRepository>();
+            services.AddTransient<ILocationRepository, LocationRepository>();
+            services.AddTransient<ITroopTypeRepository, TroopTypeRepository>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
 
             var appSettingSection = AppConfig.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingSection);

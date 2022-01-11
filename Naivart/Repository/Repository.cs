@@ -11,9 +11,12 @@ namespace Naivart.Repository
     public class Repository<T> : IRepository<T> where T : class
     {
         protected readonly ApplicationDbContext DbContext;
+
+        protected DbSet<T> Entities;
         public Repository(ApplicationDbContext context)
         {
             DbContext = context;
+            Entities = DbContext.Set<T>();
         }
 
         public void Add(T entity)
@@ -54,6 +57,30 @@ namespace Naivart.Repository
         public bool Any(Expression<Func<T, bool>> expression)
         {
             return DbContext.Set<T>().Any(expression);
+        }
+        public T FirstOrDefault(System.Linq.Expressions.Expression<Func<T, bool>> predicate)
+        {
+            return Entities.Where(predicate).FirstOrDefault();
+        }
+        public IEnumerable<T> Where(System.Linq.Expressions.Expression<Func<T, bool>> predicate)
+        {
+            return Entities.Where(predicate);
+        }
+        public IEnumerable<T> Include(params Expression<Func<T, object>>[] includes)
+        {
+            DbSet<T> dbSet = DbContext.Set<T>();
+
+            IEnumerable<T> query = null;
+            foreach (var include in includes)
+            {
+                query = dbSet.Include(include);
+            }
+
+            return query ?? dbSet;
+        }
+        public void UpdateState(T entity)
+        {
+            DbContext.Entry(entity).State = EntityState.Modified;
         }
     }
 }

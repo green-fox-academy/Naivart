@@ -1,5 +1,6 @@
 ﻿using Naivart.Models.Entities;
 using System;
+using System.Threading.Tasks;
 
 namespace Naivart.Interfaces
 {
@@ -13,7 +14,10 @@ namespace Naivart.Interfaces
         ITroopRepository Troops { get; }
         IResourceRepository Resources { get; }
         ITroopTypeRepository TroopTypes{ get; }
-
-        int Complete();
+        IBattleRepository Battles { get; }
+        IAttackerTroopsRepository AttackerTroops { get; }
+        ITroopsLostRepository TroopsLost { get; }
+        
+        Task CompleteAsync();
     }
 }

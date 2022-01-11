@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.APIModels.Troops;
@@ -14,16 +15,16 @@ namespace Naivart.Services
     public class TroopService
     {
         private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
-        private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
-        public TroopService(IMapper mapper, ApplicationDbContext dbContext, AuthService authService,
+        private IUnitOfWork UnitOfWork { get; set; }
+        public TroopService(IMapper mapper, AuthService authService, IUnitOfWork unitOfWork,
                             KingdomService kingdomService)
         {
             this.mapper = mapper;
-            DbContext = dbContext;
             AuthService = authService;
             KingdomService = kingdomService;
+            UnitOfWork = unitOfWork;
         }
 
         public List<TroopAPIModel> ListOfTroopsMapping(List<Troop> troops)
@@ -64,15 +65,15 @@ namespace Naivart.Services
                     //resultTroop.KingdomId = kingdomId;
                     createdTroop.KingdomId = kingdomId;
                     createdTroop.Status = "town";
-                    DbContext.Troops.Add(createdTroop);
-                    DbContext.SaveChanges();
+                    UnitOfWork.Troops.Add(createdTroop);
+                    UnitOfWork.CompleteAsync();
                     var infoTroop = mapper.Map<TroopInfo>(createdTroop);
                     resultModel.Add(infoTroop);
                     createdTroop = TroopFactory(troopType, troopLevel);
                 }
-                var kingdomModel = DbContext.Kingdoms.Where(x => x.Id == kingdomId).Include(x => x.Resources).FirstOrDefault();
+                var kingdomModel = UnitOfWork.Kingdoms.Include(x => x.Resources).Where(x => x.Id == kingdomId).FirstOrDefault();
                 kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= totalCost;   //reduce owner gold by total cost
-                DbContext.SaveChanges();
+                UnitOfWork.CompleteAsync();
 
                 isPossibleToCreate = true;
                 return resultModel; //returns list of created troops
@@ -115,7 +116,7 @@ namespace Naivart.Services
 
         public Troop TroopFactory(string troopType, int goldAmount, int troopAmount, long troopTypeLevel, out int totalCost)
         {
-            var troopStats = DbContext.TroopTypes.Where(x => x.Type == troopType && x.Level == troopTypeLevel).FirstOrDefault();
+            var troopStats = UnitOfWork.TroopTypes.Where(x => x.Type == troopType && x.Level == troopTypeLevel).FirstOrDefault();
 
             Troop troop = new Troop()
             {
@@ -132,7 +133,7 @@ namespace Naivart.Services
             {
                 troopTypeLevel = 1;
             }
-            var troopStats = DbContext.TroopTypes.Where(x => x.Type == troopType && x.Level == troopTypeLevel).FirstOrDefault();
+            var troopStats = UnitOfWork.TroopTypes.Where(x => x.Type == troopType && x.Level == troopTypeLevel).FirstOrDefault();
 
             Troop troop = new Troop()
             {
@@ -146,7 +147,7 @@ namespace Naivart.Services
         {
             try
             {
-                var allKingdoms = KingdomService.GetAll();
+                var allKingdoms = KingdomService.GetAllKingdoms();
                 if (allKingdoms.Count() == 0)
                 {
                     error = "There are no kingdoms in Leaderboard";
@@ -208,7 +209,7 @@ namespace Naivart.Services
                     return statusCode = 400;
                 }
 
-                var upgradedStats = DbContext.TroopTypes.Where(t => t.Type == type && t.Level == troop.TroopType.Level + 1).FirstOrDefault(); //Get stats of particular troop type one level higher than now
+                var upgradedStats = UnitOfWork.TroopTypes.Where(t => t.Type == type && t.Level == troop.TroopType.Level + 1).FirstOrDefault(); //Get stats of particular troop type one level higher than now
                 if (goldAmount < upgradedStats.GoldCost) //Lack of gold 
                 {
                     result = "You don't have enough gold to upgrade this type of troops!";
@@ -235,8 +236,8 @@ namespace Naivart.Services
             {
                 troop.TroopTypeId++;
             }
-            DbContext.Update(kingdom);
-            DbContext.SaveChanges();
+            UnitOfWork.Kingdoms.UpdateState(kingdom);
+            UnitOfWork.CompleteAsync();
         }
     }
 }

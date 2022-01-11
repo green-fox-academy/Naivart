@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Models;
 using Naivart.Models.APIModels;
 using System;
@@ -15,13 +16,13 @@ namespace Naivart.Services
     public class LoginService
     {
         private readonly AppSettings appSettings;
-        private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
-        public LoginService(IOptions<AppSettings> appSettings, ApplicationDbContext dbContext, AuthService authService)
+        private IUnitOfWork UnitOfWork { get; set; }
+        public LoginService(IOptions<AppSettings> appSettings, AuthService authService, IUnitOfWork unitOfWork)
         {
             this.appSettings = appSettings.Value;
-            DbContext = dbContext;
             AuthService = authService;
+            UnitOfWork = unitOfWork;
         }
         public string Authenticate(PlayerLogin player, out int statusCode)
         {
@@ -52,7 +53,7 @@ namespace Naivart.Services
         {
             try
             {
-                var player = DbContext.Players.FirstOrDefault(x => x.Username == name);
+                var player = UnitOfWork.Players.FirstOrDefault(x => x.Username == name);
                 if (player is null)
                 {
                     return false;
@@ -83,8 +84,9 @@ namespace Naivart.Services
         {
             try
             {
-                var player = DbContext.Players.Where(x => x.Username == name)
-                    .Include(x => x.Kingdom).FirstOrDefault();
+                var player = UnitOfWork.Players.Include(x => x.Kingdom).Where(x => x.Username == name).FirstOrDefault();
+
+
                 PlayerWithKingdom playerWithKingdom = new PlayerWithKingdom 
                 { KingdomId = player.KingdomId, KingdomName = player.Kingdom.Name, Ruler = player.Username };
                 return playerWithKingdom;
@@ -129,7 +131,7 @@ namespace Naivart.Services
 
         public PlayerInfo FindPlayerByNameReturnPlayerInfo(string name)
         {
-            var model = DbContext.Players.FirstOrDefault(x => x.Username == name);
+            var model = UnitOfWork.Players.FirstOrDefault(x => x.Username == name);
             return new PlayerInfo() { Id = model.Id, Username = model.Username, KingdomId = model.KingdomId};
         }
     }

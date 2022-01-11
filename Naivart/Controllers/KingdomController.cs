@@ -29,7 +29,7 @@ namespace Naivart.Controllers
         [HttpGet("kingdoms")]
         public object KingdomsInformation()
         {
-            var kingdoms = KingdomService.GetAll();
+            var kingdoms = KingdomService.GetAllKingdoms();
             var kingdomAPIModels = KingdomService.ListOfKingdomsMapping(kingdoms);
             var response = new KingdomsResponse() { Kingdoms = kingdomAPIModels };
 
@@ -58,7 +58,7 @@ namespace Naivart.Controllers
                 { Error = "Field kingdomName was empty!" });
             }
 
-            var kingdomWithTheSameName = KingdomService.GetAll().Where
+            var kingdomWithTheSameName = KingdomService.GetAllKingdoms().Where
                 (k => k.Name == request.KingdomName).FirstOrDefault();
 
             if (kingdomWithTheSameName != null)

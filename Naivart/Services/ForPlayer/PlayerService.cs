@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using System;
@@ -13,16 +14,16 @@ namespace Naivart.Services
     public class PlayerService
     {
         private readonly IMapper mapper;
-        private ApplicationDbContext DbContext { get; }
         public BuildingService BuildingService { get; set; }
         public TimeService TimeService { get; set; }
-        public PlayerService(IMapper mapper, ApplicationDbContext dbContext, BuildingService
-                             buildingService, TimeService timeService)
+        private IUnitOfWork UnitOfWork { get; set; }
+        public PlayerService(IMapper mapper, BuildingService
+                             buildingService, IUnitOfWork unitOfWork , TimeService timeService)
         {
             this.mapper = mapper;
-            DbContext = dbContext;
             BuildingService = buildingService;
             TimeService = timeService;
+            UnitOfWork = unitOfWork;
         }
 
         public Player RegisterPlayer(string username, string password, string kingdomName)
@@ -46,45 +47,45 @@ namespace Naivart.Services
             kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && FindKingdomByName(kingdomName) == null
                            ? kingdomName : $"{player.Username}'s kingdom";
 
-            var newKingdom = DbContext.Kingdoms.Add(kingdom).Entity;
-            DbContext.SaveChanges();
+            UnitOfWork.Kingdoms.Add(kingdom);
+            UnitOfWork.CompleteAsync();
 
             var DbKingdom = FindKingdomByName(kingdom.Name);
             player.KingdomId = DbKingdom.Id;
-            var newPlayer = DbContext.Players.Add(player).Entity;
-            DbContext.SaveChanges();
+            UnitOfWork.Players.Add(player);
+            UnitOfWork.CompleteAsync();
             CreateBasicBuildings(DbKingdom.Id); //creates basic buildings and save to Db 
             CreateResources(DbKingdom.Id);  //add resources to player (1000 gold and 0 food)
 
-            return DbContext.Players.Include(x => x.Kingdom).FirstOrDefault
+            return UnitOfWork.Players.Include(x => x.Kingdom).FirstOrDefault
                 (x => x.Username == username && x.Password == hashedPassword);
         }
 
         public Kingdom FindKingdomByName(string kingdomName)
         {
-            return DbContext.Kingdoms.FirstOrDefault(x => x.Name == kingdomName);
+            return UnitOfWork.Kingdoms.FirstOrDefault(x => x.Name == kingdomName);
         }
 
         public Player FindByUsername(string username)
         {
-            return DbContext.Players.FirstOrDefault(x => x.Username == username);
+            return UnitOfWork.Players.FirstOrDefault(x => x.Username == username);
         }
 
         public bool IsInDbWithThisUsername(string username)
         {
-            return DbContext.Players.Any(x => x.Username == username);
+            return UnitOfWork.Players.Any(x => x.Username == username);
         }
 
         public void DeleteByUsername(string username)
         {
-            DbContext.Players.Remove(FindByUsername(username));
+            UnitOfWork.Players.Remove(FindByUsername(username));
         }
 
         public Player GetPlayerById(long id)
         {
             try
             {
-                return DbContext.Players.Include(p => p.Kingdom)
+                return UnitOfWork.Players.Include(p => p.Kingdom)
                                 .FirstOrDefault(p => p.Id == id);
             }
             catch
@@ -109,7 +110,7 @@ namespace Naivart.Services
 
         public void CreateResources(long kingdomId)
         {
-            DbContext.Resources.Add(new Resource()
+            UnitOfWork.Resources.Add(new Resource()
             {
                 Type = "food",
                 Amount = 0,
@@ -117,9 +118,9 @@ namespace Naivart.Services
                 UpdatedAt = TimeService.GetUnixTimeNow(),
                 KingdomId = kingdomId
             });
-            DbContext.SaveChanges();
+            UnitOfWork.CompleteAsync();
 
-            DbContext.Resources.Add(new Resource()
+            UnitOfWork.Resources.Add(new Resource()
             {
                 Type = "gold",
                 Amount = 1000,
@@ -127,7 +128,7 @@ namespace Naivart.Services
                 UpdatedAt = TimeService.GetUnixTimeNow(),
                 KingdomId = kingdomId
             });
-            DbContext.SaveChanges();
+            UnitOfWork.CompleteAsync();
         }
     }
 }

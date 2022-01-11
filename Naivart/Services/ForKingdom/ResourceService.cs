@@ -9,11 +9,9 @@ namespace Naivart.Services
     public class ResourceService
     {
         private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
-        private ApplicationDbContext DbContext { get; }
-        public ResourceService(IMapper mapper, ApplicationDbContext dbContext)
+        public ResourceService(IMapper mapper)
         {
             this.mapper = mapper;
-            DbContext = dbContext;
         }
 
         public List<ResourceAPIModel> ListOfResourcesMapping(List<Resource> resources)

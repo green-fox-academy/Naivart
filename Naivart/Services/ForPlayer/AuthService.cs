@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Models;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -13,11 +14,12 @@ namespace Naivart.Services
     public class AuthService
     {
         private readonly AppSettings appSettings;
-        private ApplicationDbContext DbContext { get; }
-        public AuthService(IOptions<AppSettings> appSettings, ApplicationDbContext dbContext)
+        private IUnitOfWork UnitOfWork { get; set; }
+
+        public AuthService(IOptions<AppSettings> appSettings, IUnitOfWork unitOfWork)
         {
             this.appSettings = appSettings.Value;
-            DbContext = dbContext;
+            UnitOfWork = unitOfWork;
         }
 
         public string GetToken(string username)
@@ -65,7 +67,7 @@ namespace Naivart.Services
         {
             try
             {
-                return DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username == username;
+                return UnitOfWork.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username == username;
             }
             catch (Exception e)
             {
