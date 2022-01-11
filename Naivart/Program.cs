@@ -15,7 +15,7 @@ namespace Naivart
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
-                .WriteTo.File("log.txt",
+                .WriteTo.File("Logging/log.txt",
                 rollingInterval: RollingInterval.Day,
                 rollOnFileSizeLimit: true)
                 .CreateLogger();

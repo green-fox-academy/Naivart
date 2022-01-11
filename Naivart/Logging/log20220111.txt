@@ -60,3 +60,10 @@ ORDER BY `k`.`Id`, `p`.`Id`, `l`.`Id`, `b`.`Id`, `r`.`Id`, `t1`.`Id`, `t1`.`Id0`
 2022-01-11 09:35:26.791 +01:00 [INF] Executed action Naivart.Controllers.KingdomController.KingdomInformation (Naivart) in 233.6995ms
 2022-01-11 09:35:26.791 +01:00 [INF] Executed endpoint 'Naivart.Controllers.KingdomController.KingdomInformation (Naivart)'
 2022-01-11 09:35:26.792 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5467/kingdoms/1 - - - 200 - application/json;+charset=utf-8 480.7818ms
+2022-01-11 09:42:46.934 +01:00 [INF] Starting web host
+2022-01-11 09:42:47.794 +01:00 [INF] User profile is available. Using 'C:\Users\Adam\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2022-01-11 09:42:47.980 +01:00 [INF] Application started. Press Ctrl+C to shut down.
+2022-01-11 09:42:47.980 +01:00 [INF] Hosting environment: Development
+2022-01-11 09:42:47.980 +01:00 [INF] Content root path: D:\Users\camer\source\repos\Naivart\Naivart\Naivart
+2022-01-11 09:42:48.016 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5467/ - -
+2022-01-11 09:42:48.304 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5467/ - - - 404 - - 289.1072ms
