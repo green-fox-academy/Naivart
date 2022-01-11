@@ -6,6 +6,7 @@ using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Helpers;
 
 namespace Naivart.Services
@@ -25,11 +26,11 @@ namespace Naivart.Services
             TimeService = timeService;
         }
 
-        public Player RegisterPlayer(string username, string password, string kingdomName)
+        public async Task<Player> RegisterPlayerAsync(string username, string password, string kingdomName)
         {
             if (password.Length < 8
                 || String.IsNullOrWhiteSpace(username)
-                || IsInDbWithThisUsername(username))
+                || await IsInDbWithThisUsernameAsync(username))
             {
                 return null;
             }
@@ -43,49 +44,49 @@ namespace Naivart.Services
             Kingdom kingdom = new Kingdom();
 
             //check if given kingdom name (and username) is not empty or already exists in database 
-            kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && FindKingdomByName(kingdomName) == null
+            kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && FindKingdomByNameAsync(kingdomName) == null
                            ? kingdomName : $"{player.Username}'s kingdom";
 
-            var newKingdom = DbContext.Kingdoms.Add(kingdom).Entity;
-            DbContext.SaveChanges();
+            var newKingdom = await Task.FromResult(DbContext.Kingdoms.Add(kingdom).Entity);
+            await DbContext.SaveChangesAsync();
 
-            var DbKingdom = FindKingdomByName(kingdom.Name);
+            var DbKingdom = await FindKingdomByNameAsync(kingdom.Name);
             player.KingdomId = DbKingdom.Id;
-            var newPlayer = DbContext.Players.Add(player).Entity;
-            DbContext.SaveChanges();
-            CreateBasicBuildings(DbKingdom.Id); //creates basic buildings and save to Db 
-            CreateResources(DbKingdom.Id);  //add resources to player (1000 gold and 0 food)
+            var newPlayer = await Task.FromResult(DbContext.Players.Add(player).Entity);
+            await DbContext.SaveChangesAsync();
+            await CreateBasicBuildingsAsync(DbKingdom.Id); //creates basic buildings and save to Db 
+            await CreateResourcesAsync(DbKingdom.Id);  //add resources to player (1000 gold and 0 food)
 
-            return DbContext.Players.Include(x => x.Kingdom).FirstOrDefault
-                (x => x.Username == username && x.Password == hashedPassword);
+            return await Task.FromResult(DbContext.Players.Include(x => x.Kingdom).FirstOrDefault
+                (x => x.Username == username && x.Password == hashedPassword));
         }
 
-        public Kingdom FindKingdomByName(string kingdomName)
+        public async Task<Kingdom> FindKingdomByNameAsync(string kingdomName)
         {
-            return DbContext.Kingdoms.FirstOrDefault(x => x.Name == kingdomName);
+            return await Task.FromResult(DbContext.Kingdoms.FirstOrDefault(x => x.Name == kingdomName));
         }
 
-        public Player FindByUsername(string username)
+        public async Task<Player> FindByUsernameAsync(string username)
         {
-            return DbContext.Players.FirstOrDefault(x => x.Username == username);
+            return await Task.FromResult(DbContext.Players.FirstOrDefault(x => x.Username == username));
         }
 
-        public bool IsInDbWithThisUsername(string username)
+        public async Task<bool> IsInDbWithThisUsernameAsync(string username)
         {
-            return DbContext.Players.Any(x => x.Username == username);
+            return await Task.FromResult(DbContext.Players.Any(x => x.Username == username));
         }
 
-        public void DeleteByUsername(string username)
+        public async Task DeleteByUsernameAsync(string username)
         {
-            DbContext.Players.Remove(FindByUsername(username));
+            await Task.FromResult(DbContext.Players.Remove(await FindByUsernameAsync(username)));
         }
 
-        public Player GetPlayerById(long id)
+        public async Task<Player> GetPlayerByIdAsync(long id)
         {
             try
             {
-                return DbContext.Players.Include(p => p.Kingdom)
-                                .FirstOrDefault(p => p.Id == id);
+                return await Task.FromResult(DbContext.Players.Include(p => p.Kingdom)
+                                 .FirstOrDefault(p => p.Id == id));
             }
             catch
             {
@@ -93,7 +94,7 @@ namespace Naivart.Services
             }
         }
 
-        public void CreateBasicBuildings(long kingdomId)
+        public async Task CreateBasicBuildingsAsync(long kingdomId)
         {
             var townhallRequest = new BuildingRequest() { Type = "townhall" };
             var farmRequest = new BuildingRequest() { Type = "farm" };
@@ -103,13 +104,13 @@ namespace Naivart.Services
 
             foreach (var building in basicBuildings)
             {
-                BuildingService.AddBasicBuilding(building, kingdomId);
+                await BuildingService.AddBasicBuildingAsync(building, kingdomId);
             }
         }
 
-        public void CreateResources(long kingdomId)
+        public async Task CreateResourcesAsync(long kingdomId)
         {
-            DbContext.Resources.Add(new Resource()
+            await DbContext.Resources.AddAsync(new Resource()
             {
                 Type = "food",
                 Amount = 0,
@@ -117,9 +118,9 @@ namespace Naivart.Services
                 UpdatedAt = TimeService.GetUnixTimeNow(),
                 KingdomId = kingdomId
             });
-            DbContext.SaveChanges();
+            await DbContext.SaveChangesAsync();
 
-            DbContext.Resources.Add(new Resource()
+            await DbContext.Resources.AddAsync(new Resource()
             {
                 Type = "gold",
                 Amount = 1000,
@@ -127,7 +128,7 @@ namespace Naivart.Services
                 UpdatedAt = TimeService.GetUnixTimeNow(),
                 KingdomId = kingdomId
             });
-            DbContext.SaveChanges();
+            await DbContext.SaveChangesAsync();
         }
     }
 }

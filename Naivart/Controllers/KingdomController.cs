@@ -5,6 +5,7 @@ using Naivart.Models.APIModels.Troops;
 using Naivart.Services;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Naivart.Controllers
 {
@@ -26,9 +27,9 @@ namespace Naivart.Controllers
         }
 
         [HttpGet("kingdoms")]
-        public object KingdomsInformation()
+        public async Task<object> KingdomsInformationAsync()
         {
-            var kingdoms = KingdomService.GetAll();
+            var kingdoms = await KingdomService.GetAllAsync();
             var kingdomAPIModels = KingdomService.ListOfKingdomsMapping(kingdoms);
             var response = new KingdomsResponse() { Kingdoms = kingdomAPIModels };
 
@@ -38,18 +39,17 @@ namespace Naivart.Controllers
 
         [Authorize]
         [HttpGet("kingdoms/{id}")]
-        public IActionResult KingdomInformation([FromRoute] long id)
+        public async Task<IActionResult> KingdomInformationAsync([FromRoute] long id)
         {
-            var info = KingdomService.GetKingdomInfo(id, HttpContext.User.Identity.Name,
-                out int status, out string error);
+            var info = await KingdomService.GetKingdomInfoAsync(id, HttpContext.User.Identity.Name);
 
-            return status != 200 ? StatusCode(status, new ErrorResponse() { Error = error })
-                                 : Ok(info);
+            return info.Item2 != 200 ? StatusCode(info.Item2, new ErrorResponse() { Error = info.Item3 })
+                                     : Ok(info.Item1);
         }
 
         [Authorize]
         [HttpPut("kingdoms/{id}")]
-        public object RenameKingdom([FromRoute] long id, [FromBody] RenameKingdomRequest request)
+        public async Task<object> RenameKingdomAsync([FromRoute] long id, [FromBody] RenameKingdomRequest request)
         {
             if (String.IsNullOrWhiteSpace(request.KingdomName))
             {
@@ -57,8 +57,8 @@ namespace Naivart.Controllers
                 { Error = "Field kingdomName was empty!" });
             }
 
-            var kingdomWithTheSameName = KingdomService.GetAll().Where
-                (k => k.Name == request.KingdomName).FirstOrDefault();
+            var kingdoms = await KingdomService.GetAllAsync();
+            var kingdomWithTheSameName = kingdoms.Where(k => k.Name == request.KingdomName).FirstOrDefault();
 
             if (kingdomWithTheSameName != null)
             {
@@ -66,13 +66,13 @@ namespace Naivart.Controllers
                 { Error = "Given kingdom name already exists!" });
             }
 
-            if (!KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
+            if (!await KingdomService.IsUserKingdomOwnerAsync(id, HttpContext.User.Identity.Name))
             {
                 return Unauthorized(new ErrorResponse()
                 { Error = "This kingdom does not belong to authenticated player" });
             }
 
-            var kingdom = KingdomService.RenameKingdom(id, request.KingdomName);
+            var kingdom = await KingdomService.RenameKingdomAsync(id, request.KingdomName);
             return Ok(new RenameKingdomResponse()
             {
                 KingdomId = kingdom.Id,
@@ -82,15 +82,15 @@ namespace Naivart.Controllers
 
         [Authorize]
         [HttpGet("kingdoms/{id}/buildings")]
-        public IActionResult Buildings([FromRoute] long id)
+        public async Task<IActionResult> BuildingsAsync([FromRoute] long id)
         {
-            if (!KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
+            if (!await KingdomService.IsUserKingdomOwnerAsync(id, HttpContext.User.Identity.Name))
             {
                 return Unauthorized(new ErrorResponse()
                 { Error = "This kingdom does not belong to authenticated player" });
             }
 
-            var kingdom = KingdomService.GetById(id);
+            var kingdom = await KingdomService.GetByIdAsync(id);
             var kingdomAPIModel = KingdomService.KingdomMapping(kingdom);
             var buildingAPIModels = BuildingService.ListOfBuildingsMapping(kingdom.Buildings);
             var response = new BuildingsResponse()
@@ -103,9 +103,9 @@ namespace Naivart.Controllers
 
         [Authorize]
         [HttpPost("kingdoms/{id}/buildings")]
-        public IActionResult AddBuilding([FromRoute] long id, [FromBody] BuildingRequest request)
+        public async Task<IActionResult> AddBuildingAsync([FromRoute] long id, [FromBody] BuildingRequest request)
         {
-            if (!KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
+            if (!await KingdomService.IsUserKingdomOwnerAsync(id, HttpContext.User.Identity.Name))
             {
                 return Unauthorized(new ErrorResponse()
                 { Error = "This kingdom does not belong to authenticated player!" });
@@ -116,50 +116,49 @@ namespace Naivart.Controllers
                 return BadRequest(new ErrorResponse() { Error = "Type is required." });
             }
 
-            if (!BuildingService.IsBuildingTypeDefined(request.Type))
+            if (!await BuildingService.IsBuildingTypeDefinedAsync(request.Type))
             {
                 return BadRequest(new ErrorResponse() { Error = "Type is unknown." });
             }
 
-            var response = BuildingService.AddBuilding(request, id, out int statusCode, 
-                out string error);
-            return statusCode != 200 ? StatusCode(statusCode, new ErrorResponse() { Error = error })
-                                     : Ok(response);
+            var response = await BuildingService.AddBuildingAsync(request, id);
+            return response.Item2 != 200 ? StatusCode(response.Item2, new ErrorResponse() { Error = response.Item3 })
+                                         : Ok(response.Item1);
         }
 
         [Authorize]
         [HttpPut("kingdoms/{kingdomId}/buildings/{buildingId}")]
-        public IActionResult UpgradeBuilding([FromRoute] long kingdomId, [FromRoute] long buildingId)
+        public async Task<IActionResult> UpgradeBuildingAsync([FromRoute] long kingdomId, [FromRoute] long buildingId)
         {
-            if (!KingdomService.IsUserKingdomOwner(kingdomId, HttpContext.User.Identity.Name))
+            if (!await KingdomService.IsUserKingdomOwnerAsync(kingdomId, HttpContext.User.Identity.Name))
             {
                 return Unauthorized(new ErrorResponse()
                 { Error = "This kingdom does not belong to authenticated player!" });
             }
 
-            if (!KingdomService.GetById(kingdomId).Buildings.Any(b => b.Id == buildingId))
+            var kingdom = await KingdomService.GetByIdAsync(kingdomId);
+            if (!kingdom.Buildings.Any(b => b.Id == buildingId))
             {
                 return BadRequest(new ErrorResponse()
                 { Error = "There is no such building in this kingdom!" });
             }
 
-            var upgradedBuilding = BuildingService.UpgradeBuilding (kingdomId, buildingId,
-                out int statusCode, out string error);
-            return statusCode != 200 ? StatusCode(statusCode, new ErrorResponse() { Error = error })
-                                     : Ok(upgradedBuilding);
+            var response = await BuildingService.UpgradeBuildingAsync(kingdomId, buildingId);
+            return response.Item2 != 200 ? StatusCode(response.Item2, new ErrorResponse() { Error = response.Item3 })
+                                         : Ok(response.Item1);
         }
 
         [Authorize]
         [HttpGet("kingdoms/{id}/resources")]
-        public object Resources([FromRoute] long id)
+        public async Task<object> ResourcesAsync([FromRoute] long id)
         {
-            if (!KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
+            if (!await KingdomService.IsUserKingdomOwnerAsync(id, HttpContext.User.Identity.Name))
             {
                 return Unauthorized(new ErrorResponse()
                 { Error = "This kingdom does not belong to authenticated player" });
             }
 
-            var kingdom = KingdomService.GetById(id);
+            var kingdom = await KingdomService.GetByIdAsync(id);
             var kingdomAPIModel = KingdomService.KingdomMapping(kingdom);
             var resourceAPIModels = ResourceService.ListOfResourcesMapping(kingdom.Resources);
             var response = new ResourcesResponse()
@@ -172,15 +171,15 @@ namespace Naivart.Controllers
 
         [Authorize]
         [HttpGet("kingdoms/{id}/troops")]
-        public IActionResult Troops([FromRoute] long id)
+        public async Task<IActionResult> TroopsAsync([FromRoute] long id)
         {
-            if (!KingdomService.IsUserKingdomOwner(id, HttpContext.User.Identity.Name))
+            if (!await KingdomService .IsUserKingdomOwnerAsync(id, HttpContext.User.Identity.Name))
             {
                 return Unauthorized(new ErrorResponse()
                 { Error = "This kingdom does not belong to authenticated player" });
             }
 
-            var kingdom = KingdomService.GetById(id);
+            var kingdom = await KingdomService.GetByIdAsync(id);
             var kingdomAPIModel = KingdomService.KingdomMapping(kingdom);
             var troopAPIModels = TroopService.ListOfTroopsMapping(kingdom.Troops);
             var response = new TroopsResponse()
@@ -192,25 +191,24 @@ namespace Naivart.Controllers
         }
 
         [HttpPost("kingdoms/{id}/troops")]
-        public IActionResult CreateTroops([FromRoute] long id, [FromBody] CreateTroopRequest input)
+        public async Task<IActionResult> CreateTroopsAsync([FromRoute] long id, [FromBody] CreateTroopRequest input)
         {
-            var model = TroopService.TroopCreateRequest(input, id, HttpContext.User.Identity.Name,
-                out int status, out string result);
-            return status != 200 ? StatusCode(status, new ErrorResponse() { Error = result })
-                                     : Ok(model);
+            var response = await TroopService.TroopCreateRequestAsync(input, id, HttpContext.User.Identity.Name);
+            return response.Item2 != 200 ? StatusCode(response.Item2, new ErrorResponse() { Error = response.Item3 })
+                                         : Ok(response.Item1);
         }
 
         [Authorize]
         [HttpPut("kingdoms/{id}/troops")]
-        public IActionResult UpgradeTroops([FromRoute] long id, [FromBody] UpgradeTroopsRequest input)
+        public async Task<IActionResult> UpgradeTroopsAsync([FromRoute] long id, [FromBody] UpgradeTroopsRequest input)
         {
-            var troop = TroopService.UpgradeTroops(id, HttpContext.User.Identity.Name, input.Type, out string result, out int statusCode);
-            if (statusCode != 200)
+            var result = await TroopService.UpgradeTroopsAsync(id, HttpContext.User.Identity.Name, input.Type);
+            if (result.Item1 != 200)
             {
-                var errorResponse = new ErrorResponse() { Error = result };
-                return StatusCode(statusCode, errorResponse);
+                var errorResponse = new ErrorResponse() { Error = result.Item2 };
+                return StatusCode(result.Item1, errorResponse);
             }
-            var upgradeTroopsResponse = new UpgradeTroopsResponse() { status = "ok" };
+            var upgradeTroopsResponse = new UpgradeTroopsResponse() { status = "OK" };
             return Ok(upgradeTroopsResponse);
         }
     }

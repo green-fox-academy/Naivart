@@ -8,6 +8,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web.Helpers;
 
 namespace Naivart.Services
@@ -23,7 +24,7 @@ namespace Naivart.Services
             DbContext = dbContext;
             AuthService = authService;
         }
-        public string Authenticate(PlayerLogin player, out int statusCode)
+        public async Task<ValueTuple<int, string>> AuthenticateAsync(PlayerLogin player)
         {
             string username = player.Username;
             string password = player.Password;
@@ -31,28 +32,28 @@ namespace Naivart.Services
             {
                 if (String.IsNullOrEmpty(username) || String.IsNullOrEmpty(password))
                 {
-                    statusCode = 400;
-                    return "Field username and/or field password was empty!";
+                    //statusCode = 400;
+                    return (400, "Field username and/or field password was empty!");
                 }
-                else if (IsLoginPasswordCorrect(username, password))
+                else if (await IsLoginPasswordCorrectAsync(username, password))
                 {
-                    statusCode = 200;
-                    return AuthService.GetToken(username);
+                    //statusCode = 200;
+                    return (200, AuthService.GetToken(username));
                 }
-                statusCode = 401;
-                return "Username and/or password was incorrect!";
+                //statusCode = 401;
+                return (401, "Username and/or password was incorrect!");
             }
             catch
             {
-                statusCode = 500;
-                return "Data could not be read";
+                //statusCode = 500;
+                return (500, "Data could not be read");
             }
         }
-        public bool IsLoginPasswordCorrect(string name, string password)    
+        public async Task<bool> IsLoginPasswordCorrectAsync(string name, string password)    
         {
             try
             {
-                var player = DbContext.Players.FirstOrDefault(x => x.Username == name);
+                var player = await Task.FromResult(DbContext.Players.FirstOrDefault(x => x.Username == name));
                 if (player is null)
                 {
                     return false;
@@ -66,25 +67,25 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
-        public PlayerWithKingdom GetTokenOwner(PlayerIdentity player)
+        public async Task<PlayerWithKingdom> GetTokenOwnerAsync(PlayerIdentity player)
         {
             string token = player.Token;
             try
             {               
                 var identity = AuthService.GetNameFromToken(token);
-                return FindPlayerByName(identity);
+                return await FindPlayerByNameAsync(identity);
             }
             catch
             {
                 return null;
             }
         }
-        public PlayerWithKingdom FindPlayerByName(string name)
+        public async Task<PlayerWithKingdom> FindPlayerByNameAsync(string name)
         {
             try
             {
-                var player = DbContext.Players.Where(x => x.Username == name)
-                    .Include(x => x.Kingdom).FirstOrDefault();
+                var player = await Task.FromResult(DbContext.Players.Where(x => x.Username == name)
+                                             .Include(x => x.Kingdom).FirstOrDefault());
                 PlayerWithKingdom playerWithKingdom = new PlayerWithKingdom 
                 { KingdomId = player.KingdomId, KingdomName = player.Kingdom.Name, Ruler = player.Username };
                 return playerWithKingdom;
@@ -95,7 +96,7 @@ namespace Naivart.Services
             }       
         }
 
-        public PlayerInfo GetTokenOwnerInfo(string token)
+        public async Task<PlayerInfo> GetTokenOwnerInfoAsync(string token)
         {
             try
             {
@@ -119,7 +120,7 @@ namespace Naivart.Services
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
                 var identity = principal.Identity.Name;
 
-                return FindPlayerByNameReturnPlayerInfo(identity);
+                return await FindPlayerByNameReturnPlayerInfoAsync(identity);
             }
             catch
             {
@@ -127,9 +128,9 @@ namespace Naivart.Services
             }
         }
 
-        public PlayerInfo FindPlayerByNameReturnPlayerInfo(string name)
+        public async Task<PlayerInfo> FindPlayerByNameReturnPlayerInfoAsync(string name)
         {
-            var model = DbContext.Players.FirstOrDefault(x => x.Username == name);
+            var model = await Task.FromResult(DbContext.Players.FirstOrDefault(x => x.Username == name));
             return new PlayerInfo() { Id = model.Id, Username = model.Username, KingdomId = model.KingdomId};
         }
     }

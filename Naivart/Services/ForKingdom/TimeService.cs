@@ -1,6 +1,7 @@
 ﻿using Naivart.Database;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Naivart.Services
 {
@@ -17,15 +18,15 @@ namespace Naivart.Services
             return DateTimeOffset.Now.ToUnixTimeSeconds();
         }
         
-        public void UpdateResources(long kingdomId)
+        public async Task UpdateResourcesAsync(long kingdomId)
         {
-            var resources = DbContext.Resources.Where(x => x.KingdomId == kingdomId).ToList();
+            var resources = await Task.FromResult(DbContext.Resources.Where(x => x.KingdomId == kingdomId).ToList());
             foreach (var resource in resources)
             {
                 resource.Amount += CalculateAmount(resource.UpdatedAt, resource.Generation, out int extra);
                 resource.UpdatedAt = GetUnixTimeNow() - extra;
                 DbContext.Resources.Update(resource);
-                DbContext.SaveChanges();
+                await DbContext.SaveChangesAsync();
             }
         }
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using Naivart.Services;
+using System.Threading.Tasks;
 
 namespace Naivart.Controllers
 {
@@ -24,28 +25,28 @@ namespace Naivart.Controllers
         [HttpPost("auth")]
         public IActionResult Auth([FromBody] PlayerIdentity token)
         {
-            var player = LoginService.GetTokenOwner(token);
+            var player = LoginService.GetTokenOwnerAsync(token);
             return player == null ? Unauthorized() : Ok(player);
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] PlayerLogin player)
+        public async Task<IActionResult> LoginAsync([FromBody] PlayerLogin player)
         {
-            string tokenOrMessage = LoginService.Authenticate(player, out int statusCode);
-            if (statusCode != 200)
+            var result = await LoginService.AuthenticateAsync(player);
+            if (result.Item1 != 200)
             {   
-                var output = new ErrorResponse() { Error = tokenOrMessage };
-                return StatusCode(statusCode, output);
+                var output = new ErrorResponse() { Error = result.Item2 };
+                return StatusCode(result.Item1, output);
             }
             var correctLogin = new TokenWithStatusResponse()
-            { Status = "ok", Token = tokenOrMessage };
+            { Status = "OK", Token = result.Item2 };
             return Ok(correctLogin);
         }
 
         [HttpPost("registration")]
-        public IActionResult PlayerRegistration([FromBody] RegisterRequest request)
+        public async Task<IActionResult> PlayerRegistrationAsync([FromBody] RegisterRequest request)
         {
-            Player player = PlayerService.RegisterPlayer(
+            Player player = await PlayerService.RegisterPlayerAsync(
                 request.Username,
                 request.Password,
                 request.KingdomName);
@@ -71,16 +72,15 @@ namespace Naivart.Controllers
 
         [Authorize]
         [HttpPut("registration")]
-        public IActionResult KingdomRegistration([FromBody] KingdomLocationInput input)
+        public async Task<IActionResult> KingdomRegistrationAsync([FromBody] KingdomLocationInput input)
         {
-            string result = KingdomService.RegisterKingdom(input, HttpContext.User.Identity.Name,
-                out int status);
-            if (status != 200)
+            var result = await KingdomService.RegisterKingdomAsync(input, HttpContext.User.Identity.Name);
+            if (result.Item1 != 200)
             {
-                var outputError = new ErrorResponse() { Error = result };
-                return StatusCode(status, outputError);
+                var outputError = new ErrorResponse() { Error = result.Item2 };
+                return StatusCode(result.Item1, outputError);
             }
-            var outputOk = new StatusResponse() { Status = result };
+            var outputOk = new StatusResponse() { Status = result.Item2 };
             return Ok(outputOk);
         }
     }
