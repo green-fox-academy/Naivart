@@ -11,6 +11,8 @@
 appsettings.json
 appsettings.Development.json
 !json-backup/*
+Naivart/Logging/
+Logging/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
