@@ -13,7 +13,8 @@ namespace Naivart
             //CreateHostBuilder(args).Build().Run();
             Log.Logger = new LoggerConfiguration()
                 //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .MinimumLevel.Information()
+                //.MinimumLevel.Information()
+                .MinimumLevel.Debug()
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
                 .WriteTo.File("Logging/log.txt",
