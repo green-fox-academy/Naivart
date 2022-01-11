@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Kingdom;
 using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;

@@ -1,0 +1,1 @@
+UPDATE naivart.trooptypes SET Type = LOWER(Type);

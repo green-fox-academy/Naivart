@@ -13,6 +13,10 @@ namespace Naivart.Database
         public DbSet<Resource> Resources { get; set; }
         public DbSet<Troop> Troops { get; set; }
         public DbSet<TroopType> TroopTypes { get; set; }
+        public DbSet<Battle> Battles { get; set; }
+        public DbSet<TroopsLost> TroopsLost { get; set; }
+        public DbSet<AttackerTroops> AttackerTroops { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
 
@@ -54,6 +58,18 @@ namespace Naivart.Database
                 .HasOne<TroopType>(t => t.TroopType)
                 .WithMany(t => t.Troops)
                 .HasForeignKey(t => t.TroopTypeId)
+                .IsRequired(true);
+            
+            modelBuilder.Entity<AttackerTroops>()
+                .HasOne<Battle>(t => t.Battle)
+                .WithMany(t => t.AttackingTroops)
+                .HasForeignKey(t => t.BattleId)
+                .IsRequired(true);
+            
+            modelBuilder.Entity<TroopsLost>()
+                .HasOne<Battle>(t => t.Battle)
+                .WithMany(t => t.DeadTroops)
+                .HasForeignKey(t => t.BattleId)
                 .IsRequired(true);
 
             modelBuilder.Entity<Building>()

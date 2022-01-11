@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Kingdom;
 using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.Entities;
 using System.Linq;
@@ -27,6 +28,16 @@ namespace Naivart
                 .ForMember(dest => dest.Buildings_points, opt => opt.MapFrom(src => src.Buildings.Sum(i => i.Level)))
                 .ForMember(dest => dest.Troops_points, opt => opt.MapFrom(src => src.Troops.Sum(ad => ad.TroopType.Attack + ad.TroopType.Defense)))
                 .ForMember(dest => dest.Total_points, opt => opt.MapFrom(src => src.Buildings.Sum(i => i.Level) + src.Troops.Sum(ad => ad.TroopType.Attack + ad.TroopType.Defense)));
+        }
+    }
+
+    public class KingdomBattleProfile : Profile 
+    {
+        public KingdomBattleProfile()
+        {
+            CreateMap<Battle, BattleResultRespond>()
+           .ForMember(dest => dest.BattleId, opt => opt.MapFrom(src => src.Id))
+           .ForMember(dest => dest.ResolutionTime, opt => opt.MapFrom(src => src.FinishedAt));
         }
     }
 }
