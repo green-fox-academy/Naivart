@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Naivart.Models.APIModels;
+using Naivart.Models.APIModels.Kingdom;
 using Naivart.Models.APIModels.Troops;
 using Naivart.Services;
 using System;
@@ -210,6 +211,26 @@ namespace Naivart.Controllers
             }
             var upgradeTroopsResponse = new UpgradeTroopsResponse() { status = "OK" };
             return Ok(upgradeTroopsResponse);
+        }
+        
+        [Authorize]
+        [HttpPost("kingdoms/{id}/battles")]
+        public IActionResult Battles([FromRoute] long id, [FromBody] BattleTargetRequest input)
+        {
+            var model = KingdomService
+                                       .Battle(input, id, HttpContext.User.Identity.Name, out int status, out string result);
+            return status != 200 ? StatusCode(status, new ErrorResponse() { Error = result })
+                         : Ok(model);
+        }
+        
+        [Authorize]
+        [HttpGet("kingdoms/{kingdomId}/battles/{id}")]
+        public IActionResult BattleResult([FromRoute] long kingdomId, long id)
+        {
+            var model = KingdomService
+                                       .BattleInfo(id, kingdomId, HttpContext.User.Identity.Name, out int status, out string result);
+            return status != 200 ? StatusCode(status, new ErrorResponse() { Error = result })
+             : Ok(model);
         }
     }
 }
