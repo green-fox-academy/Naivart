@@ -14,13 +14,13 @@ namespace Naivart.Middlewares
             _next = next;
         }
 
-        public Task Invoke(HttpContext httpContext, TimeService timeService)
+        public async Task<Task> InvokeAsync(HttpContext httpContext, TimeService timeService)
         {
             var kingdomId = httpContext.Request.RouteValues["id"];
             if (kingdomId is not null)
             {
                 long.TryParse(kingdomId.ToString(), out long result);
-                timeService.UpdateAll(result);
+                await timeService.UpdateAllAsync(result);
             }
             return _next(httpContext);
         }

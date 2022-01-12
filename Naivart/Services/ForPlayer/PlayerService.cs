@@ -7,6 +7,7 @@ using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Helpers;
 
 namespace Naivart.Services
@@ -26,11 +27,11 @@ namespace Naivart.Services
             UnitOfWork = unitOfWork;
         }
 
-        public Player RegisterPlayer(string username, string password, string kingdomName)
+        public async Task<Player> RegisterPlayerAsync(string username, string password, string kingdomName)
         {
             if (password.Length < 8
                 || String.IsNullOrWhiteSpace(username)
-                || IsInDbWithThisUsername(username))
+                || await IsInDbWithThisUsernameAsync(username))
             {
                 return null;
             }
@@ -44,49 +45,49 @@ namespace Naivart.Services
             Kingdom kingdom = new Kingdom();
 
             //check if given kingdom name (and username) is not empty or already exists in database 
-            kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && FindKingdomByName(kingdomName) == null
+            kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && FindKingdomByNameAsync(kingdomName) == null
                            ? kingdomName : $"{player.Username}'s kingdom";
 
-            UnitOfWork.Kingdoms.Add(kingdom);
-            UnitOfWork.CompleteAsync();
+            await UnitOfWork.Kingdoms.AddAsync(kingdom);
+            await UnitOfWork.CompleteAsync();
 
-            var DbKingdom = FindKingdomByName(kingdom.Name);
+            var DbKingdom = await FindKingdomByNameAsync(kingdom.Name);
             player.KingdomId = DbKingdom.Id;
-            UnitOfWork.Players.Add(player);
-            UnitOfWork.CompleteAsync();
+            await UnitOfWork.Players.AddAsync(player);
+            await UnitOfWork.CompleteAsync();
             CreateBasicBuildings(DbKingdom.Id); //creates basic buildings and save to Db 
             CreateResources(DbKingdom.Id);  //add resources to player (1000 gold and 0 food)
 
-            return UnitOfWork.Players.Include(x => x.Kingdom).FirstOrDefault
-                (x => x.Username == username && x.Password == hashedPassword);
+            return await Task.FromResult(UnitOfWork.Players.Include(x => x.Kingdom).FirstOrDefault
+                (x => x.Username == username && x.Password == hashedPassword));
         }
 
-        public Kingdom FindKingdomByName(string kingdomName)
+        public async Task<Kingdom> FindKingdomByNameAsync(string kingdomName)
         {
-            return UnitOfWork.Kingdoms.FirstOrDefault(x => x.Name == kingdomName);
+            return await Task.FromResult(UnitOfWork.Kingdoms.FirstOrDefault(x => x.Name == kingdomName));
         }
 
-        public Player FindByUsername(string username)
+        public async Task<Player> FindByUsernameAsync(string username)
         {
-            return UnitOfWork.Players.FirstOrDefault(x => x.Username == username);
+            return await Task.FromResult(UnitOfWork.Players.FirstOrDefault(x => x.Username == username));
         }
 
-        public bool IsInDbWithThisUsername(string username)
+        public async Task<bool> IsInDbWithThisUsernameAsync(string username)
         {
-            return UnitOfWork.Players.Any(x => x.Username == username);
+            return await Task.FromResult(UnitOfWork.Players.Any(x => x.Username == username));
         }
 
-        public void DeleteByUsername(string username)
+        public async Task DeleteByUsernameAsync(string username)
         {
-            UnitOfWork.Players.Remove(FindByUsername(username));
+            await Task.FromResult(UnitOfWork.Players.Remove(FindByUsername(username)));
         }
 
-        public Player GetPlayerById(long id)
+        public async Task<Player> GetPlayerByIdAsync(long id)
         {
             try
             {
-                return UnitOfWork.Players.Include(p => p.Kingdom)
-                                .FirstOrDefault(p => p.Id == id);
+                return await Task.FromResult(UnitOfWork.Players.Include(p => p.Kingdom)
+                                .FirstOrDefault(p => p.Id == id));
             }
             catch
             {
@@ -94,7 +95,7 @@ namespace Naivart.Services
             }
         }
 
-        public void CreateBasicBuildings(long kingdomId)
+        public async Task CreateBasicBuildingsAsync(long kingdomId)
         {
             var townhallRequest = new BuildingRequest() { Type = "townhall" };
             var farmRequest = new BuildingRequest() { Type = "farm" };
@@ -104,13 +105,13 @@ namespace Naivart.Services
 
             foreach (var building in basicBuildings)
             {
-                BuildingService.AddBasicBuilding(building, kingdomId);
+                await BuildingService.AddBasicBuildingAsync(building, kingdomId);
             }
         }
 
-        public void CreateResources(long kingdomId)
+        public async Task CreateResourcesAsync(long kingdomId)
         {
-            UnitOfWork.Resources.Add(new Resource()
+            await UnitOfWork.Resources.AddAsync(new Resource()
             {
                 Type = "food",
                 Amount = 0,
@@ -118,9 +119,9 @@ namespace Naivart.Services
                 UpdatedAt = TimeService.GetUnixTimeNow(),
                 KingdomId = kingdomId
             });
-            UnitOfWork.CompleteAsync();
+            await UnitOfWork.CompleteAsync();
 
-            UnitOfWork.Resources.Add(new Resource()
+            await UnitOfWork.Resources.AddAsync(new Resource()
             {
                 Type = "gold",
                 Amount = 1000,
@@ -128,7 +129,7 @@ namespace Naivart.Services
                 UpdatedAt = TimeService.GetUnixTimeNow(),
                 KingdomId = kingdomId
             });
-            UnitOfWork.CompleteAsync();
+            await UnitOfWork.CompleteAsync();
         }
     }
 }

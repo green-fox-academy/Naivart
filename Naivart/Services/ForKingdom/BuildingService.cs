@@ -8,6 +8,7 @@ using Naivart.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Naivart.Services
 {
@@ -42,38 +43,37 @@ namespace Naivart.Services
             return buildingAPIModels;
         }
 
-        public BuildingResponse AddBuilding(BuildingRequest request, long kingdomId,
-            out int statusCode, out string error)
+        public async Task<ValueTuple<BuildingResponse, int, string>> AddBuildingAsync(BuildingRequest request, long kingdomId)
         {
             try
             {
-                var buildingType = UnitOfWork.BuildingTypes.FirstOrDefault //getting required building level 1 information 
-                    (bt => bt.Type == request.Type && bt.Level == 1);
-                var kingdom = KingdomService.GetById(kingdomId);
+                var buildingType = await Task.FromResult(UnitOfWork.BuildingTypes.FirstOrDefault //getting required building level 1 information 
+                    (bt => bt.Type == request.Type && bt.Level == 1));
+                var kingdom = await KingdomService.GetByIdAsync(kingdomId);
                 var requiredTownhallLevel = buildingType.RequiredTownhallLevel;
 
                 if ((buildingType.Type == "academy" && kingdom.Buildings.Any(b => b.Type == "academy"))
                    || (buildingType.Type == "ramparts" && kingdom.Buildings.Any(b => b.Type == "ramparts"))
                    || buildingType.Type == "townhall") //checking for buildings that can be built only once 
                 {
-                    statusCode = 403;
-                    error = $"You can have only one {buildingType.Type}!";
-                    return new BuildingResponse();
+                    //statusCode = 403;
+                    //error = $"You can have only one {buildingType.Type}!";
+                    return (new BuildingResponse(), 403, $"You can have only one {buildingType.Type}!");
                 }
 
-                if (GetTownhallLevel(kingdomId) != requiredTownhallLevel) //checking required townhall level
+                if (await GetTownhallLevelAsync(kingdomId) != requiredTownhallLevel) //checking required townhall level
                 {
-                    statusCode = 400;
-                    error = $"You need to have townhall level {requiredTownhallLevel} to build that!";
-                    return new BuildingResponse();
+                    //statusCode = 400;
+                    //error = $"You need to have townhall level {requiredTownhallLevel} to build that!";
+                    return (new BuildingResponse(), 400, $"You need to have townhall level {requiredTownhallLevel} first!");
                 }
 
-                if (!KingdomService.IsEnoughGoldFor(KingdomService.GetGoldAmount(kingdomId), //checking resources in the kingdom
+                if (!await KingdomService.IsEnoughGoldForAsync(await KingdomService .GetGoldAmountAsync(kingdomId), //checking resources in the kingdom
                     buildingType.Id))
                 {
-                    statusCode = 400;
-                    error = "You don't have enough gold to build that!";
-                    return new BuildingResponse();
+                    //statusCode = 400;
+                    //error = "You don't have enough gold to build that!";
+                    return (new BuildingResponse(), 400, "You don't have enough gold to build that!");
                 }
 
                 var buildingModel = mapper.Map<BuildingModel>(buildingType); //mapping model for creating building
@@ -90,58 +90,57 @@ namespace Naivart.Services
                 {
                     kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
                 }
-                UnitOfWork.Buildings.Add(building);
-                UnitOfWork.CompleteAsync();
+                await UnitOfWork.Buildings.AddAsync(building);
+                await UnitOfWork.CompleteAsync();
 
-                statusCode = 200;
-                error = string.Empty;
-                return mapper.Map<BuildingResponse>(building); //mapping in order to give required response format
+                //statusCode = 200;
+                //error = string.Empty;
+                return (mapper.Map<BuildingResponse>(building), 200, string.Empty); //mapping in order to give required response format
             }
             catch
             {
-                statusCode = 500;
-                error = "Data could not be read";
-                return null;
+                //statusCode = 500;
+                //error = "Data could not be read";
+                return (null, 500, "Data could not be read");
             }
         }
 
-        public int GetTownhallLevel(long kingdomId)
+        public async Task<int> GetTownhallLevelAsync(long kingdomId)
         {
-            var kingdom = KingdomService.GetById(kingdomId);
+            var kingdom = await KingdomService.GetByIdAsync(kingdomId);
             return kingdom.Buildings.Where(p => p.Type == "townhall").FirstOrDefault().Level;
         }
 
-        public BuildingAPIModel UpgradeBuilding(long kingdomId, long buildingId, out int statusCode,
-            out string error)
+        public async Task<ValueTuple<BuildingAPIModel, int, string>> UpgradeBuildingAsync(long kingdomId, long buildingId)
         {
             try
             {
-                var kingdom = KingdomService.GetById(kingdomId);
+                var kingdom = await KingdomService.GetByIdAsync(kingdomId);
                 var building = kingdom.Buildings.FirstOrDefault(b => b.Id == buildingId);
 
-                if (!KingdomService.IsEnoughGoldFor(KingdomService.GetGoldAmount(kingdomId),
+                if (!await KingdomService.IsEnoughGoldForAsync(await KingdomService.GetGoldAmountAsync(kingdomId),
                     building.BuildingTypeId))
                 {
-                    statusCode = 400;
-                    error = "You don't have enough gold to upgrade that!";
-                    return new BuildingAPIModel();
+                    //statusCode = 400;
+                    //error = "You don't have enough gold to upgrade that!";
+                    return (new BuildingAPIModel(), 400, "You don't have enough gold to upgrade that!");
                 }
 
-                if (building.Type is not "townhall" && GetTownhallLevel(kingdomId) <= building.Level)
+                if (building.Type is not "townhall" && await GetTownhallLevelAsync(kingdomId) <= building.Level)
                 {
-                    statusCode = 403;
-                    error = "Building's level cannot be higher than the townhall's!";
-                    return new BuildingAPIModel();
+                    //statusCode = 403;
+                    //error = "Building's level cannot be higher than the townhall's!";
+                    return (new BuildingAPIModel(), 403, "Building's level cannot be higher than the townhall's!");
                 }
 
                 if (building.Level == 10)
                 {
-                    statusCode = 400;
-                    error = "This building has already reached max level!";
-                    return new BuildingAPIModel();
+                    //statusCode = 400;
+                    //error = "This building has already reached max level!";
+                    return (new BuildingAPIModel(), 400, "This building has already reached max level!");
                 }
 
-                var upgradedBuilding = UnitOfWork.BuildingTypes.FirstOrDefault(x => x.Id == building.BuildingTypeId + 1);
+                var upgradedBuilding = await Task.FromResult(UnitOfWork.BuildingTypes.FirstOrDefault(x => x.Id == building.BuildingTypeId + 1));
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= upgradedBuilding.GoldCost;
 
                 if (upgradedBuilding.Type == "farm")
@@ -156,29 +155,29 @@ namespace Naivart.Services
                 building.BuildingTypeId = upgradedBuilding.Id;
                 building.Level = upgradedBuilding.Level;
                 building.Hp = upgradedBuilding.Hp;
-                UnitOfWork.CompleteAsync();
-                statusCode = 200;
-                error = string.Empty;
-                return mapper.Map<BuildingAPIModel>(building);
+                await UnitOfWork.CompleteAsync();
+                //statusCode = 200;
+                //error = string.Empty;
+                return (mapper.Map<BuildingAPIModel>(building), 200, string.Empty);
             }
             catch
             {
-                statusCode = 500;
-                error = "Data could not be read";
-                return null;
+                //statusCode = 500;
+                //error = "Data could not be read";
+                return (null, 500, "Data could not be read");
             }
         }
 
-        public List<LeaderboardBuildingAPIModel> GetBuildingsLeaderboard(out int status, out string error)
+        public async Task<ValueTuple<List<LeaderboardBuildingAPIModel>, int, string>> GetBuildingsLeaderboardAsync()
         {
             try
             {
-                var allKingdoms = KingdomService.GetAllKingdoms();
+                var allKingdoms = await KingdomService.GetAllAsync();
                 if (!allKingdoms.Any())
                 {
-                    error = "There are no kingdoms in Leaderboard";
-                    status = 404;
-                    return null;
+                    //error = "There are no kingdoms in Leaderboard";
+                    //status = 404;
+                    return (null, 404, "There are no kingdoms in Leaderboard");
                 }
 
                 var BuildingsLeaderboard = new List<LeaderboardBuildingAPIModel>();
@@ -187,38 +186,38 @@ namespace Naivart.Services
                     var model = mapper.Map<LeaderboardBuildingAPIModel>(kingdom);
                     BuildingsLeaderboard.Add(model);
                 }
-                error = "ok";
-                status = 200;
-                return BuildingsLeaderboard.OrderByDescending(p => p.Points).ToList();
+                //error = "ok";
+                //status = 200;
+                return (BuildingsLeaderboard.OrderByDescending(p => p.Points).ToList(), 200, "OK");
             }
             catch
             {
-                error = "Data could not be read";
-                status = 500;
-                return null;
+                //error = "Data could not be read";
+                //status = 500;
+                return (null, 500, "Data could not be read");
             }
         }
 
-        public bool IsBuildingTypeDefined(string type)
+        public async Task<bool> IsBuildingTypeDefinedAsync(string type)
         {
-            return UnitOfWork.BuildingTypes.Any(bt => bt.Type == type);
+            return await Task.FromResult(UnitOfWork.BuildingTypes.Any(bt => bt.Type == type));
         }
 
-        public void AddBasicBuilding(BuildingRequest request, long kingdomId) //similar to AddBuilding method, but modified for player registration
+        public async Task AddBasicBuildingAsync(BuildingRequest request, long kingdomId) //similar to AddBuilding method, but modified for player registration
         {
             try
             {
-                var buildingType = UnitOfWork.BuildingTypes.FirstOrDefault
-                    (bt => bt.Type == request.Type && bt.Level == 1);
-                var kingdom = KingdomService.GetById(kingdomId);
+                var buildingType = await Task.FromResult(UnitOfWork.BuildingTypes.FirstOrDefault
+                    (bt => bt.Type == request.Type && bt.Level == 1));
+                var kingdom = await KingdomService.GetByIdAsync(kingdomId);
 
                 var buildingModel = mapper.Map<BuildingModel>(buildingType);
                 buildingModel.BuildingTypeId = buildingType.Id;
                 buildingModel.KingdomId = kingdom.Id;
 
                 Building building = mapper.Map<Building>(buildingModel);
-                UnitOfWork.Buildings.Add(building);
-                UnitOfWork.CompleteAsync();
+                await UnitOfWork.Buildings.AddAsync(building);
+                await UnitOfWork.CompleteAsync();
             }
             catch (Exception e)
             {

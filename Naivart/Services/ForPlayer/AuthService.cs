@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Naivart.Services
 {
@@ -63,11 +64,11 @@ namespace Naivart.Services
             return principal.Identity.Name;
         }
 
-        public bool IsKingdomOwner(long kingdomId, string username)
+        public async Task<bool> IsKingdomOwnerAsync(long kingdomId, string username)
         {
             try
             {
-                return UnitOfWork.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username == username;
+                return await Task.FromResult(UnitOfWork.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username == username);
             }
             catch (Exception e)
             {
