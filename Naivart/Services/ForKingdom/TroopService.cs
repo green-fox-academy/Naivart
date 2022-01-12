@@ -65,14 +65,14 @@ namespace Naivart.Services
                 {
                     createdTroop.Item1.KingdomId = kingdomId;
                     createdTroop.Item1.Status = "town";
-                    await UnitOfWork.Troops.AddAsync(createdTroop.Item1);
+                    UnitOfWork.Troops.AddAsync(createdTroop.Item1);
                     await UnitOfWork.CompleteAsync();
                     var infoTroop = mapper.Map<TroopInfo>(createdTroop);
                     resultModel.Add(infoTroop);
                     createdTroop.Item1 = await TroopFactoryAsync(troopType, troopLevel);
                 }
                 var kingdomModel = await Task.FromResult(UnitOfWork.Kingdoms.Include(x => x.Resources).Where(x => x.Id == kingdomId).FirstOrDefault());
-                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= totalCost;   //reduce owner gold by total cost
+                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= createdTroop.Item2;   //reduce owner gold by total cost
                 await UnitOfWork.CompleteAsync();
 
                 //isPossibleToCreate = true;

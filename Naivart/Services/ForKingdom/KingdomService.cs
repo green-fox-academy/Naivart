@@ -41,7 +41,8 @@ namespace Naivart.Services
             var kingdom = new Kingdom();
             try
             {
-                return await Task.FromResult(UnitOfWork.Kingdoms.GetAllKingdomsAsync().FirstOrDefault(k => k.Id == id));
+                var kingdoms = await GetAllAsync();
+                return kingdoms.FirstOrDefault(k => k.Id == id);
             }
             catch
             {
@@ -146,7 +147,7 @@ namespace Naivart.Services
             try
             {
                 var model = new Location() { CoordinateX = input.CoordinateX, CoordinateY = input.CoordinateY };
-                await UnitOfWork.Locations.AddAsync(model);
+                UnitOfWork.Locations.AddAsync(model);
                 await UnitOfWork.CompleteAsync();
                 long locationId = await Task.FromResult(UnitOfWork.Locations.FirstOrDefault(x => x.CoordinateX == model.CoordinateX && x.CoordinateY == model.CoordinateY).Id);
                 await Task.FromResult(UnitOfWork.Kingdoms.FirstOrDefault(x => x.Id == input.KingdomId).LocationId = locationId);
@@ -460,14 +461,14 @@ namespace Naivart.Services
                     StartedAt = TimeService.GetUnixTimeNow(),
                     FinishedAt = await CountTravelTimeAsync(targetKingdom.Target.KingdomId, attacker.Id)
                 };
-                await UnitOfWork.Battles.AddAsync(battle);
+                UnitOfWork.Battles.AddAsync(battle);
                 await UnitOfWork.CompleteAsync();
 
                 var attackerTroops = GetTroopLevels(attacker.Troops); 
                 var attackingTroops = new List<AttackerTroops>();
                 foreach (var troop in targetKingdom.Troops)
                 {
-                    await UnitOfWork.AttackerTroops.AddAsync(new AttackerTroops()
+                    UnitOfWork.AttackerTroops.AddAsync(new AttackerTroops()
                     {
                         Type = troop.Type,
                         Quantity = troop.Quantity,

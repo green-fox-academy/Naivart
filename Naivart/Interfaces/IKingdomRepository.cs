@@ -8,8 +8,8 @@ namespace Naivart.Interfaces
 {
     public interface IKingdomRepository : IRepository<Kingdom>
     {
-        List<Kingdom> GetAllKingdoms();
-        Kingdom RenameKingdom(long kingdomId, string newKingdomName);
-        Kingdom FindPlayerInfoByKingdomId(long kingdomId);
+        Task<List<Kingdom>> GetAllKingdomsAsync();
+        Task<Kingdom> RenameKingdomAsync(long kingdomId, string newKingdomName);
+        Task<Kingdom> FindPlayerInfoByKingdomIdAsync(long kingdomId);
     }
 }

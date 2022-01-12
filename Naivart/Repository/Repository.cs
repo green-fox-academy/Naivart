@@ -19,7 +19,7 @@ namespace Naivart.Repository
             Entities = DbContext.Set<T>();
         }
 
-        public void Add(T entity)
+        public void AddAsync(T entity)
         {
             DbContext.Set<T>().Add(entity);
         }

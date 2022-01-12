@@ -151,7 +151,7 @@ namespace Naivart.Services
                                         Type = troop.Type,
                                         Quantity = Convert.ToInt32(Math.Round(quantityResult))
                                     };
-                                    await UnitOfWork.TroopsLost.AddAsync(lostTroop);
+                                    UnitOfWork.TroopsLost.AddAsync(lostTroop);
                                     await UnitOfWork.CompleteAsync();
                                 }
                                 else if (Math.Round(quantityResult) != 0)
@@ -163,8 +163,8 @@ namespace Naivart.Services
                                         Type = troop.Type,
                                         Quantity = (troop.Quantity - 1) == 0 ? 1 : (troop.Quantity - 1)
                                     };
-                                    await UnitOfWork.TroopsLost.AddAsync(lostTroop);
-                                    await UnitOfWork.SaveChangesAsync();
+                                    UnitOfWork.TroopsLost.AddAsync(lostTroop);
+                                    await UnitOfWork.CompleteAsync();
                                 }
                             }
                         }
@@ -208,7 +208,7 @@ namespace Naivart.Services
                                         Type = troop.Type,
                                         Quantity = Convert.ToInt32(Math.Round(quantityResult))
                                     };
-                                    await UnitOfWork.TroopsLost.AddAsync(lostTroop);
+                                    UnitOfWork.TroopsLost.AddAsync(lostTroop);
                                     await UnitOfWork.CompleteAsync();
                                 }
                                 else if(Math.Round(quantityResult) != 0)
@@ -220,7 +220,7 @@ namespace Naivart.Services
                                         Type = troop.Type,
                                         Quantity = (troop.Quantity - 1) == 0 ? 1 : (troop.Quantity - 1)
                                     };
-                                    await UnitOfWork.TroopsLost.AddAsync(lostTroop);
+                                    UnitOfWork.TroopsLost.AddAsync(lostTroop);
                                     await UnitOfWork.CompleteAsync();
                                 }
                             }
@@ -275,8 +275,7 @@ namespace Naivart.Services
                                 troopsForUpdate.Add(attTroop);
                             }
                         }
-                        UnitOfWork.Battles.UpdateTroops(troopsForUpdate);
-                        await UnitOfWork.CompleteAsync();
+                        await UnitOfWork.Battles.UpdateTroopsAsync(troopsForUpdate);
                     }
                 }
             }
@@ -324,7 +323,7 @@ namespace Naivart.Services
 
             foreach (var troops in deadTroops)
             {
-                await UnitOfWork.TroopsLost.AddAsync(troops);
+                UnitOfWork.TroopsLost.AddAsync(troops);
                 await UnitOfWork.CompleteAsync();
             }
             
@@ -354,7 +353,7 @@ namespace Naivart.Services
 
             foreach (var troops in deadTroops)
             {
-                await UnitOfWork.TroopsLost.AddAsync(troops);
+                UnitOfWork.TroopsLost.AddAsync(troops);
                 await UnitOfWork.CompleteAsync();
             }
 

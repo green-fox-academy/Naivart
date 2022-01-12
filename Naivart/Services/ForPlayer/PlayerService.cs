@@ -48,15 +48,15 @@ namespace Naivart.Services
             kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && FindKingdomByNameAsync(kingdomName) == null
                            ? kingdomName : $"{player.Username}'s kingdom";
 
-            await UnitOfWork.Kingdoms.AddAsync(kingdom);
+            UnitOfWork.Kingdoms.AddAsync(kingdom);
             await UnitOfWork.CompleteAsync();
 
             var DbKingdom = await FindKingdomByNameAsync(kingdom.Name);
             player.KingdomId = DbKingdom.Id;
-            await UnitOfWork.Players.AddAsync(player);
+            UnitOfWork.Players.AddAsync(player);
             await UnitOfWork.CompleteAsync();
-            CreateBasicBuildings(DbKingdom.Id); //creates basic buildings and save to Db 
-            CreateResources(DbKingdom.Id);  //add resources to player (1000 gold and 0 food)
+            await CreateBasicBuildingsAsync(DbKingdom.Id); //creates basic buildings and save to Db 
+            await CreateResourcesAsync(DbKingdom.Id);  //add resources to player (1000 gold and 0 food)
 
             return await Task.FromResult(UnitOfWork.Players.Include(x => x.Kingdom).FirstOrDefault
                 (x => x.Username == username && x.Password == hashedPassword));
@@ -79,7 +79,7 @@ namespace Naivart.Services
 
         public async Task DeleteByUsernameAsync(string username)
         {
-            await Task.FromResult(UnitOfWork.Players.Remove(FindByUsername(username)));
+             UnitOfWork.Players.Remove(await FindByUsernameAsync(username));
         }
 
         public async Task<Player> GetPlayerByIdAsync(long id)
@@ -111,7 +111,7 @@ namespace Naivart.Services
 
         public async Task CreateResourcesAsync(long kingdomId)
         {
-            await UnitOfWork.Resources.AddAsync(new Resource()
+            UnitOfWork.Resources.AddAsync(new Resource()
             {
                 Type = "food",
                 Amount = 0,
@@ -121,7 +121,7 @@ namespace Naivart.Services
             });
             await UnitOfWork.CompleteAsync();
 
-            await UnitOfWork.Resources.AddAsync(new Resource()
+            UnitOfWork.Resources.AddAsync(new Resource()
             {
                 Type = "gold",
                 Amount = 1000,

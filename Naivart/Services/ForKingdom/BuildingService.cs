@@ -90,7 +90,7 @@ namespace Naivart.Services
                 {
                     kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
                 }
-                await UnitOfWork.Buildings.AddAsync(building);
+                UnitOfWork.Buildings.AddAsync(building);
                 await UnitOfWork.CompleteAsync();
 
                 //statusCode = 200;
@@ -216,7 +216,7 @@ namespace Naivart.Services
                 buildingModel.KingdomId = kingdom.Id;
 
                 Building building = mapper.Map<Building>(buildingModel);
-                await UnitOfWork.Buildings.AddAsync(building);
+                UnitOfWork.Buildings.AddAsync(building);
                 await UnitOfWork.CompleteAsync();
             }
             catch (Exception e)
