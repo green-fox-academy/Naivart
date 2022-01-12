@@ -63,17 +63,5 @@ namespace Naivart.Services
             var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
             return principal.Identity.Name;
         }
-
-        public async Task<bool> IsKingdomOwnerAsync(long kingdomId, string username)
-        {
-            try
-            {
-                return await Task.FromResult(UnitOfWork.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username == username);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Data could not be read", e);
-            }
-        }
     }
 }

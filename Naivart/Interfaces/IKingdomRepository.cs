@@ -1,7 +1,6 @@
-﻿using Naivart.Models.Entities;
-using System;
+﻿using Naivart.Models.APIModels;
+using Naivart.Models.Entities;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Naivart.Interfaces
@@ -11,5 +10,10 @@ namespace Naivart.Interfaces
         Task<List<Kingdom>> GetAllKingdomsAsync();
         Task<Kingdom> RenameKingdomAsync(long kingdomId, string newKingdomName);
         Task<Kingdom> FindPlayerInfoByKingdomIdAsync(long kingdomId);
+        Task<Kingdom> KingdomIncludeResourceByIdAsync(long kingdomId);
+        Task<Kingdom> FindKingdomByNameAsync(string kingdomName);
+        Task<bool> HasAlreadyLocationAsync(KingdomLocationInput input);
+        Task ChangeLocationIdForKingdomAsync(KingdomLocationInput input, long locationId);
+        Task<bool> DoesKingdomExistAsync(long kingdomId);
     }
 }

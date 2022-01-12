@@ -68,7 +68,7 @@ namespace Naivart.Services
                     return (new BuildingResponse(), 400, $"You need to have townhall level {requiredTownhallLevel} first!");
                 }
 
-                if (!await KingdomService.IsEnoughGoldForAsync(await KingdomService .GetGoldAmountAsync(kingdomId), //checking resources in the kingdom
+                if (!await UnitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService .GetGoldAmountAsync(kingdomId), //checking resources in the kingdom
                     buildingType.Id))
                 {
                     //statusCode = 400;
@@ -118,7 +118,7 @@ namespace Naivart.Services
                 var kingdom = await KingdomService.GetByIdAsync(kingdomId);
                 var building = kingdom.Buildings.FirstOrDefault(b => b.Id == buildingId);
 
-                if (!await KingdomService.IsEnoughGoldForAsync(await KingdomService.GetGoldAmountAsync(kingdomId),
+                if (!await UnitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService.GetGoldAmountAsync(kingdomId),
                     building.BuildingTypeId))
                 {
                     //statusCode = 400;
@@ -140,7 +140,7 @@ namespace Naivart.Services
                     return (new BuildingAPIModel(), 400, "This building has already reached max level!");
                 }
 
-                var upgradedBuilding = await Task.FromResult(UnitOfWork.BuildingTypes.FirstOrDefault(x => x.Id == building.BuildingTypeId + 1));
+                var upgradedBuilding = await UnitOfWork.BuildingTypes.BuildingTypeIdAsync(building.BuildingTypeId);
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= upgradedBuilding.GoldCost;
 
                 if (upgradedBuilding.Type == "farm")
@@ -172,7 +172,7 @@ namespace Naivart.Services
         {
             try
             {
-                var allKingdoms = await KingdomService.GetAllAsync();
+                var allKingdoms = await UnitOfWork.Kingdoms.GetAllKingdomsAsync();
                 if (!allKingdoms.Any())
                 {
                     //error = "There are no kingdoms in Leaderboard";

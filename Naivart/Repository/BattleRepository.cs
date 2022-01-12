@@ -2,6 +2,7 @@
 using Naivart.Database;
 using Naivart.Interfaces;
 using Naivart.Models.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,6 +35,36 @@ namespace Naivart.Repository
         {
             DbContext.UpdateRange(troops);
             await DbContext.SaveChangesAsync();
+        }
+        public async Task<bool> DoesBattleExistAsync(long battleId)
+        {
+            try
+            {
+                return await Task.FromResult(DbContext.Battles.Any(x => x.Id == battleId));
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
+        }
+        public async Task<bool> IsKingdomInBattleAsync(long battleId, long kingdomId)
+        {
+            try
+            {
+                return await Task.FromResult(DbContext.Battles.Any(x => x.Id == battleId && (x.AttackerId == kingdomId || x.DefenderId == kingdomId)));
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
+        }
+        public async Task<Battle> GetBattleFromBattleIdAsync(long battleId)
+        {
+            return await Task.FromResult(DbContext.Battles.FirstOrDefault(x => x.Id == battleId));
+        }
+        public async Task<bool> IsKingdomInBattleAsync(long kingdomId)
+        {
+            return await Task.FromResult(DbContext.Battles.Any(x => x.AttackerId == kingdomId || x.DefenderId == kingdomId));
         }
     }
 }

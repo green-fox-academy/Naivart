@@ -32,7 +32,7 @@ namespace Naivart.Services
         
         public async Task UpdateResourcesAsync(long kingdomId)
         {
-            var resources = await Task.FromResult(UnitOfWork.Resources.Where(x => x.KingdomId == kingdomId).ToList());
+            var resources = await UnitOfWork.Resources.GetResourcesFromIdAsync(kingdomId);
             foreach (var resource in resources)
             {
                 resource.Amount += CalculateAmount(resource.UpdatedAt, resource.Generation, out int extra);
@@ -52,7 +52,7 @@ namespace Naivart.Services
         public async Task UpdateBattleAsync(long kingdomId)
         {
             //check if kingdom is in or have any battles
-            if (await Task.FromResult(UnitOfWork.Battles.Any(x => x.AttackerId == kingdomId || x.DefenderId == kingdomId)))
+            if (await UnitOfWork.Battles.IsKingdomInBattleAsync(kingdomId))
             {
                 var battles = await UnitOfWork.Battles.BattlesAsync(kingdomId);
                 foreach (var battle in battles)
@@ -67,9 +67,8 @@ namespace Naivart.Services
                     {
 
                         foreach (var troops in battle.AttackingTroops)
-                        {
-                            totalDamage += await Task.FromResult(UnitOfWork.TroopTypes.FirstOrDefault(x => x.Type == troops.Type &&
-                             x.Level == troops.Level).Attack * 6 * troops.Quantity); //total damage is calculated based on attack * quantity * 6
+                        { 
+                            totalDamage += await UnitOfWork.TroopTypes.TotalDamageAsync(troops); //total damage is calculated based on attack * quantity * 6
                         }
 
                         //total defense is troops HP + defense
@@ -224,8 +223,7 @@ namespace Naivart.Services
                                     await UnitOfWork.CompleteAsync();
                                 }
                             }
-                            var lostTroops = await Task.FromResult(UnitOfWork.TroopsLost.Where(x => !(x.IsAttacker) 
-                             && x.BattleId == battle.Id).ToList());
+                            var lostTroops = await UnitOfWork.TroopsLost.LostTroopsDefenderAsync(battle.Id);
                             foreach (var troop in lostTroops)
                             {
                                 troopsForRemove = defender.Troops

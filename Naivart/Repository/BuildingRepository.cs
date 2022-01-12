@@ -6,14 +6,14 @@ using Naivart.Models.APIModels.Buildings;
 using Naivart.Models.Entities;
 using Naivart.Services;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Naivart.Repository
 {
     public class BuildingRepository : Repository<Building>, IBuildingRepository
     {
         public BuildingRepository(ApplicationDbContext context) : base(context)
-        {
-
+        {  
         }
     }
 }

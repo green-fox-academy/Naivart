@@ -54,7 +54,7 @@ namespace Naivart.Services
         {
             try
             {
-                var player = await Task.FromResult(UnitOfWork.Players.FirstOrDefault(x => x.Username == name));
+                var player = await UnitOfWork.Players.FindByUsernameAsync(name);
                 if (player is null)
                 {
                     return false;
@@ -85,9 +85,7 @@ namespace Naivart.Services
         {
             try
             {
-                var player = await Task.FromResult(UnitOfWork.Players.Include(x => x.Kingdom).Where(x => x.Username == name).FirstOrDefault());
-
-
+                var player = await UnitOfWork.Players.FindPlayerIncudeKingdomsByUsernameAsync(name);
                 PlayerWithKingdom playerWithKingdom = new PlayerWithKingdom 
                 { KingdomId = player.KingdomId, KingdomName = player.Kingdom.Name, Ruler = player.Username };
                 return playerWithKingdom;
@@ -122,18 +120,12 @@ namespace Naivart.Services
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
                 var identity = principal.Identity.Name;
 
-                return await FindPlayerByNameReturnPlayerInfoAsync(identity);
+                return await UnitOfWork.Players.FindPlayerByNameReturnPlayerInfoAsync(identity);
             }
             catch
             {
                 return null;
             }
-        }
-
-        public async Task<PlayerInfo> FindPlayerByNameReturnPlayerInfoAsync(string name)
-        {
-            var model = await Task.FromResult(UnitOfWork.Players.FirstOrDefault(x => x.Username == name));
-            return new PlayerInfo() { Id = model.Id, Username = model.Username, KingdomId = model.KingdomId};
         }
     }
 }

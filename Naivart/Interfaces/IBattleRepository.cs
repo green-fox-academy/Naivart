@@ -10,5 +10,9 @@ namespace Naivart.Interfaces
         Task<Kingdom> DefenderAsync(long defenderId);
         Task<Kingdom> AttackerAsync(long attackerId);
         Task UpdateTroopsAsync(List<Troop> troops);
+        Task<bool> DoesBattleExistAsync(long battleId);
+        Task<bool> IsKingdomInBattleAsync(long battleId, long kingdomId);
+        Task<Battle> GetBattleFromBattleIdAsync(long battleId);
+        Task<bool> IsKingdomInBattleAsync(long kingdomId);
     }
 }

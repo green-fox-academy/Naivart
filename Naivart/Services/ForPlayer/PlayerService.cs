@@ -31,7 +31,7 @@ namespace Naivart.Services
         {
             if (password.Length < 8
                 || String.IsNullOrWhiteSpace(username)
-                || await IsInDbWithThisUsernameAsync(username))
+                || await UnitOfWork.Players.IsInDbWithThisUsernameAsync(username))
             {
                 return null;
             }
@@ -45,55 +45,22 @@ namespace Naivart.Services
             Kingdom kingdom = new Kingdom();
 
             //check if given kingdom name (and username) is not empty or already exists in database 
-            kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && FindKingdomByNameAsync(kingdomName) == null
+            kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && await UnitOfWork.Kingdoms.FindKingdomByNameAsync(kingdomName) == null
                            ? kingdomName : $"{player.Username}'s kingdom";
 
             UnitOfWork.Kingdoms.AddAsync(kingdom);
             await UnitOfWork.CompleteAsync();
 
-            var DbKingdom = await FindKingdomByNameAsync(kingdom.Name);
+            var DbKingdom = await UnitOfWork.Kingdoms.FindKingdomByNameAsync(kingdom.Name);
             player.KingdomId = DbKingdom.Id;
             UnitOfWork.Players.AddAsync(player);
             await UnitOfWork.CompleteAsync();
             await CreateBasicBuildingsAsync(DbKingdom.Id); //creates basic buildings and save to Db 
             await CreateResourcesAsync(DbKingdom.Id);  //add resources to player (1000 gold and 0 food)
 
-            return await Task.FromResult(UnitOfWork.Players.Include(x => x.Kingdom).FirstOrDefault
-                (x => x.Username == username && x.Password == hashedPassword));
+            return await UnitOfWork.Players.PlayerInsludeKingdomFindByUsernameAndPasswordAsync(username, hashedPassword);
         }
 
-        public async Task<Kingdom> FindKingdomByNameAsync(string kingdomName)
-        {
-            return await Task.FromResult(UnitOfWork.Kingdoms.FirstOrDefault(x => x.Name == kingdomName));
-        }
-
-        public async Task<Player> FindByUsernameAsync(string username)
-        {
-            return await Task.FromResult(UnitOfWork.Players.FirstOrDefault(x => x.Username == username));
-        }
-
-        public async Task<bool> IsInDbWithThisUsernameAsync(string username)
-        {
-            return await Task.FromResult(UnitOfWork.Players.Any(x => x.Username == username));
-        }
-
-        public async Task DeleteByUsernameAsync(string username)
-        {
-             UnitOfWork.Players.Remove(await FindByUsernameAsync(username));
-        }
-
-        public async Task<Player> GetPlayerByIdAsync(long id)
-        {
-            try
-            {
-                return await Task.FromResult(UnitOfWork.Players.Include(p => p.Kingdom)
-                                .FirstOrDefault(p => p.Id == id));
-            }
-            catch
-            {
-                return null;
-            }
-        }
 
         public async Task CreateBasicBuildingsAsync(long kingdomId)
         {
