@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Naivart.Services;
+using System;
 using System.Threading.Tasks;
 
 namespace Naivart.Middlewares
@@ -16,11 +17,10 @@ namespace Naivart.Middlewares
 
         public async Task InvokeAsync(HttpContext httpContext, TimeService timeService)
         {
-            var kingdomId = httpContext.Request.RouteValues["id"];
-            if (kingdomId is not null)
+            string username = httpContext.User.Identity.Name;
+            if (!String.IsNullOrEmpty(username))
             {
-                long.TryParse(kingdomId.ToString(), out long result);
-                await timeService.UpdateAllAsync(result);
+                await timeService.UpdateAllAsync(username);
             }
             await _next(httpContext);
         }

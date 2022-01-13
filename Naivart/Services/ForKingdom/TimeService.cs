@@ -29,7 +29,13 @@ namespace Naivart.Services
             await UpdateResourcesAsync(kingdomId);
             await UpdateBattleAsync(kingdomId);
         }
-        
+        public async Task UpdateAllAsync(string username)
+        {
+            var player = await UnitOfWork.Players.FindPlayerIncudeKingdomsByUsernameAsync(username);
+            await UpdateResourcesAsync(player.KingdomId);
+            await UpdateBattleAsync(player.KingdomId);
+        }
+
         public async Task UpdateResourcesAsync(long kingdomId)
         {
             var resources = await UnitOfWork.Resources.GetResourcesFromIdAsync(kingdomId);
