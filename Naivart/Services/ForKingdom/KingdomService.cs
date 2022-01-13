@@ -78,11 +78,10 @@ namespace Naivart.Services
             return await UnitOfWork.Kingdoms.RenameKingdomAsync(kingdomId,newKingdomName);
         }
 
-        public async Task<ValueTuple<int, string>> RegisterKingdomAsync(KingdomLocationInput input, string usernameToken)
+        public async Task<(int status, string message)> RegisterKingdomAsync(KingdomLocationInput input, string usernameToken)
         {
             try
             {
-                //status = 400;
                 if (!IsCorrectLocationRange(input))
                 {
                     return (400, "One or both coordinates are out of valid range (0-99).");
@@ -96,18 +95,14 @@ namespace Naivart.Services
                     if (await IsUserKingdomOwnerAsync(input.KingdomId, usernameToken))
                     {
                         await ConnectLocationAsync(input);
-                        //status = 200;
                         return (200, "OK");
                     }
-                    //status = 401;
                     return (401, "Wrong user authentication!");
                 }
-                //status = 409;
                 return (409, "Your kingdom already have location!");
             }
             catch
             {
-                //status = 500;
                 return (500, "Data could not be read");
             }
         }
@@ -135,27 +130,21 @@ namespace Naivart.Services
             }
         }
 
-        public async Task<ValueTuple<KingdomDetails, int, string>> GetKingdomInfoAsync(long kingdomId, string tokenUsername)
+        public async Task<(KingdomDetails model, int status, string message)> GetKingdomInfoAsync(long kingdomId, string tokenUsername)
         {
             try
             {
                 if (await IsUserKingdomOwnerAsync(kingdomId, tokenUsername))
                 {
-                    //error = "ok";
-                    //status = 200;
                     return (await GetAllInfoAboutKingdomAsync(kingdomId), 200, "OK"); //this will use automapper to create an object
                 }
                 else
                 {
-                    //error = "This kingdom does not belong to authenticated player";
-                    //status = 401;
                     return (null, 401, "This kingdom does not belong to authenticated player");
                 }
             }
             catch
             {
-                //error = "Data could not be read";
-                //status = 500;
                 return (null, 500, "Data could not be read");
             }
         }
@@ -218,15 +207,13 @@ namespace Naivart.Services
             }
         }
 
-        public async Task<ValueTuple<List<LeaderboardKingdomAPIModel>, int, string>> GetKingdomsLeaderboardAsync()
+        public async Task<(List<LeaderboardKingdomAPIModel> model, int status, string message)> GetKingdomsLeaderboardAsync()
         {
             try
             {
                 var allKingdoms = await UnitOfWork.Kingdoms.GetAllKingdomsAsync();
-                if (allKingdoms.Count() == 0)
+                if (allKingdoms.Count == 0)
                 {
-                    //error = "There are no kingdoms in Leaderboard";
-                    //status = 404;
                     return (null, 404, "There are no kingdoms in Leaderboard");
                 }
 
@@ -236,96 +223,72 @@ namespace Naivart.Services
                     var model = mapper.Map<LeaderboardKingdomAPIModel>(kingdom);
                     kingdomsLeaderboard.Add(model);
                 }
-                //error = "ok";
-                //status = 200;
                 return (kingdomsLeaderboard.OrderByDescending(p => p.Total_points).ToList(), 200, "OK");
 
             }
             catch
             {
-                //error = "Data could not be read";
-                //status = 500;
                 return (null, 500, "Data could not be read");
             }
         }
 
-        public async Task<ValueTuple<BattleTargetResponse, int, string>> BattleAsync(BattleTargetRequest targetKingdom, long attackerId, string tokenUsername)
+        public async Task<(BattleTargetResponse model, int status, string message)> BattleAsync(
+            BattleTargetRequest targetKingdom, long attackerId, string tokenUsername)
         {
             try
             {
                 var attacker = await UnitOfWork.Kingdoms.FindPlayerInfoByKingdomIdAsync(attackerId);
                 if(!await UnitOfWork.Kingdoms.DoesKingdomExistAsync(targetKingdom.Target.KingdomId))
                 {
-                    //error = "Target kingdom doesn't exist";
-                    //status = 404;
                     return (null, 404, "Target kingdom doesn't exist");
                 }
                 else if (targetKingdom.Target.KingdomId == attacker.Id)
                 {
-                    //error = "You can't attack your own kingdom";
-                    //status = 405;
                     return (null, 405, "You can't attack your own kingdom!");
                 }
                 else if (!TroopQuantityCheck(targetKingdom, attacker))
                 {
-                    //error = "You don't have enough troops";
-                    //status = 404;
                     return (null, 404, "You don't have enough troops!");
                 }
                 else if (await IsUserKingdomOwnerAsync(attackerId, tokenUsername))
                 {
-                    //error = "ok";
-                    //status = 200;
                     return (await StartBattleAsync(targetKingdom, attacker), 200, "OK");
                 }
                 else
                 {
-                    //error = "This kingdom does not belong to authenticated player";
-                    //status = 401;
                     return (null, 401, "This kingdom does not belong to authenticated player!");
                 }
             }
             catch
             {
-                //error = "Data could not be read";
-                //status = 500;
                 return (null, 500, "Data could not be read");
             }
         }
 
-        public async Task<ValueTuple<BattleResultResponse, int, string>> BattleInfoAsync(long battleId, long kingdomId, string tokenUsername)
+        public async Task<(BattleResultResponse model, int status, string message)> BattleInfoAsync(
+            long battleId, long kingdomId, string tokenUsername)
         {
             try
             {
                 if (!await IsUserKingdomOwnerAsync(kingdomId, tokenUsername))
                 {
-                    //error = "This kingdom does not belong to authenticated player";
-                    //status = 401;
                     return (null, 401, "This kingdom does not belong to authenticated player!");
                 }
                 else if (!await UnitOfWork.Battles.IsKingdomInBattleAsync(battleId, kingdomId))
                 {
-                    //error = "Kingdom didn't fight in selected battle!";
-                    //status = 401;
                     return (null, 401, "Kingdom didn't fight in selected battle!");
                 }
                 else if (!await UnitOfWork.Battles.DoesBattleExistAsync(battleId))
                 {
-                    //error = "Battle doesn't exist";
-                    //status = 404;
                     return (null, 404, "Battle doesn't exist!");
                 }
                 else
                 {
-                    //error = "ok";
-                    //status = 200;
                     return (await GetBattleInfoAsync(battleId), 200, "OK");
                 }
             }
             catch
             {
-                //error = "Data could not be read";
-                //status = 500;
                 return (null, 500, "Data could not be read");
             }
         }

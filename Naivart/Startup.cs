@@ -95,7 +95,7 @@ namespace Naivart
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseMiddleware<TimeMiddleware>();    //If you get errors using id in route then comment this.
+            //app.UseMiddleware<TimeMiddleware>();    //If you get errors using id in route then comment this.
 
             app.UseEndpoints(endpoints =>
             {
