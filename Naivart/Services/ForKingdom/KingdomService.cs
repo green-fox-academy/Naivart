@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Kingdom;
 using Naivart.Models.APIModels.Leaderboards;
@@ -16,38 +17,23 @@ namespace Naivart.Services
     public class KingdomService
     {
         private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
-        private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public LoginService LoginService { get; set; }
         public TimeService TimeService { get; set; }
-        public KingdomService(IMapper mapper, ApplicationDbContext dbContext,
-                              AuthService authService, LoginService loginService, TimeService timeService)
+        private IUnitOfWork UnitOfWork { get; set; }
+        //public BuildingService BuildingService { get; set; }
+        public KingdomService(IMapper mapper, AuthService authService, LoginService loginService, TimeService timeService, IUnitOfWork unitOfWork)
         {
             this.mapper = mapper;
-            DbContext = dbContext;
             AuthService = authService;
             LoginService = loginService;
             TimeService = timeService;
+            UnitOfWork = unitOfWork;
         }
 
         public async Task<List<Kingdom>> GetAllAsync()
         {
-            var kingdoms = new List<Kingdom>();
-            try
-            {
-                return await Task.FromResult(DbContext.Kingdoms
-                    .Include(k => k.Player)
-                    .Include(k => k.Location)
-                    .Include(k => k.Buildings)
-                    .Include(k => k.Resources)
-                    .Include(k => k.Troops)
-                    .ThenInclude(k => k.TroopType)
-                    .ToList());
-            }
-            catch
-            {
-                return kingdoms;
-            }
+            return await UnitOfWork.Kingdoms.GetAllKingdomsAsync();
         }
 
         public async Task<Kingdom> GetByIdAsync(long id)
@@ -55,8 +41,8 @@ namespace Naivart.Services
             var kingdom = new Kingdom();
             try
             {
-                var kingdoms = await GetAllAsync();
-                return await Task.FromResult(kingdoms.FirstOrDefault(k => k.Id == id));
+                var kingdoms = await UnitOfWork.Kingdoms.GetAllKingdomsAsync();
+                return kingdoms.FirstOrDefault(k => k.Id == id);
             }
             catch
             {
@@ -89,11 +75,7 @@ namespace Naivart.Services
 
         public async Task<Kingdom> RenameKingdomAsync(long kingdomId, string newKingdomName)
         {
-            var kingdom = await GetByIdAsync(kingdomId);
-            kingdom.Name = newKingdomName;
-            DbContext.Update(kingdom);
-            await DbContext.SaveChangesAsync();
-            return kingdom;
+            return await UnitOfWork.Kingdoms.RenameKingdomAsync(kingdomId,newKingdomName);
         }
 
         public async Task<ValueTuple<int, string>> RegisterKingdomAsync(KingdomLocationInput input, string usernameToken)
@@ -105,11 +87,11 @@ namespace Naivart.Services
                 {
                     return (400, "One or both coordinates are out of valid range (0-99).");
                 }
-                else if (await IsLocationTakenAsync(input))
+                else if (await UnitOfWork.Locations.IsLocationTakenAsync(input))
                 {
                     return (400, "Given coordinates are already taken!");
                 }
-                else if (await HasAlreadyLocationAsync(input))
+                else if (await UnitOfWork.Kingdoms.HasAlreadyLocationAsync(input))
                 {
                     if (await IsUserKingdomOwnerAsync(input.KingdomId, usernameToken))
                     {
@@ -136,43 +118,16 @@ namespace Naivart.Services
                                           && input.CoordinateY <= 99;
         }
 
-        public async Task<bool> IsLocationTakenAsync(KingdomLocationInput input)
-        {
-            try
-            {
-                return await Task.FromResult(DbContext.Locations.Any(x => x.CoordinateX == input.CoordinateX 
-                && x.CoordinateY == input.CoordinateY));
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Data could not be read", e);
-            }
-        }
-
-        public async Task<bool> HasAlreadyLocationAsync(KingdomLocationInput input)
-        {
-            try
-            {
-                return await Task.FromResult(DbContext.Kingdoms.Any(x => x.Id == input.KingdomId 
-                && x.LocationId == null));
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Data could not be read", e);
-            }
-        }
-
         public async Task ConnectLocationAsync(KingdomLocationInput input)
         {
             try
             {
                 var model = new Location() { CoordinateX = input.CoordinateX, CoordinateY = input.CoordinateY };
-                await DbContext.Locations.AddAsync(model);
-                await DbContext.SaveChangesAsync();
-                long locationId = await Task.FromResult(DbContext.Locations.FirstOrDefault(x => x.CoordinateX == model.CoordinateX 
-                && x.CoordinateY == model.CoordinateY).Id);
-                await Task.FromResult(DbContext.Kingdoms.FirstOrDefault(x => x.Id == input.KingdomId).LocationId = locationId);
-                await DbContext.SaveChangesAsync();
+                UnitOfWork.Locations.AddAsync(model);
+                await UnitOfWork.CompleteAsync();
+                long locationId = await UnitOfWork.Locations.GetLocationIdFromCoordinatesAsync(model);
+                await UnitOfWork.Kingdoms.ChangeLocationIdForKingdomAsync(input, locationId);
+                await UnitOfWork.CompleteAsync();
             }
             catch (Exception e)
             {
@@ -247,28 +202,7 @@ namespace Naivart.Services
 
         public async Task<bool> IsUserKingdomOwnerAsync(long kingdomId, string username)
         {
-            try
-            {
-                return await Task.FromResult(DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId)?
-                                                      .Username == username);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Data could not be read", e);
-            }
-        }
-
-        public async Task<bool> IsEnoughGoldForAsync(int goldAmount, long buildingTypeId)
-        {
-            try
-            {
-                return await Task.FromResult(goldAmount >= DbContext.BuildingTypes.FirstOrDefault
-                    (bt => bt.Id == buildingTypeId + 1).GoldCost);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Data could not be read", e);
-            }
+            return await UnitOfWork.Players.IsUserKingdomOwnerAsync(kingdomId, username);
         }
 
         public async Task<int> GetGoldAmountAsync(long kingdomId)
@@ -288,7 +222,7 @@ namespace Naivart.Services
         {
             try
             {
-                var allKingdoms = await GetAllAsync();
+                var allKingdoms = await UnitOfWork.Kingdoms.GetAllKingdomsAsync();
                 if (allKingdoms.Count() == 0)
                 {
                     //error = "There are no kingdoms in Leaderboard";
@@ -319,8 +253,8 @@ namespace Naivart.Services
         {
             try
             {
-                var attacker = await FindPlayerInfoByKingdomIdAsync(attackerId);
-                if(!await DoesKingdomExistAsync(targetKingdom.Target.KingdomId))
+                var attacker = await UnitOfWork.Kingdoms.FindPlayerInfoByKingdomIdAsync(attackerId);
+                if(!await UnitOfWork.Kingdoms.DoesKingdomExistAsync(targetKingdom.Target.KingdomId))
                 {
                     //error = "Target kingdom doesn't exist";
                     //status = 404;
@@ -369,13 +303,13 @@ namespace Naivart.Services
                     //status = 401;
                     return (null, 401, "This kingdom does not belong to authenticated player!");
                 }
-                else if (!await IsKingdomInBattleAsync(battleId, kingdomId))
+                else if (!await UnitOfWork.Battles.IsKingdomInBattleAsync(battleId, kingdomId))
                 {
                     //error = "Kingdom didn't fight in selected battle!";
                     //status = 401;
                     return (null, 401, "Kingdom didn't fight in selected battle!");
                 }
-                else if (!await DoesBattleExistAsync(battleId))
+                else if (!await UnitOfWork.Battles.DoesBattleExistAsync(battleId))
                 {
                     //error = "Battle doesn't exist";
                     //status = 404;
@@ -396,41 +330,16 @@ namespace Naivart.Services
             }
         }
 
-        public async Task<bool> IsKingdomInBattleAsync(long battleId, long kingdomId)
-        {
-            try
-            {
-                return await Task.FromResult(DbContext.Battles.Any(x => x.Id == battleId && (x.AttackerId == kingdomId 
-                                                                           || x.DefenderId == kingdomId)));
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Data could not be read", e);
-            }
-        }
-
-        public async Task<bool> DoesBattleExistAsync(long battleId)
-        {
-            try
-            {
-                return await Task.FromResult(DbContext.Battles.Any(x => x.Id == battleId));
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Data could not be read", e);
-            }
-        }
-
         public async Task<BattleResultResponse> GetBattleInfoAsync(long battleId)
         {
             try
             {
                 var result = new BattleResultResponse();
-                var battle = await Task.FromResult(DbContext.Battles.FirstOrDefault(x => x.Id == battleId));
-                var lostTroopsAttacker = await Task.FromResult(DbContext.TroopsLost.Where(x => x.BattleId == battleId &&
-                                                                                                                      x.IsAttacker).ToList());
-                var lostTroopsDefender = await Task.FromResult(DbContext.TroopsLost.Where(x => x.BattleId == battleId &&
-                                                                                                                    !(x.IsAttacker)).ToList());
+                var battle = await UnitOfWork.Battles.GetBattleFromBattleIdAsync(battleId);
+
+                var lostTroopsAttacker = await UnitOfWork.TroopsLost.LostTroopsAttackerAsync(battleId);
+                var lostTroopsDefender = await UnitOfWork.TroopsLost.LostTroopsDefenderAsync(battleId);
+
                 var stolenResources = new ResourceStolen() { Food = battle.FoodStolen, Gold = battle.GoldStolen};
 
                 var modelAttackerTroopsLost = new List<LostTroopsAPI>();
@@ -458,17 +367,6 @@ namespace Naivart.Services
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
-        public async Task<bool> DoesKingdomExistAsync(long kingdomId)
-        {
-            try
-            {
-                return await Task.FromResult(DbContext.Kingdoms.Any(x => x.Id == kingdomId));
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Data could not be read", e);
-            }
-        }
 
         public async Task<BattleTargetResponse> StartBattleAsync(BattleTargetRequest targetKingdom, Kingdom attacker)
         {
@@ -483,21 +381,21 @@ namespace Naivart.Services
                     StartedAt = TimeService.GetUnixTimeNow(),
                     FinishedAt = await CountTravelTimeAsync(targetKingdom.Target.KingdomId, attacker.Id)
                 };
-                await DbContext.Battles.AddAsync(battle);
-                await DbContext.SaveChangesAsync();
+                UnitOfWork.Battles.AddAsync(battle);
+                await UnitOfWork.CompleteAsync();
 
                 var attackerTroops = GetTroopLevels(attacker.Troops); 
                 var attackingTroops = new List<AttackerTroops>();
                 foreach (var troop in targetKingdom.Troops)
                 {
-                    await DbContext.AttackerTroops.AddAsync(new AttackerTroops()
+                    UnitOfWork.AttackerTroops.AddAsync(new AttackerTroops()
                     {
                         Type = troop.Type,
                         Quantity = troop.Quantity,
                         Level = attackerTroops.FirstOrDefault(x => x.Type == troop.Type).Level,
                         BattleId = battle.Id
                     });
-                    await DbContext .SaveChangesAsync();
+                    await UnitOfWork.CompleteAsync();
                     
                     //change all attacking troops status to attack that are in town currently
                     for (int i = 0; i < troop.Quantity; i++)
@@ -505,8 +403,8 @@ namespace Naivart.Services
                         var troopStatus = attacker.Troops.FirstOrDefault(x => x.TroopType.Type == troop.Type && 
                                                                                         x.Status == "town");
                         troopStatus.Status = "attack";
-                        DbContext.Update(troopStatus);
-                        await DbContext.SaveChangesAsync();
+                        UnitOfWork.Troops.UpdateState(troopStatus);
+                        await UnitOfWork.CompleteAsync();
                     }
                 }
                 return new BattleTargetResponse() 
@@ -528,8 +426,7 @@ namespace Naivart.Services
                    //checks if you have all types of troops needed
             return targetKingdom.Troops.All(x => troopQuantity.Select(x => x.Type).Contains(x.Type)) &&
                    //checks if all types have correct amount of troops        
-                   targetKingdom.Troops.All(x => troopQuantity.Any(y => y.Type == x.Type && y.Quantity >= x.Quantity)); 
-                    
+                   targetKingdom.Troops.All(x => troopQuantity.Any(y => y.Type == x.Type && y.Quantity >= x.Quantity));                     
         }
 
         public List<TroopBattleInfo> GetTroopQuantity(List<Troop> input)
@@ -554,28 +451,12 @@ namespace Naivart.Services
             return troopQuantity;
         }
 
-        public async Task<Kingdom> FindPlayerInfoByKingdomIdAsync(long kingdomId)
-        {
-            try
-            {
-                return await GetByIdAsync(kingdomId);
-                //return DbContext.Kingdoms.Where(x => x.Id == kingdomId)
-                                        //.Include(x => x.Troops).ThenInclude(x => x.TroopType).FirstOrDefault();
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Data could not be read", e);
-            }
-        }
-
         public async Task<long> CountTravelTimeAsync(long kingdomIdDef, long kingdomIdAtt)
         {
             try
             {
-                var locationDef = await Task.FromResult(DbContext.Kingdoms.Where(x => x.Id == kingdomIdDef)
-                                                    .Include(x => x.Location).FirstOrDefault().Location);
-                var locationAtt = await Task.FromResult(DbContext.Kingdoms.Where(x => x.Id == kingdomIdAtt)
-                                                    .Include(x => x.Location).FirstOrDefault().Location);
+                var locationDef = await UnitOfWork.Locations.LocationDefAsync(kingdomIdDef);
+                var locationAtt = await UnitOfWork.Locations.LocationDefAsync(kingdomIdAtt);
 
                 //analytic geometry - difference between two points
                 double resultA = (locationAtt.CoordinateX - locationDef.CoordinateX) * (locationAtt.CoordinateX - locationDef.CoordinateX)

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Buildings;
 using Naivart.Models.APIModels.Leaderboards;
@@ -14,16 +15,16 @@ namespace Naivart.Services
     public class BuildingService
     {
         private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
-        private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
-        public BuildingService(IMapper mapper, ApplicationDbContext dbContext, AuthService authService,
-                               KingdomService kingdomService)
+        private IUnitOfWork UnitOfWork { get; set; }
+        public BuildingService(IMapper mapper, AuthService authService,
+                               KingdomService kingdomService, IUnitOfWork unitOfWork)
         {
             this.mapper = mapper;
-            DbContext = dbContext;
             AuthService = authService;
             KingdomService = kingdomService;
+            UnitOfWork = unitOfWork;
         }
 
         public List<BuildingAPIModel> ListOfBuildingsMapping(List<Building> buildings)
@@ -46,7 +47,7 @@ namespace Naivart.Services
         {
             try
             {
-                var buildingType = await Task.FromResult(DbContext.BuildingTypes.FirstOrDefault //getting required building level 1 information 
+                var buildingType = await Task.FromResult(UnitOfWork.BuildingTypes.FirstOrDefault //getting required building level 1 information 
                     (bt => bt.Type == request.Type && bt.Level == 1));
                 var kingdom = await KingdomService.GetByIdAsync(kingdomId);
                 var requiredTownhallLevel = buildingType.RequiredTownhallLevel;
@@ -67,7 +68,7 @@ namespace Naivart.Services
                     return (new BuildingResponse(), 400, $"You need to have townhall level {requiredTownhallLevel} first!");
                 }
 
-                if (!await KingdomService.IsEnoughGoldForAsync(await KingdomService .GetGoldAmountAsync(kingdomId), //checking resources in the kingdom
+                if (!await UnitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService .GetGoldAmountAsync(kingdomId), //checking resources in the kingdom
                     buildingType.Id))
                 {
                     //statusCode = 400;
@@ -89,8 +90,8 @@ namespace Naivart.Services
                 {
                     kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
                 }
-                await DbContext.Buildings.AddAsync(building);
-                await DbContext.SaveChangesAsync();
+                UnitOfWork.Buildings.AddAsync(building);
+                await UnitOfWork.CompleteAsync();
 
                 //statusCode = 200;
                 //error = string.Empty;
@@ -117,7 +118,7 @@ namespace Naivart.Services
                 var kingdom = await KingdomService.GetByIdAsync(kingdomId);
                 var building = kingdom.Buildings.FirstOrDefault(b => b.Id == buildingId);
 
-                if (!await KingdomService.IsEnoughGoldForAsync(await KingdomService.GetGoldAmountAsync(kingdomId),
+                if (!await UnitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService.GetGoldAmountAsync(kingdomId),
                     building.BuildingTypeId))
                 {
                     //statusCode = 400;
@@ -139,7 +140,7 @@ namespace Naivart.Services
                     return (new BuildingAPIModel(), 400, "This building has already reached max level!");
                 }
 
-                var upgradedBuilding = await Task.FromResult(DbContext.BuildingTypes.Find(building.BuildingTypeId + 1));
+                var upgradedBuilding = await UnitOfWork.BuildingTypes.BuildingTypeIdAsync(building.BuildingTypeId);
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= upgradedBuilding.GoldCost;
 
                 if (upgradedBuilding.Type == "farm")
@@ -154,7 +155,7 @@ namespace Naivart.Services
                 building.BuildingTypeId = upgradedBuilding.Id;
                 building.Level = upgradedBuilding.Level;
                 building.Hp = upgradedBuilding.Hp;
-                await DbContext.SaveChangesAsync();
+                await UnitOfWork.CompleteAsync();
                 //statusCode = 200;
                 //error = string.Empty;
                 return (mapper.Map<BuildingAPIModel>(building), 200, string.Empty);
@@ -171,7 +172,7 @@ namespace Naivart.Services
         {
             try
             {
-                var allKingdoms = await KingdomService.GetAllAsync();
+                var allKingdoms = await UnitOfWork.Kingdoms.GetAllKingdomsAsync();
                 if (!allKingdoms.Any())
                 {
                     //error = "There are no kingdoms in Leaderboard";
@@ -199,14 +200,14 @@ namespace Naivart.Services
 
         public async Task<bool> IsBuildingTypeDefinedAsync(string type)
         {
-            return await Task.FromResult(DbContext.BuildingTypes.Any(bt => bt.Type == type));
+            return await Task.FromResult(UnitOfWork.BuildingTypes.Any(bt => bt.Type == type));
         }
 
         public async Task AddBasicBuildingAsync(BuildingRequest request, long kingdomId) //similar to AddBuilding method, but modified for player registration
         {
             try
             {
-                var buildingType = await Task.FromResult(DbContext.BuildingTypes.FirstOrDefault
+                var buildingType = await Task.FromResult(UnitOfWork.BuildingTypes.FirstOrDefault
                     (bt => bt.Type == request.Type && bt.Level == 1));
                 var kingdom = await KingdomService.GetByIdAsync(kingdomId);
 
@@ -215,8 +216,8 @@ namespace Naivart.Services
                 buildingModel.KingdomId = kingdom.Id;
 
                 Building building = mapper.Map<Building>(buildingModel);
-                await DbContext.Buildings.AddAsync(building);
-                await DbContext.SaveChangesAsync();
+                UnitOfWork.Buildings.AddAsync(building);
+                await UnitOfWork.CompleteAsync();
             }
             catch (Exception e)
             {

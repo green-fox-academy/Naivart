@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
 using System;
@@ -11,10 +12,11 @@ namespace Naivart.Services
 {
     public class TimeService
     {
-        private ApplicationDbContext DbContext { get; }
-        public TimeService(ApplicationDbContext dbContext)
+        private IUnitOfWork UnitOfWork { get; set; }
+
+        public TimeService(IUnitOfWork unitOfWork)
         {
-            DbContext = dbContext;
+            UnitOfWork = unitOfWork;
         }
 
         public long GetUnixTimeNow()
@@ -30,13 +32,13 @@ namespace Naivart.Services
         
         public async Task UpdateResourcesAsync(long kingdomId)
         {
-            var resources = await Task.FromResult(DbContext.Resources.Where(x => x.KingdomId == kingdomId).ToList());
+            var resources = await UnitOfWork.Resources.GetResourcesFromIdAsync(kingdomId);
             foreach (var resource in resources)
             {
                 resource.Amount += CalculateAmount(resource.UpdatedAt, resource.Generation, out int extra);
                 resource.UpdatedAt = GetUnixTimeNow() - extra;
-                DbContext.Resources.Update(resource);
-                await DbContext.SaveChangesAsync();
+                UnitOfWork.Resources.UpdateState(resource);
+                await UnitOfWork.CompleteAsync();
             }
         }
 
@@ -50,28 +52,23 @@ namespace Naivart.Services
         public async Task UpdateBattleAsync(long kingdomId)
         {
             //check if kingdom is in or have any battles
-            if (await Task.FromResult(DbContext.Battles.Any(x => x.AttackerId == kingdomId || x.DefenderId == kingdomId))) 
+            if (await UnitOfWork.Battles.IsKingdomInBattleAsync(kingdomId))
             {
-                var battles = await Task.FromResult(DbContext.Battles.Where(x => x.AttackerId == kingdomId ||
-                 x.DefenderId == kingdomId).Include(x => x.AttackingTroops)?.Include(x => x.DeadTroops).ToList());
+                var battles = await UnitOfWork.Battles.BattlesAsync(kingdomId);
                 foreach (var battle in battles)
                 {
                     int totalDamage = 0;
                     int totalDefense = 0;
-                    var defender = await Task.FromResult(DbContext.Kingdoms.Where(x => x.Id == battle.DefenderId)
-                     .Include(x => x.Troops).ThenInclude(x => x.TroopType).Include(x => x.Resources).FirstOrDefault());
-
-                    var attacker = await Task.FromResult(DbContext.Kingdoms.Where(x => x.Id == battle.AttackerId)
-                     .Include(x => x.Troops).ThenInclude(x => x.TroopType).Include(x => x.Resources).FirstOrDefault()) ;
+                    var defender = await UnitOfWork.Battles.DefenderAsync(battle.DefenderId);
+                    var attacker = await UnitOfWork.Battles.AttackerAsync(battle.AttackerId);
 
                     //If fight didn't start yet and it's already time for it
                     if (battle.Result is null && battle.FinishedAt <= GetUnixTimeNow() && battle.Status != "done") 
                     {
 
                         foreach (var troops in battle.AttackingTroops)
-                        {
-                            totalDamage += await Task.FromResult(DbContext.TroopTypes.FirstOrDefault(x => x.Type == troops.Type &&
-                             x.Level == troops.Level).Attack * 6 * troops.Quantity); //total damage is calculated based on attack * quantity * 6
+                        { 
+                            totalDamage += await UnitOfWork.TroopTypes.TotalDamageAsync(troops); //total damage is calculated based on attack * quantity * 6
                         }
 
                         //total defense is troops HP + defense
@@ -119,15 +116,15 @@ namespace Naivart.Services
                             battle.FinishedAt += travelTime;
                             battle.Status = "on way back";
                         
-                            DbContext.Battles.Update(battle);
-                            await DbContext.SaveChangesAsync();
+                            UnitOfWork.Battles.UpdateState(battle);
+                            await UnitOfWork.CompleteAsync();
 
                             //update resources for defender
                             defender.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= goldStolen;
                             defender.Resources.FirstOrDefault(x => x.Type == "food").Amount -= foodStolen;
                         
-                            DbContext.Update(defender);
-                            await DbContext.SaveChangesAsync();
+                            UnitOfWork.Kingdoms.UpdateState(defender);
+                            await UnitOfWork.CompleteAsync();
 
                             //saving dead troops list of DEFENDER and remove from kingdom
                             await SaveAndRemoveTroopsLostDefenderAsync(defender.Troops, battle.Id);
@@ -153,8 +150,8 @@ namespace Naivart.Services
                                         Type = troop.Type,
                                         Quantity = Convert.ToInt32(Math.Round(quantityResult))
                                     };
-                                    await DbContext.TroopsLost.AddAsync(lostTroop);
-                                    await DbContext.SaveChangesAsync ();
+                                    UnitOfWork.TroopsLost.AddAsync(lostTroop);
+                                    await UnitOfWork.CompleteAsync();
                                 }
                                 else if (Math.Round(quantityResult) != 0)
                                 {
@@ -165,8 +162,8 @@ namespace Naivart.Services
                                         Type = troop.Type,
                                         Quantity = (troop.Quantity - 1) == 0 ? 1 : (troop.Quantity - 1)
                                     };
-                                    await DbContext.TroopsLost.AddAsync(lostTroop);
-                                    await DbContext.SaveChangesAsync();
+                                    UnitOfWork.TroopsLost.AddAsync(lostTroop);
+                                    await UnitOfWork.CompleteAsync();
                                 }
                             }
                         }
@@ -180,8 +177,8 @@ namespace Naivart.Services
                             battle.FinishedAt += travelTime;
                             battle.Status = "done";
 
-                            DbContext.Battles.Update(battle);
-                            await DbContext.SaveChangesAsync();
+                            UnitOfWork.Battles.UpdateState(battle);
+                            await UnitOfWork.CompleteAsync();
 
                             //saving dead troops list of ATTACKER and remove from kingdom
                             await SaveAndRemoveTroopsLostAttackerAsync(battle.AttackingTroops, battle.Id, attacker);
@@ -210,8 +207,8 @@ namespace Naivart.Services
                                         Type = troop.Type,
                                         Quantity = Convert.ToInt32(Math.Round(quantityResult))
                                     };
-                                    await DbContext.TroopsLost.AddAsync(lostTroop);
-                                    await DbContext.SaveChangesAsync();
+                                    UnitOfWork.TroopsLost.AddAsync(lostTroop);
+                                    await UnitOfWork.CompleteAsync();
                                 }
                                 else if(Math.Round(quantityResult) != 0)
                                 {
@@ -222,18 +219,18 @@ namespace Naivart.Services
                                         Type = troop.Type,
                                         Quantity = (troop.Quantity - 1) == 0 ? 1 : (troop.Quantity - 1)
                                     };
-                                    await DbContext.TroopsLost.AddAsync(lostTroop);
-                                    await DbContext.SaveChangesAsync();
+                                    UnitOfWork.TroopsLost.AddAsync(lostTroop);
+                                    await UnitOfWork.CompleteAsync();
                                 }
                             }
-                            var lostTroops = await Task.FromResult(DbContext.TroopsLost.Where(x => !(x.IsAttacker) 
-                             && x.BattleId == battle.Id).ToList());
+                            var lostTroops = await UnitOfWork.TroopsLost.LostTroopsDefenderAsync(battle.Id);
                             foreach (var troop in lostTroops)
                             {
-                                troopsForRemove = defender.Troops.Where(x => x.TroopType.Type == troop.Type && x.Status == "town")
-                                                                 .Take(troop.Quantity).ToList();
-                                DbContext.Troops.RemoveRange(troopsForRemove);
-                                await DbContext.SaveChangesAsync();
+                                troopsForRemove = defender.Troops
+                                    .Where(x => x.TroopType.Type == troop.Type && x.Status == "town")
+                                    .Take(troop.Quantity).ToList();
+                                UnitOfWork.Troops.RemoveRange(troopsForRemove);
+                                await UnitOfWork.CompleteAsync();
                             }
                             
                         }
@@ -242,8 +239,8 @@ namespace Naivart.Services
                     if (battle.Result is not null && battle.FinishedAt <= GetUnixTimeNow() && battle.Status != "done")     
                     {
                         battle.Status = "done";
-                        DbContext.Battles.Update(battle);
-                        await DbContext.SaveChangesAsync();
+                        UnitOfWork.Battles.UpdateState(battle);
+                        await UnitOfWork.CompleteAsync();
 
                         var attackTroops = battle.DeadTroops
                                                         .Where(x => x.IsAttacker && x.BattleId == battle.Id).ToList();
@@ -255,15 +252,15 @@ namespace Naivart.Services
                             troopsForRemove = attacker.Troops
                                 .Where(x => x.TroopType.Type == troop.Type && x.Status == "attack").Take(troop.Quantity).ToList();
                             
-                            DbContext.Troops.RemoveRange(troopsForRemove);
-                            await DbContext.SaveChangesAsync();
+                            UnitOfWork.Troops.RemoveRange(troopsForRemove);
+                            await UnitOfWork.CompleteAsync();
                         }
 
                         attacker.Resources.FirstOrDefault(x => x.Type == "gold").Amount += battle.GoldStolen;
                         attacker.Resources.FirstOrDefault(x => x.Type == "food").Amount += battle.FoodStolen;
 
-                        DbContext.Update(attacker);
-                        await DbContext.SaveChangesAsync();
+                        UnitOfWork.Kingdoms.UpdateState(attacker);
+                        await UnitOfWork.CompleteAsync();
 
                         foreach (var troop in attackTroops)
                         {
@@ -276,8 +273,7 @@ namespace Naivart.Services
                                 troopsForUpdate.Add(attTroop);
                             }
                         }
-                        DbContext.UpdateRange(troopsForUpdate);  
-                        await DbContext.SaveChangesAsync();
+                        await UnitOfWork.Battles.UpdateTroopsAsync(troopsForUpdate);
                     }
                 }
             }
@@ -325,12 +321,12 @@ namespace Naivart.Services
 
             foreach (var troops in deadTroops)
             {
-                await DbContext.TroopsLost.AddAsync(troops);
-                await DbContext.SaveChangesAsync();
+                UnitOfWork.TroopsLost.AddAsync(troops);
+                await UnitOfWork.CompleteAsync();
             }
             
-            DbContext.Troops.RemoveRange(troopsForRemove);
-            await DbContext.SaveChangesAsync();
+            UnitOfWork.Troops.RemoveRange(troopsForRemove);
+            await UnitOfWork.CompleteAsync();
         }
         public async Task SaveAndRemoveTroopsLostDefenderAsync(List<Troop> input, long battleId)
         {
@@ -355,12 +351,12 @@ namespace Naivart.Services
 
             foreach (var troops in deadTroops)
             {
-                await DbContext.TroopsLost.AddAsync(troops);
-                await DbContext.SaveChangesAsync();
+                UnitOfWork.TroopsLost.AddAsync(troops);
+                await UnitOfWork.CompleteAsync();
             }
 
-            DbContext.Troops.RemoveRange(input);
-            await DbContext.SaveChangesAsync();
+            UnitOfWork.Troops.RemoveRange(input);
+            await UnitOfWork.CompleteAsync();
         }
     }
 }

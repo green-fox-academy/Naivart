@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.APIModels.Troops;
@@ -15,16 +16,16 @@ namespace Naivart.Services
     public class TroopService
     {
         private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
-        private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
-        public TroopService(IMapper mapper, ApplicationDbContext dbContext, AuthService authService,
+        private IUnitOfWork UnitOfWork { get; set; }
+        public TroopService(IMapper mapper, AuthService authService, IUnitOfWork unitOfWork,
                             KingdomService kingdomService)
         {
             this.mapper = mapper;
-            DbContext = dbContext;
             AuthService = authService;
             KingdomService = kingdomService;
+            UnitOfWork = unitOfWork;
         }
 
         public List<TroopAPIModel> ListOfTroopsMapping(List<Troop> troops)
@@ -64,16 +65,15 @@ namespace Naivart.Services
                 {
                     createdTroop.Item1.KingdomId = kingdomId;
                     createdTroop.Item1.Status = "town";
-                    await DbContext.Troops.AddAsync(createdTroop.Item1);
-                    await DbContext.SaveChangesAsync();
+                    UnitOfWork.Troops.AddAsync(createdTroop.Item1);
+                    await UnitOfWork.CompleteAsync();
                     var infoTroop = mapper.Map<TroopInfo>(createdTroop);
                     resultModel.Add(infoTroop);
                     createdTroop.Item1 = await TroopFactoryAsync(troopType, troopLevel);
                 }
-                var kingdomModel = await Task.FromResult(DbContext.Kingdoms.Where(x => x.Id == kingdomId)
-                                                    .Include(x => x.Resources).FirstOrDefault());
-                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= createdTroop.Item2; //reduce owner gold by total cost
-                await DbContext.SaveChangesAsync();
+                var kingdomModel = await UnitOfWork.Kingdoms.KingdomIncludeResourceByIdAsync(kingdomId);
+                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= createdTroop.Item2;   //reduce owner gold by total cost
+                await UnitOfWork.CompleteAsync();
 
                 //isPossibleToCreate = true;
                 return (resultModel, true); //returns list of created troops and confirmation
@@ -87,7 +87,7 @@ namespace Naivart.Services
             var troopsCreated = new List<TroopInfo>();
             try
             {
-                if (await AuthService.IsKingdomOwnerAsync(kingdomId, username))
+                if (await UnitOfWork.Players.IsKingdomOwnerAsync(kingdomId, username))
                 {
                     int goldAmount = await KingdomService.GetGoldAmountAsync(kingdomId);
                     var response = await CreateTroopsAsync(goldAmount, input.Type, input.Quantity, kingdomId);
@@ -116,9 +116,7 @@ namespace Naivart.Services
 
         public async Task<ValueTuple<Troop, int>> TroopFactoryAsync(string troopType, int goldAmount, int troopAmount, long troopTypeLevel)
         {
-            var troopStats = await Task.FromResult(DbContext.TroopTypes.Where(x => x.Type == troopType 
-             && x.Level == troopTypeLevel).FirstOrDefault());
-
+            var troopStats = await UnitOfWork.TroopTypes.GetTroopTypeForUpgradeAsync(troopType, troopTypeLevel);
             Troop troop = new Troop()
             {
                 TroopTypeId = troopStats.Id,
@@ -134,8 +132,7 @@ namespace Naivart.Services
             {
                 troopTypeLevel = 1;
             }
-            var troopStats = await Task.FromResult(DbContext.TroopTypes.Where(x => x.Type == troopType 
-             && x.Level == troopTypeLevel).FirstOrDefault());
+            var troopStats = await UnitOfWork.TroopTypes.GetTroopTypeForUpgradeAsync(troopType, troopTypeLevel);
 
             Troop troop = new Troop()
             {
@@ -149,7 +146,7 @@ namespace Naivart.Services
         {
             try
             {
-                var allKingdoms = await KingdomService.GetAllAsync();
+                var allKingdoms = await UnitOfWork.Kingdoms.GetAllKingdomsAsync();
                 if (allKingdoms.Count() == 0)
                 {
                     //error = "There are no kingdoms in Leaderboard";
@@ -179,7 +176,7 @@ namespace Naivart.Services
         {
             try
             {
-                if (!await AuthService.IsKingdomOwnerAsync(kingdomId, username))
+                if (!await UnitOfWork.Players.IsKingdomOwnerAsync(kingdomId, username))
                 {
                     //result = "This kingdom doesn't belong to authenticated player";
                     return (401, "This kingdom doesn't belong to authenticated player");
@@ -212,10 +209,7 @@ namespace Naivart.Services
                     //result = "Upgrade Academy first!";
                     return (400, "Upgrade Academy first!");
                 }
-
-                var upgradedStats = await Task.FromResult(DbContext.TroopTypes
-                    .Where(t => t.Type == type && t.Level == troop.TroopType.Level + 1)
-                    .FirstOrDefault()); //Get stats of particular troop type one level higher than now
+                var upgradedStats = await UnitOfWork.TroopTypes.UpgradeStatsOfTroopAsync(type, troop.TroopType.Level); //Get stats of particular troop type one level higher than now
                 if (goldAmount < upgradedStats.GoldCost) //Lack of gold 
                 {
                     //result = "You don't have enough gold to upgrade this type of troops!";
@@ -242,8 +236,8 @@ namespace Naivart.Services
             {
                 troop.TroopTypeId++;
             }
-            DbContext.Update(kingdom);
-            await DbContext.SaveChangesAsync();
+            UnitOfWork.Kingdoms.UpdateState(kingdom);
+            await UnitOfWork.CompleteAsync();
         }
     }
 }

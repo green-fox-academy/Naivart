@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using System;
@@ -14,23 +15,23 @@ namespace Naivart.Services
     public class PlayerService
     {
         private readonly IMapper mapper;
-        private ApplicationDbContext DbContext { get; }
         public BuildingService BuildingService { get; set; }
         public TimeService TimeService { get; set; }
-        public PlayerService(IMapper mapper, ApplicationDbContext dbContext, BuildingService
-                             buildingService, TimeService timeService)
+        private IUnitOfWork UnitOfWork { get; set; }
+        public PlayerService(IMapper mapper, BuildingService
+                             buildingService, IUnitOfWork unitOfWork , TimeService timeService)
         {
             this.mapper = mapper;
-            DbContext = dbContext;
             BuildingService = buildingService;
             TimeService = timeService;
+            UnitOfWork = unitOfWork;
         }
 
         public async Task<Player> RegisterPlayerAsync(string username, string password, string kingdomName)
         {
             if (password.Length < 8
                 || String.IsNullOrWhiteSpace(username)
-                || await IsInDbWithThisUsernameAsync(username))
+                || await UnitOfWork.Players.IsInDbWithThisUsernameAsync(username))
             {
                 return null;
             }
@@ -44,55 +45,22 @@ namespace Naivart.Services
             Kingdom kingdom = new Kingdom();
 
             //check if given kingdom name (and username) is not empty or already exists in database 
-            kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && FindKingdomByNameAsync(kingdomName) == null
+            kingdom.Name = !String.IsNullOrWhiteSpace(kingdomName) && await UnitOfWork.Kingdoms.FindKingdomByNameAsync(kingdomName) == null
                            ? kingdomName : $"{player.Username}'s kingdom";
 
-            var newKingdom = await Task.FromResult(DbContext.Kingdoms.Add(kingdom).Entity);
-            await DbContext.SaveChangesAsync();
+            UnitOfWork.Kingdoms.AddAsync(kingdom);
+            await UnitOfWork.CompleteAsync();
 
-            var DbKingdom = await FindKingdomByNameAsync(kingdom.Name);
+            var DbKingdom = await UnitOfWork.Kingdoms.FindKingdomByNameAsync(kingdom.Name);
             player.KingdomId = DbKingdom.Id;
-            var newPlayer = await Task.FromResult(DbContext.Players.Add(player).Entity);
-            await DbContext.SaveChangesAsync();
+            UnitOfWork.Players.AddAsync(player);
+            await UnitOfWork.CompleteAsync();
             await CreateBasicBuildingsAsync(DbKingdom.Id); //creates basic buildings and save to Db 
             await CreateResourcesAsync(DbKingdom.Id);  //add resources to player (1000 gold and 0 food)
 
-            return await Task.FromResult(DbContext.Players.Include(x => x.Kingdom).FirstOrDefault
-                (x => x.Username == username && x.Password == hashedPassword));
+            return await UnitOfWork.Players.PlayerInsludeKingdomFindByUsernameAndPasswordAsync(username, hashedPassword);
         }
 
-        public async Task<Kingdom> FindKingdomByNameAsync(string kingdomName)
-        {
-            return await Task.FromResult(DbContext.Kingdoms.FirstOrDefault(x => x.Name == kingdomName));
-        }
-
-        public async Task<Player> FindByUsernameAsync(string username)
-        {
-            return await Task.FromResult(DbContext.Players.FirstOrDefault(x => x.Username == username));
-        }
-
-        public async Task<bool> IsInDbWithThisUsernameAsync(string username)
-        {
-            return await Task.FromResult(DbContext.Players.Any(x => x.Username == username));
-        }
-
-        public async Task DeleteByUsernameAsync(string username)
-        {
-            await Task.FromResult(DbContext.Players.Remove(await FindByUsernameAsync(username)));
-        }
-
-        public async Task<Player> GetPlayerByIdAsync(long id)
-        {
-            try
-            {
-                return await Task.FromResult(DbContext.Players.Include(p => p.Kingdom)
-                                 .FirstOrDefault(p => p.Id == id));
-            }
-            catch
-            {
-                return null;
-            }
-        }
 
         public async Task CreateBasicBuildingsAsync(long kingdomId)
         {
@@ -110,7 +78,7 @@ namespace Naivart.Services
 
         public async Task CreateResourcesAsync(long kingdomId)
         {
-            await DbContext.Resources.AddAsync(new Resource()
+            UnitOfWork.Resources.AddAsync(new Resource()
             {
                 Type = "food",
                 Amount = 0,
@@ -118,9 +86,9 @@ namespace Naivart.Services
                 UpdatedAt = TimeService.GetUnixTimeNow(),
                 KingdomId = kingdomId
             });
-            await DbContext.SaveChangesAsync();
+            await UnitOfWork.CompleteAsync();
 
-            await DbContext.Resources.AddAsync(new Resource()
+            UnitOfWork.Resources.AddAsync(new Resource()
             {
                 Type = "gold",
                 Amount = 1000,
@@ -128,7 +96,7 @@ namespace Naivart.Services
                 UpdatedAt = TimeService.GetUnixTimeNow(),
                 KingdomId = kingdomId
             });
-            await DbContext.SaveChangesAsync();
+            await UnitOfWork.CompleteAsync();
         }
     }
 }

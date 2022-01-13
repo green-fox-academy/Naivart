@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Naivart.Database;
+using Naivart.Interfaces;
 using Naivart.Models;
 using Naivart.Models.APIModels;
 using System;
@@ -16,13 +17,13 @@ namespace Naivart.Services
     public class LoginService
     {
         private readonly AppSettings appSettings;
-        private ApplicationDbContext DbContext { get; }
         public AuthService AuthService { get; set; }
-        public LoginService(IOptions<AppSettings> appSettings, ApplicationDbContext dbContext, AuthService authService)
+        private IUnitOfWork UnitOfWork { get; set; }
+        public LoginService(IOptions<AppSettings> appSettings, AuthService authService, IUnitOfWork unitOfWork)
         {
             this.appSettings = appSettings.Value;
-            DbContext = dbContext;
             AuthService = authService;
+            UnitOfWork = unitOfWork;
         }
         public async Task<ValueTuple<int, string>> AuthenticateAsync(PlayerLogin player)
         {
@@ -53,7 +54,7 @@ namespace Naivart.Services
         {
             try
             {
-                var player = await Task.FromResult(DbContext.Players.FirstOrDefault(x => x.Username == name));
+                var player = await UnitOfWork.Players.FindByUsernameAsync(name);
                 if (player is null)
                 {
                     return false;
@@ -84,8 +85,7 @@ namespace Naivart.Services
         {
             try
             {
-                var player = await Task.FromResult(DbContext.Players.Where(x => x.Username == name)
-                                             .Include(x => x.Kingdom).FirstOrDefault());
+                var player = await UnitOfWork.Players.FindPlayerIncudeKingdomsByUsernameAsync(name);
                 PlayerWithKingdom playerWithKingdom = new PlayerWithKingdom 
                 { KingdomId = player.KingdomId, KingdomName = player.Kingdom.Name, Ruler = player.Username };
                 return playerWithKingdom;
@@ -120,18 +120,12 @@ namespace Naivart.Services
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
                 var identity = principal.Identity.Name;
 
-                return await FindPlayerByNameReturnPlayerInfoAsync(identity);
+                return await UnitOfWork.Players.FindPlayerByNameReturnPlayerInfoAsync(identity);
             }
             catch
             {
                 return null;
             }
-        }
-
-        public async Task<PlayerInfo> FindPlayerByNameReturnPlayerInfoAsync(string name)
-        {
-            var model = await Task.FromResult(DbContext.Players.FirstOrDefault(x => x.Username == name));
-            return new PlayerInfo() { Id = model.Id, Username = model.Username, KingdomId = model.KingdomId};
         }
     }
 }
