@@ -52,6 +52,11 @@ namespace Naivart.Services
                 {
                     building.Status = "done";
                     await UnitOfWork.Buildings.UpgradeBuilding(building);   //upgrade building and save changes
+                    
+                    if (building.BuildingType.Type == "farm" || building.BuildingType.Type == "mine")
+                    {
+                        await UnitOfWork.Resources.UpgradeGeneration(kingdomId, building.BuildingType.Type);
+                    }
                 }
             }
         }

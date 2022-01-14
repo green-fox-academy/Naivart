@@ -133,15 +133,6 @@ namespace Naivart.Services
                 var upgradedBuilding = await UnitOfWork.BuildingTypes.BuildingTypeIdAsync(building.BuildingTypeId);
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= upgradedBuilding.GoldCost;
 
-                if (upgradedBuilding.Type == "farm")
-                {
-                    kingdom.Resources.FirstOrDefault(r => r.Type == "food").Generation += 1;
-                }
-                else if (upgradedBuilding.Type == "mine")
-                {
-                    kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
-                }
-
                 building.Status = "upgrading";
                 building.StartedAt = TimeService.GetUnixTimeNow();
                 building.FinishedAt = building.StartedAt + (600 * upgradedBuilding.Level);
