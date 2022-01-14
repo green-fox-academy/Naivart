@@ -78,15 +78,7 @@ namespace Naivart.Services
 
                 Building building = mapper.Map<Building>(buildingModel); //creating building using reverse mapping
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= buildingType.GoldCost; //charging for creating building
-                //TODO: Delete this before pull request
-                //if (building.Type == "farm")
-                //{
-                //    kingdom.Resources.FirstOrDefault(r => r.Type == "food").Generation += 1;
-                //}
-                //else if (building.Type == "mine")                                                   //upgrading food/gold generation
-                //{
-                //    kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
-                //}
+
                 building.StartedAt = TimeService.GetUnixTimeNow();
                 building.FinishedAt = building.StartedAt + 600;
                 building.Status = "creating";

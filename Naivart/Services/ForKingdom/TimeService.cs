@@ -24,12 +24,6 @@ namespace Naivart.Services
             return DateTimeOffset.Now.ToUnixTimeSeconds();
         }
 
-        public async Task UpdateAllAsync(long kingdomId)    //maybe delete this later
-        {
-            await UpdateResourcesAsync(kingdomId);
-            await UpdateBattleAsync(kingdomId);
-            await UpdateTroopsAsync(kingdomId);
-        }
         public async Task UpdateAllAsync(string username)       
         {
             //TODO: Update creating building/troops, upgrading buildings/troops
@@ -38,6 +32,25 @@ namespace Naivart.Services
             await UpdateResourcesAsync(player.KingdomId);
             await UpdateBattleAsync(player.KingdomId);
             await UpdateTroopsAsync(player.KingdomId);
+            await UpdateBuildings(player.KingdomId);
+        }
+        public async Task UpdateBuildings(long kingdomId)
+        {
+            var buildings = await UnitOfWork.Buildings.GetAllBuildingsThatAreNotDone(kingdomId);
+
+            foreach (var building in buildings)
+            {
+                if (building.Status == "creating" && building.FinishedAt <= GetUnixTimeNow())
+                {
+                    building.Status = "done";
+                    await UnitOfWork.CompleteAsync();
+
+                    if (building.BuildingType.Type == "farm" || building.BuildingType.Type == "mine")
+                    {
+                        await UnitOfWork.Resources.UpgradeGeneration(kingdomId, building.BuildingType.Type);
+                    }
+                }
+            }
         }
 
         public async Task UpdateTroopsAsync(long kingdomId)

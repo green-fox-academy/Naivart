@@ -7,5 +7,6 @@ namespace Naivart.Interfaces
     public interface IResourceRepository : IRepository<Resource>
     {
         Task<List<Resource>> GetResourcesFromIdAsync(long kingdomId);
+        Task UpgradeGeneration(long kingdomId, string resourceType);
     }
 }
