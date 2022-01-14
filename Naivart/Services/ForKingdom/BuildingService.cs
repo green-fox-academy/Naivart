@@ -43,7 +43,7 @@ namespace Naivart.Services
             return buildingAPIModels;
         }
 
-        public async Task<ValueTuple<BuildingResponse, int, string>> AddBuildingAsync(BuildingRequest request, long kingdomId)
+        public async Task<(BuildingResponse model, int status, string message)> AddBuildingAsync(BuildingRequest request, long kingdomId)
         {
             try
             {
@@ -56,23 +56,17 @@ namespace Naivart.Services
                    || (buildingType.Type == "ramparts" && kingdom.Buildings.Any(b => b.Type == "ramparts"))
                    || buildingType.Type == "townhall") //checking for buildings that can be built only once 
                 {
-                    //statusCode = 403;
-                    //error = $"You can have only one {buildingType.Type}!";
                     return (new BuildingResponse(), 403, $"You can have only one {buildingType.Type}!");
                 }
 
                 if (await GetTownhallLevelAsync(kingdomId) != requiredTownhallLevel) //checking required townhall level
                 {
-                    //statusCode = 400;
-                    //error = $"You need to have townhall level {requiredTownhallLevel} to build that!";
                     return (new BuildingResponse(), 400, $"You need to have townhall level {requiredTownhallLevel} first!");
                 }
 
                 if (!await UnitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService .GetGoldAmountAsync(kingdomId), //checking resources in the kingdom
                     buildingType.Id))
                 {
-                    //statusCode = 400;
-                    //error = "You don't have enough gold to build that!";
                     return (new BuildingResponse(), 400, "You don't have enough gold to build that!");
                 }
 
@@ -93,14 +87,10 @@ namespace Naivart.Services
                 UnitOfWork.Buildings.AddAsync(building);
                 await UnitOfWork.CompleteAsync();
 
-                //statusCode = 200;
-                //error = string.Empty;
                 return (mapper.Map<BuildingResponse>(building), 200, string.Empty); //mapping in order to give required response format
             }
             catch
             {
-                //statusCode = 500;
-                //error = "Data could not be read";
                 return (null, 500, "Data could not be read");
             }
         }
@@ -111,7 +101,7 @@ namespace Naivart.Services
             return kingdom.Buildings.Where(p => p.Type == "townhall").FirstOrDefault().Level;
         }
 
-        public async Task<ValueTuple<BuildingAPIModel, int, string>> UpgradeBuildingAsync(long kingdomId, long buildingId)
+        public async Task<(BuildingAPIModel model, int status, string message)> UpgradeBuildingAsync(long kingdomId, long buildingId)
         {
             try
             {
@@ -121,22 +111,16 @@ namespace Naivart.Services
                 if (!await UnitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService.GetGoldAmountAsync(kingdomId),
                     building.BuildingTypeId))
                 {
-                    //statusCode = 400;
-                    //error = "You don't have enough gold to upgrade that!";
                     return (new BuildingAPIModel(), 400, "You don't have enough gold to upgrade that!");
                 }
 
                 if (building.Type is not "townhall" && await GetTownhallLevelAsync(kingdomId) <= building.Level)
                 {
-                    //statusCode = 403;
-                    //error = "Building's level cannot be higher than the townhall's!";
                     return (new BuildingAPIModel(), 403, "Building's level cannot be higher than the townhall's!");
                 }
 
                 if (building.Level == 10)
                 {
-                    //statusCode = 400;
-                    //error = "This building has already reached max level!";
                     return (new BuildingAPIModel(), 400, "This building has already reached max level!");
                 }
 
@@ -156,27 +140,21 @@ namespace Naivart.Services
                 building.Level = upgradedBuilding.Level;
                 building.Hp = upgradedBuilding.Hp;
                 await UnitOfWork.CompleteAsync();
-                //statusCode = 200;
-                //error = string.Empty;
                 return (mapper.Map<BuildingAPIModel>(building), 200, string.Empty);
             }
             catch
             {
-                //statusCode = 500;
-                //error = "Data could not be read";
                 return (null, 500, "Data could not be read");
             }
         }
 
-        public async Task<ValueTuple<List<LeaderboardBuildingAPIModel>, int, string>> GetBuildingsLeaderboardAsync()
+        public async Task<(List<LeaderboardBuildingAPIModel> model, int status, string message)> GetBuildingsLeaderboardAsync()
         {
             try
             {
                 var allKingdoms = await UnitOfWork.Kingdoms.GetAllKingdomsAsync();
                 if (!allKingdoms.Any())
                 {
-                    //error = "There are no kingdoms in Leaderboard";
-                    //status = 404;
                     return (null, 404, "There are no kingdoms in Leaderboard");
                 }
 
@@ -186,14 +164,10 @@ namespace Naivart.Services
                     var model = mapper.Map<LeaderboardBuildingAPIModel>(kingdom);
                     BuildingsLeaderboard.Add(model);
                 }
-                //error = "ok";
-                //status = 200;
                 return (BuildingsLeaderboard.OrderByDescending(p => p.Points).ToList(), 200, "OK");
             }
             catch
             {
-                //error = "Data could not be read";
-                //status = 500;
                 return (null, 500, "Data could not be read");
             }
         }

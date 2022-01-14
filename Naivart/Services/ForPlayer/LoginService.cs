@@ -25,7 +25,7 @@ namespace Naivart.Services
             AuthService = authService;
             UnitOfWork = unitOfWork;
         }
-        public async Task<ValueTuple<int, string>> AuthenticateAsync(PlayerLogin player)
+        public async Task<(int status, string message)> AuthenticateAsync(PlayerLogin player)
         {
             string username = player.Username;
             string password = player.Password;
@@ -33,20 +33,16 @@ namespace Naivart.Services
             {
                 if (String.IsNullOrEmpty(username) || String.IsNullOrEmpty(password))
                 {
-                    //statusCode = 400;
                     return (400, "Field username and/or field password was empty!");
                 }
                 else if (await IsLoginPasswordCorrectAsync(username, password))
                 {
-                    //statusCode = 200;
                     return (200, AuthService.GetToken(username));
                 }
-                //statusCode = 401;
                 return (401, "Username and/or password was incorrect!");
             }
             catch
             {
-                //statusCode = 500;
                 return (500, "Data could not be read");
             }
         }

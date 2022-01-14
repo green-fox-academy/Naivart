@@ -44,8 +44,8 @@ namespace Naivart.Controllers
         {
             var info = await KingdomService.GetKingdomInfoAsync(id, HttpContext.User.Identity.Name);
 
-            return info.Item2 != 200 ? StatusCode(info.Item2, new ErrorResponse() { Error = info.Item3 })
-                                     : Ok(info.Item1);
+            return info.status != 200 ? StatusCode(info.status, new ErrorResponse() { Error = info.message })
+                                      : Ok(info.model);
         }
 
         [Authorize]
@@ -123,8 +123,8 @@ namespace Naivart.Controllers
             }
 
             var response = await BuildingService.AddBuildingAsync(request, id);
-            return response.Item2 != 200 ? StatusCode(response.Item2, new ErrorResponse() { Error = response.Item3 })
-                                         : Ok(response.Item1);
+            return response.status != 200 ? StatusCode(response.status, new ErrorResponse() { Error = response.message })
+                                          : Ok(response.model);
         }
 
         [Authorize]
@@ -145,8 +145,8 @@ namespace Naivart.Controllers
             }
 
             var response = await BuildingService.UpgradeBuildingAsync(kingdomId, buildingId);
-            return response.Item2 != 200 ? StatusCode(response.Item2, new ErrorResponse() { Error = response.Item3 })
-                                         : Ok(response.Item1);
+            return response.status != 200 ? StatusCode(response.status, new ErrorResponse() { Error = response.message })
+                                          : Ok(response.model);
         }
 
         [Authorize]
@@ -195,8 +195,8 @@ namespace Naivart.Controllers
         public async Task<IActionResult> CreateTroopsAsync([FromRoute] long id, [FromBody] CreateTroopRequest input)
         {
             var response = await TroopService.TroopCreateRequestAsync(input, id, HttpContext.User.Identity.Name);
-            return response.Item2 != 200 ? StatusCode(response.Item2, new ErrorResponse() { Error = response.Item3 })
-                                         : Ok(response.Item1);
+            return response.status != 200 ? StatusCode(response.status, new ErrorResponse() { Error = response.message })
+                                          : Ok(response.list);
         }
 
         [Authorize]
@@ -204,10 +204,9 @@ namespace Naivart.Controllers
         public async Task<IActionResult> UpgradeTroopsAsync([FromRoute] long id, [FromBody] UpgradeTroopsRequest input)
         {
             var result = await TroopService.UpgradeTroopsAsync(id, HttpContext.User.Identity.Name, input.Type);
-            if (result.Item1 != 200)
+            if (result.status != 200)
             {
-                var errorResponse = new ErrorResponse() { Error = result.Item2 };
-                return StatusCode(result.Item1, errorResponse);
+                return StatusCode(result.status, new ErrorResponse() { Error = result.message });
             }
             var upgradeTroopsResponse = new UpgradeTroopsResponse() { status = "OK" };
             return Ok(upgradeTroopsResponse);
@@ -217,18 +216,18 @@ namespace Naivart.Controllers
         [HttpPost("kingdoms/{id}/battles")]
         public async Task<IActionResult> BattlesAsync([FromRoute] long id, [FromBody] BattleTargetRequest input)
         {
-            var model = await KingdomService.BattleAsync(input, id, HttpContext.User.Identity.Name);
-            return model.Item2 != 200 ? StatusCode(model.Item2, new ErrorResponse() { Error = model.Item3 })
-                                      : Ok(model.Item1);
+            var response = await KingdomService.BattleAsync(input, id, HttpContext.User.Identity.Name);
+            return response.status != 200 ? StatusCode(response.status, new ErrorResponse() { Error = response.message })
+                                          : Ok(response.model);
         }
         
         [Authorize]
         [HttpGet("kingdoms/{kingdomId}/battles/{id}")]
         public async Task<IActionResult> BattleResultAsync([FromRoute] long kingdomId, long id)
         {
-            var model = await KingdomService.BattleInfoAsync(id, kingdomId, HttpContext.User.Identity.Name);
-            return model.Item2 != 200 ? StatusCode(model.Item2, new ErrorResponse() { Error = model.Item3 })
-                                      : Ok(model.Item1);
+            var response = await KingdomService.BattleInfoAsync(id, kingdomId, HttpContext.User.Identity.Name);
+            return response.status != 200 ? StatusCode(response.status, new ErrorResponse() { Error = response.message })
+                                          : Ok(response.model);
         }
     }
 }
