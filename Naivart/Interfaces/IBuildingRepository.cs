@@ -7,5 +7,6 @@ namespace Naivart.Interfaces
     public interface IBuildingRepository : IRepository<Building>
     {
         Task<List<Building>> GetAllBuildingsThatAreNotDone(long kingdomId);
+        Task UpgradeBuilding(Building building);
     }
 }

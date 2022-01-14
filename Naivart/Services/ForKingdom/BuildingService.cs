@@ -134,9 +134,9 @@ namespace Naivart.Services
                     kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
                 }
 
-                building.BuildingTypeId = upgradedBuilding.Id;
-                building.Level = upgradedBuilding.Level;
-                building.Hp = upgradedBuilding.Hp;
+                building.Status = "upgrading";
+                building.StartedAt = TimeService.GetUnixTimeNow();
+                building.FinishedAt = building.StartedAt + (600 * upgradedBuilding.Level);
                 await UnitOfWork.CompleteAsync();
                 return (mapper.Map<BuildingAPIModel>(building), 200, string.Empty);
             }

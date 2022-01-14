@@ -24,5 +24,15 @@ namespace Naivart.Repository
                               && (x.Status == "creating" || x.Status == "upgrading"))
                             .Include(x => x.BuildingType).ToList());
         }
+
+        public async Task UpgradeBuilding(Building building)
+        {
+            long buildingTypeId =
+                await Task.FromResult(DbContext.BuildingTypes
+                          .FirstOrDefault(x => x.Type == building.BuildingType.Type && x.Level == (building.BuildingType.Level + 1)).Id);
+
+            building.BuildingTypeId = buildingTypeId;
+            await DbContext.SaveChangesAsync();
+        }
     }
 }
