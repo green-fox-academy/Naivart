@@ -33,13 +33,13 @@ namespace Naivart.Controllers
         public async Task<IActionResult> LoginAsync([FromBody] PlayerLogin player)
         {
             var result = await LoginService.AuthenticateAsync(player);
-            if (result.Item1 != 200)
+            if (result.status != 200)
             {   
-                var output = new ErrorResponse() { Error = result.Item2 };
-                return StatusCode(result.Item1, output);
+                var output = new ErrorResponse() { Error = result.message };
+                return StatusCode(result.status, output);
             }
             var correctLogin = new TokenWithStatusResponse()
-            { Status = "OK", Token = result.Item2 };
+            { Status = "OK", Token = result.message };
             return Ok(correctLogin);
         }
 
@@ -47,15 +47,14 @@ namespace Naivart.Controllers
         public async Task<IActionResult> PlayerRegistrationAsync([FromBody] RegisterRequest request)
         {
             Player player = await PlayerService.RegisterPlayerAsync(
-                request.Username,
-                request.Password,
-                request.KingdomName);
+                   request.Username,
+                   request.Password,
+                   request.KingdomName);
             if (player == null)
             {
                 var response = new ErrorResponse()
                 {
-                    Error =
-                "Username was empty, already exists or password was shorter than 8 characters!"
+                    Error = "Username was empty, already exists or password was shorter than 8 characters!"
                 };
                 return BadRequest(response);
             }
@@ -75,12 +74,12 @@ namespace Naivart.Controllers
         public async Task<IActionResult> KingdomRegistrationAsync([FromBody] KingdomLocationInput input)
         {
             var result = await KingdomService.RegisterKingdomAsync(input, HttpContext.User.Identity.Name);
-            if (result.Item1 != 200)
+            if (result.status != 200)
             {
-                var outputError = new ErrorResponse() { Error = result.Item2 };
-                return StatusCode(result.Item1, outputError);
+                var outputError = new ErrorResponse() { Error = result.message };
+                return StatusCode(result.status, outputError);
             }
-            var outputOk = new StatusResponse() { Status = result.Item2 };
+            var outputOk = new StatusResponse() { Status = result.message };
             return Ok(outputOk);
         }
     }

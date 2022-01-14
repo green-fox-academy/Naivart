@@ -1,0 +1,32 @@
+1) add .editorconfig file to your project solution 
+
+   - in Visual Studio (VS) go to Tools > Options > Text Editor > C# > Code Style > General
+   - here click on "Generate .editorconfig file from settings" to auto create the file
+   - the file should be placed in the same folder as project solution file (*.sln) 
+   - confirm the file placement and VS should pop-up a yellow window with a question =>
+
+     "A new .editorconfig file was detected at the root of your solution. Would you like
+      to make it a solution item?"
+
+   - choose "Yes" and "Solution Items" folder with the file should be in solution explorer
+
+2) install SonarAnalyzer.CSharp NuGet Package (ver. 8.33.0.40503) => both project and tests
+
+   - new Warnings should appear immediately after installation, if not, rebuild solution
+
+3) customize linter behaviour according to your preferences by editing .editorconfig file
+
+   - you can do it directly in VS by opening the file from solution explorer OR manually
+     by making changes externally in notepad
+
+4) when you encounter a rule violation you don't know how to fix, visit:
+
+   https://rules.sonarsource.com/csharp (=> just click on rule number!)
+
+5) useful links to find out more about linting and setting up SonarAnalyzer:
+
+   https://dev.to/srmagura/c-linting-and-formatting-tools-in-2021-bna
+
+   https://gist.github.com/srmagura/744ec1f356515eb3fe4b829f89c21a8c
+
+   

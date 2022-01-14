@@ -59,30 +59,29 @@ namespace Naivart.Services
             }
             var createdTroop = await TroopFactoryAsync(troopType, goldAmount, troopAmount, troopLevel); //get troop stats based on type, if no golds returns null
             var resultModel = new List<TroopInfo>();
-            if (createdTroop.Item1 != null)
+            if (createdTroop.troop != null)
             {
                 for (int i = 0; i < troopAmount; i++) //create troops number based on troop amount
                 {
-                    createdTroop.Item1.KingdomId = kingdomId;
-                    createdTroop.Item1.Status = "town";
-                    UnitOfWork.Troops.AddAsync(createdTroop.Item1);
+                    createdTroop.troop.KingdomId = kingdomId;
+                    createdTroop.troop.Status = "town";
+                    UnitOfWork.Troops.AddAsync(createdTroop.troop);
                     await UnitOfWork.CompleteAsync();
                     var infoTroop = mapper.Map<TroopInfo>(createdTroop);
                     resultModel.Add(infoTroop);
-                    createdTroop.Item1 = await TroopFactoryAsync(troopType, troopLevel);
+                    createdTroop.troop = await TroopFactoryAsync(troopType, troopLevel);
                 }
                 var kingdomModel = await UnitOfWork.Kingdoms.KingdomIncludeResourceByIdAsync(kingdomId);
-                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= createdTroop.Item2;   //reduce owner gold by total cost
+                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= createdTroop.totalCost;   //reduce owner gold by total cost
                 await UnitOfWork.CompleteAsync();
 
-                //isPossibleToCreate = true;
                 return (resultModel, true); //returns list of created troops and confirmation
             }
-            //isPossibleToCreate = false;
             return (resultModel, false);
         }
 
-        public async Task<ValueTuple<List<TroopInfo>, int, string>> TroopCreateRequestAsync(CreateTroopRequest input, long kingdomId, string username)
+        public async Task<(List<TroopInfo> list, int status, string message)> TroopCreateRequestAsync(CreateTroopRequest input,
+            long kingdomId, string username)
         {
             var troopsCreated = new List<TroopInfo>();
             try
@@ -94,27 +93,20 @@ namespace Naivart.Services
 
                     if (response.Item2)
                     {
-                        //status = 200;
-                        //result = "ok";
                         return (response.Item1, 200, "OK");
                     }
-                    //status = 400;
-                    //result = "You don't have enough gold to train all these units!";
                     return (response.Item1, 400, "You don't have enough gold to train all these units!");
                 }
-                //status = 401;
-                //result = "This kingdom does not belong to authenticated player";
                 return (troopsCreated, 401, "This kingdom does not belong to authenticated player!");
             }
             catch (Exception)
             {
-                //status = 500;
-                //result = "Data could not be read";
                 return (troopsCreated, 500, "Data could not be read");
             }
         }
 
-        public async Task<ValueTuple<Troop, int>> TroopFactoryAsync(string troopType, int goldAmount, int troopAmount, long troopTypeLevel)
+        public async Task<(Troop troop, int totalCost)> TroopFactoryAsync(string troopType, int goldAmount, int troopAmount, 
+            long troopTypeLevel)
         {
             var troopStats = await UnitOfWork.TroopTypes.GetTroopTypeForUpgradeAsync(troopType, troopTypeLevel);
             Troop troop = new Troop()
@@ -142,15 +134,13 @@ namespace Naivart.Services
             return troop;
         }
 
-        public async Task<ValueTuple<List<LeaderboardTroopAPIModel>, int, string>> GetTroopsLeaderboardAsync()
+        public async Task<(List<LeaderboardTroopAPIModel> model, int status, string message)> GetTroopsLeaderboardAsync()
         {
             try
             {
                 var allKingdoms = await UnitOfWork.Kingdoms.GetAllKingdomsAsync();
-                if (allKingdoms.Count() == 0)
+                if (allKingdoms.Count == 0)
                 {
-                    //error = "There are no kingdoms in Leaderboard";
-                    //status = 404;
                     return (null, 404, "There are no kingdoms in Leaderboard");
                 }
 
@@ -160,25 +150,20 @@ namespace Naivart.Services
                     var model = mapper.Map<LeaderboardTroopAPIModel>(kingdom);
                     TroopsLeaderboard.Add(model);
                 }
-                //error = "ok";
-                //status = 200;
                 return (TroopsLeaderboard.OrderByDescending(p => p.Points).ToList(), 200, "OK");
             }
             catch
             {
-                //error = "Data could not be read";
-                //status = 500;
                 return (null, 500, "Data could not be read");
             }
         }
 
-        public async Task<ValueTuple<int, string>> UpgradeTroopsAsync(long kingdomId, string username, string type)
+        public async Task<(int status, string message)> UpgradeTroopsAsync(long kingdomId, string username, string type)
         {
             try
             {
                 if (!await UnitOfWork.Players.IsKingdomOwnerAsync(kingdomId, username))
                 {
-                    //result = "This kingdom doesn't belong to authenticated player";
                     return (401, "This kingdom doesn't belong to authenticated player");
                 }
                 int goldAmount = await KingdomService.GetGoldAmountAsync(kingdomId);
@@ -191,37 +176,30 @@ namespace Naivart.Services
 
                 if (academy == null) //There is no academy in Kingdom
                 {
-                    //result = "You have to build Academy first!";
                     return (400, "You have to build Academy first!");
                 }
                 else if (troop == null) //There are not any troop of this type
                 {
-                    //result = "You don't have any troop of this type in your army!";
                     return (400, "You don't have any troop of this type in your army!");
                 }
                 else if (troop.TroopType.Level >= 20) //Max. level reached
                 {
-                    //result = "Maximum level reached!";
                     return (400, "Maximum level reached!");
                 }
                 else if (troop.TroopType.Level >= academy.Level) //Academy upgrade required
                 {
-                    //result = "Upgrade Academy first!";
                     return (400, "Upgrade Academy first!");
                 }
                 var upgradedStats = await UnitOfWork.TroopTypes.UpgradeStatsOfTroopAsync(type, troop.TroopType.Level); //Get stats of particular troop type one level higher than now
                 if (goldAmount < upgradedStats.GoldCost) //Lack of gold 
                 {
-                    //result = "You don't have enough gold to upgrade this type of troops!";
                     return (400, "You don't have enough gold to upgrade this type of troops!");
                 }
                 await LevelUpAsync(kingdom, type, upgradedStats); //Everything ok - upgrade all troops of its type
-                //result = "ok";
                 return (200, "OK");
             }
             catch
             {
-                //result = "Data couldn't be read";
                 return (500, "Data could not be read");
             }
         }
