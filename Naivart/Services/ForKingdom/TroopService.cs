@@ -220,7 +220,7 @@ namespace Naivart.Services
             {
                 troop.Status = "upgrading";
                 troop.StartedAt = TimeService.GetUnixTimeNow();
-                troop.FinishedAt = TimeService.GetUnixTimeNow() + (600 * upgradedStats.Level); //time for upgrade is level * 10mins
+                troop.FinishedAt = troop.StartedAt + (600 * upgradedStats.Level); //time for upgrade is level * 10mins
             }
             UnitOfWork.Kingdoms.UpdateState(kingdom);
             await UnitOfWork.CompleteAsync();

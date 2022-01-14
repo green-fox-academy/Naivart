@@ -18,13 +18,15 @@ namespace Naivart.Services
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
         private IUnitOfWork UnitOfWork { get; set; }
+        public TimeService TimeService { get; set; }
         public BuildingService(IMapper mapper, AuthService authService,
-                               KingdomService kingdomService, IUnitOfWork unitOfWork)
+                               KingdomService kingdomService, IUnitOfWork unitOfWork, TimeService timeService)
         {
             this.mapper = mapper;
             AuthService = authService;
             KingdomService = kingdomService;
             UnitOfWork = unitOfWork;
+            TimeService = timeService;
         }
 
         public List<BuildingAPIModel> ListOfBuildingsMapping(List<Building> buildings)
@@ -59,7 +61,7 @@ namespace Naivart.Services
                     return (new BuildingResponse(), 403, $"You can have only one {buildingType.Type}!");
                 }
 
-                if (await GetTownhallLevelAsync(kingdomId) != requiredTownhallLevel) //checking required townhall level
+                if (await GetTownhallLevelAsync(kingdomId) < requiredTownhallLevel) //checking required townhall level
                 {
                     return (new BuildingResponse(), 400, $"You need to have townhall level {requiredTownhallLevel} first!");
                 }
@@ -76,14 +78,18 @@ namespace Naivart.Services
 
                 Building building = mapper.Map<Building>(buildingModel); //creating building using reverse mapping
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= buildingType.GoldCost; //charging for creating building
-                if (building.Type == "farm")
-                {
-                    kingdom.Resources.FirstOrDefault(r => r.Type == "food").Generation += 1;
-                }
-                else if (building.Type == "mine")                                                   //upgrading food/gold generation
-                {
-                    kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
-                }
+                //TODO: Delete this before pull request
+                //if (building.Type == "farm")
+                //{
+                //    kingdom.Resources.FirstOrDefault(r => r.Type == "food").Generation += 1;
+                //}
+                //else if (building.Type == "mine")                                                   //upgrading food/gold generation
+                //{
+                //    kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
+                //}
+                building.StartedAt = TimeService.GetUnixTimeNow();
+                building.FinishedAt = building.StartedAt + 600;
+                building.Status = "creating";
                 UnitOfWork.Buildings.AddAsync(building);
                 await UnitOfWork.CompleteAsync();
 
