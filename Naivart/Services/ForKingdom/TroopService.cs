@@ -216,9 +216,11 @@ namespace Naivart.Services
             kingdom.Resources.FirstOrDefault(t => t.Type == "gold").Amount -= upgradedStats.GoldCost;
 
             foreach (Troop troop in kingdom.Troops.Where(x => String.Equals(x.TroopType.Type, type, 
-                StringComparison.CurrentCultureIgnoreCase)).ToList()) //Upgrade all units of its type
+                StringComparison.CurrentCultureIgnoreCase)).ToList()) //Edited(timeflow): changed upgrading to waiting for upgrade
             {
-                troop.TroopTypeId++;
+                troop.Status = "upgrading";
+                troop.StartedAt = TimeService.GetUnixTimeNow();
+                troop.FinishedAt = TimeService.GetUnixTimeNow() + (600 * upgradedStats.Level); //time for upgrade is level * 10mins
             }
             UnitOfWork.Kingdoms.UpdateState(kingdom);
             await UnitOfWork.CompleteAsync();

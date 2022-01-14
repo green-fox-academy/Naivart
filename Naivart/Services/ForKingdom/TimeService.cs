@@ -42,13 +42,18 @@ namespace Naivart.Services
 
         public async Task UpdateTroopsAsync(long kingdomId)
         {
-            var troops = await UnitOfWork.Troops.GetRecruitingTroops(kingdomId);
+            var troops = await UnitOfWork.Troops.GetRecruitingOrUpgradingTroops(kingdomId);
             foreach (var troop in troops)
             {
-                if (troop.FinishedAt <= GetUnixTimeNow())
+                if (troop.Status == "recruiting" && troop.FinishedAt <= GetUnixTimeNow())
                 {
                     troop.Status = "town";
                     await UnitOfWork.CompleteAsync();
+                }
+                else if (troop.Status == "upgrading" && troop.FinishedAt <= GetUnixTimeNow())
+                {
+                    troop.Status = "town";
+                    await UnitOfWork.Troops.UpgradeTroop(troop);    //upgrade troop and save changes
                 }
             }
         }

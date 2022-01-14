@@ -6,6 +6,7 @@ namespace Naivart.Interfaces
 {
     public interface ITroopRepository : IRepository<Troop>
     {
-        Task<List<Troop>> GetRecruitingTroops(long kingdomId);
+        Task<List<Troop>> GetRecruitingOrUpgradingTroops(long kingdomId);
+        Task UpgradeTroop(Troop troop);
     }
 }
