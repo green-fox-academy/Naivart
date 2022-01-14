@@ -9,5 +9,11 @@ namespace Naivart.Models.APIModels.Kingdom
     {
         public ResourceStolen ResourceStolen { get; set; }
         public List<LostTroopsAPI> TroopsLost { get; set; }
+
+        public AttackerInfo(ResourceStolen resourceStolen, List<LostTroopsAPI> troopsLost)
+        {
+            ResourceStolen = resourceStolen;
+            TroopsLost = troopsLost;
+        }
     }
 }

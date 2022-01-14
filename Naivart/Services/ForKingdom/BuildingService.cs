@@ -14,17 +14,16 @@ namespace Naivart.Services
 {
     public class BuildingService
     {
-        private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
+        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
-        private IUnitOfWork UnitOfWork { get; set; }
-        public BuildingService(IMapper mapper, AuthService authService,
-                               KingdomService kingdomService, IUnitOfWork unitOfWork)
+        private IUnitOfWork _unitOfWork { get; set; }
+        public BuildingService(IMapper mapper, AuthService authService, KingdomService kingdomService, IUnitOfWork unitOfWork)
         {
-            this.mapper = mapper;
+            _mapper = mapper;
             AuthService = authService;
             KingdomService = kingdomService;
-            UnitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork;
         }
 
         public List<BuildingAPIModel> ListOfBuildingsMapping(List<Building> buildings)
@@ -37,8 +36,7 @@ namespace Naivart.Services
 
             foreach (var building in buildings)
             {
-                var buildingAPIModel = mapper.Map<BuildingAPIModel>(building);
-                buildingAPIModels.Add(buildingAPIModel);
+                buildingAPIModels.Add(_mapper.Map<BuildingAPIModel>(building));
             }
             return buildingAPIModels;
         }
@@ -47,7 +45,7 @@ namespace Naivart.Services
         {
             try
             {
-                var buildingType = await Task.FromResult(UnitOfWork.BuildingTypes.FirstOrDefault //getting required building level 1 information 
+                var buildingType = await Task.FromResult(_unitOfWork.BuildingTypes.FirstOrDefault //getting required building level 1 information 
                     (bt => bt.Type == request.Type && bt.Level == 1));
                 var kingdom = await KingdomService.GetByIdAsync(kingdomId);
                 var requiredTownhallLevel = buildingType.RequiredTownhallLevel;
@@ -59,22 +57,20 @@ namespace Naivart.Services
                     return (new BuildingResponse(), 403, $"You can have only one {buildingType.Type}!");
                 }
 
-                if (await GetTownhallLevelAsync(kingdomId) != requiredTownhallLevel) //checking required townhall level
+                if (await GetTownhallLevelAsync(kingdomId) < requiredTownhallLevel) //checking required townhall level
                 {
                     return (new BuildingResponse(), 400, $"You need to have townhall level {requiredTownhallLevel} first!");
                 }
 
-                if (!await UnitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService .GetGoldAmountAsync(kingdomId), //checking resources in the kingdom
+                if (!await _unitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService .GetGoldAmountAsync(kingdomId), //checking resources in the kingdom
                     buildingType.Id))
                 {
                     return (new BuildingResponse(), 400, "You don't have enough gold to build that!");
                 }
 
-                var buildingModel = mapper.Map<BuildingModel>(buildingType); //mapping model for creating building
-                buildingModel.BuildingTypeId = buildingType.Id;
-                buildingModel.KingdomId = kingdom.Id;
+                var buildingModel = new BuildingModel(_mapper.Map<BuildingModel>(buildingType), kingdom.Id, buildingType.Id); //mapping model for creating building
 
-                Building building = mapper.Map<Building>(buildingModel); //creating building using reverse mapping
+                var building = _mapper.Map<Building>(buildingModel); //creating building using reverse mapping
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= buildingType.GoldCost; //charging for creating building
                 if (building.Type == "farm")
                 {
@@ -84,10 +80,10 @@ namespace Naivart.Services
                 {
                     kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
                 }
-                UnitOfWork.Buildings.AddAsync(building);
-                await UnitOfWork.CompleteAsync();
+                _unitOfWork.Buildings.AddAsync(building);
+                await _unitOfWork.CompleteAsync();
 
-                return (mapper.Map<BuildingResponse>(building), 200, string.Empty); //mapping in order to give required response format
+                return (_mapper.Map<BuildingResponse>(building), 200, string.Empty); //mapping in order to give required response format
             }
             catch
             {
@@ -98,7 +94,7 @@ namespace Naivart.Services
         public async Task<int> GetTownhallLevelAsync(long kingdomId)
         {
             var kingdom = await KingdomService.GetByIdAsync(kingdomId);
-            return kingdom.Buildings.Where(p => p.Type == "townhall").FirstOrDefault().Level;
+            return kingdom.Buildings.FirstOrDefault(p => p.Type == "townhall").Level;
         }
 
         public async Task<(BuildingAPIModel model, int status, string message)> UpgradeBuildingAsync(long kingdomId, long buildingId)
@@ -108,7 +104,7 @@ namespace Naivart.Services
                 var kingdom = await KingdomService.GetByIdAsync(kingdomId);
                 var building = kingdom.Buildings.FirstOrDefault(b => b.Id == buildingId);
 
-                if (!await UnitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService.GetGoldAmountAsync(kingdomId),
+                if (!await _unitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService.GetGoldAmountAsync(kingdomId),
                     building.BuildingTypeId))
                 {
                     return (new BuildingAPIModel(), 400, "You don't have enough gold to upgrade that!");
@@ -124,7 +120,7 @@ namespace Naivart.Services
                     return (new BuildingAPIModel(), 400, "This building has already reached max level!");
                 }
 
-                var upgradedBuilding = await UnitOfWork.BuildingTypes.BuildingTypeIdAsync(building.BuildingTypeId);
+                var upgradedBuilding = await _unitOfWork.BuildingTypes.BuildingTypeIdAsync(building.BuildingTypeId);
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= upgradedBuilding.GoldCost;
 
                 if (upgradedBuilding.Type == "farm")
@@ -139,8 +135,8 @@ namespace Naivart.Services
                 building.BuildingTypeId = upgradedBuilding.Id;
                 building.Level = upgradedBuilding.Level;
                 building.Hp = upgradedBuilding.Hp;
-                await UnitOfWork.CompleteAsync();
-                return (mapper.Map<BuildingAPIModel>(building), 200, string.Empty);
+                await _unitOfWork.CompleteAsync();
+                return (_mapper.Map<BuildingAPIModel>(building), 200, string.Empty);
             }
             catch
             {
@@ -152,19 +148,19 @@ namespace Naivart.Services
         {
             try
             {
-                var allKingdoms = await UnitOfWork.Kingdoms.GetAllKingdomsAsync();
+                var allKingdoms = await _unitOfWork.Kingdoms.GetAllKingdomsAsync();
                 if (!allKingdoms.Any())
                 {
                     return (null, 404, "There are no kingdoms in Leaderboard");
                 }
 
-                var BuildingsLeaderboard = new List<LeaderboardBuildingAPIModel>();
+                var buildingsLeaderboard = new List<LeaderboardBuildingAPIModel>();
                 foreach (var kingdom in allKingdoms)
                 {
-                    var model = mapper.Map<LeaderboardBuildingAPIModel>(kingdom);
-                    BuildingsLeaderboard.Add(model);
+                    var model = _mapper.Map<LeaderboardBuildingAPIModel>(kingdom);
+                    buildingsLeaderboard.Add(model);
                 }
-                return (BuildingsLeaderboard.OrderByDescending(p => p.Points).ToList(), 200, "OK");
+                return (buildingsLeaderboard.OrderByDescending(p => p.Points).ToList(), 200, "OK");
             }
             catch
             {
@@ -174,24 +170,22 @@ namespace Naivart.Services
 
         public async Task<bool> IsBuildingTypeDefinedAsync(string type)
         {
-            return await Task.FromResult(UnitOfWork.BuildingTypes.Any(bt => bt.Type == type));
+            return await Task.FromResult(_unitOfWork.BuildingTypes.Any(bt => bt.Type == type));
         }
 
         public async Task AddBasicBuildingAsync(BuildingRequest request, long kingdomId) //similar to AddBuilding method, but modified for player registration
         {
             try
             {
-                var buildingType = await Task.FromResult(UnitOfWork.BuildingTypes.FirstOrDefault
+                var buildingType = await Task.FromResult(_unitOfWork.BuildingTypes.FirstOrDefault
                     (bt => bt.Type == request.Type && bt.Level == 1));
                 var kingdom = await KingdomService.GetByIdAsync(kingdomId);
 
-                var buildingModel = mapper.Map<BuildingModel>(buildingType);
-                buildingModel.BuildingTypeId = buildingType.Id;
-                buildingModel.KingdomId = kingdom.Id;
+                var buildingModel = new BuildingModel(_mapper.Map<BuildingModel>(buildingType), kingdom.Id, buildingType.Id);
 
-                Building building = mapper.Map<Building>(buildingModel);
-                UnitOfWork.Buildings.AddAsync(building);
-                await UnitOfWork.CompleteAsync();
+                var building = _mapper.Map<Building>(buildingModel);
+                _unitOfWork.Buildings.AddAsync(building);
+                await _unitOfWork.CompleteAsync();
             }
             catch (Exception e)
             {

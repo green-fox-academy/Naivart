@@ -15,17 +15,16 @@ namespace Naivart.Services
 {
     public class TroopService
     {
-        private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
+        private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
-        private IUnitOfWork UnitOfWork { get; set; }
-        public TroopService(IMapper mapper, AuthService authService, IUnitOfWork unitOfWork,
-                            KingdomService kingdomService)
+        private IUnitOfWork _unitOfWork { get; set; }
+        public TroopService(IMapper mapper, AuthService authService, KingdomService kingdomService, IUnitOfWork unitOfWork)
         {
-            this.mapper = mapper;
+            _mapper = mapper;
             AuthService = authService;
             KingdomService = kingdomService;
-            UnitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork;
         }
 
         public List<TroopAPIModel> ListOfTroopsMapping(List<Troop> troops)
@@ -38,42 +37,35 @@ namespace Naivart.Services
 
             foreach (var troop in troops)
             {
-                var troopAPIModel = mapper.Map<TroopAPIModel>(troop);
-                troopAPIModels.Add(troopAPIModel);
+                troopAPIModels.Add(_mapper.Map<TroopAPIModel>(troop));
             }
             return troopAPIModels;
         }
 
-        public async Task<ValueTuple<List<TroopInfo>, bool>> CreateTroopsAsync(int goldAmount, string troopType, int troopAmount, long kingdomId)
+        public async Task<(List<TroopInfo> info, bool isPossibleToCreate)> CreateTroopsAsync(int goldAmount, string troopType,
+            int troopAmount, long kingdomId)
         {
             var kingdom = await KingdomService.GetByIdAsync(kingdomId);
             var troop = kingdom.Troops.FirstOrDefault(x => x.TroopType.Type == troopType);
-            int troopLevel;
-            if (troop is null)
-            {
-                troopLevel = 1;
-            }
-            else
-            {
-                troopLevel = troop.TroopType.Level;
-            }
+            var troopLevel = troop is null ? 1 : troop.TroopType.Level;
             var createdTroop = await TroopFactoryAsync(troopType, goldAmount, troopAmount, troopLevel); //get troop stats based on type, if no golds returns null
             var resultModel = new List<TroopInfo>();
+
             if (createdTroop.troop != null)
             {
                 for (int i = 0; i < troopAmount; i++) //create troops number based on troop amount
                 {
                     createdTroop.troop.KingdomId = kingdomId;
                     createdTroop.troop.Status = "town";
-                    UnitOfWork.Troops.AddAsync(createdTroop.troop);
-                    await UnitOfWork.CompleteAsync();
-                    var infoTroop = mapper.Map<TroopInfo>(createdTroop);
+                    _unitOfWork.Troops.AddAsync(createdTroop.troop);
+                    await _unitOfWork.CompleteAsync();
+                    var infoTroop = _mapper.Map<TroopInfo>(createdTroop.troop);
                     resultModel.Add(infoTroop);
                     createdTroop.troop = await TroopFactoryAsync(troopType, troopLevel);
                 }
-                var kingdomModel = await UnitOfWork.Kingdoms.KingdomIncludeResourceByIdAsync(kingdomId);
-                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= createdTroop.totalCost;   //reduce owner gold by total cost
-                await UnitOfWork.CompleteAsync();
+                var kingdomModel = await _unitOfWork.Kingdoms.KingdomIncludeResourceByIdAsync(kingdomId);
+                kingdomModel.Resources.FirstOrDefault(x => x.Type == "gold").Amount -= createdTroop.totalCost; //reduce owner gold by total cost
+                await _unitOfWork.CompleteAsync();
 
                 return (resultModel, true); //returns list of created troops and confirmation
             }
@@ -86,16 +78,16 @@ namespace Naivart.Services
             var troopsCreated = new List<TroopInfo>();
             try
             {
-                if (await UnitOfWork.Players.IsKingdomOwnerAsync(kingdomId, username))
+                if (await _unitOfWork.Players.IsKingdomOwnerAsync(kingdomId, username))
                 {
                     int goldAmount = await KingdomService.GetGoldAmountAsync(kingdomId);
                     var response = await CreateTroopsAsync(goldAmount, input.Type, input.Quantity, kingdomId);
 
-                    if (response.Item2)
+                    if (response.isPossibleToCreate)
                     {
-                        return (response.Item1, 200, "OK");
+                        return (response.info, 200, "OK");
                     }
-                    return (response.Item1, 400, "You don't have enough gold to train all these units!");
+                    return (response.info, 400, "You don't have enough gold to train all these units!");
                 }
                 return (troopsCreated, 401, "This kingdom does not belong to authenticated player!");
             }
@@ -105,15 +97,11 @@ namespace Naivart.Services
             }
         }
 
-        public async Task<(Troop troop, int totalCost)> TroopFactoryAsync(string troopType, int goldAmount, int troopAmount, 
+        public async Task<(Troop troop, int totalCost)> TroopFactoryAsync(string troopType, int goldAmount, int troopAmount,
             long troopTypeLevel)
         {
-            var troopStats = await UnitOfWork.TroopTypes.GetTroopTypeForUpgradeAsync(troopType, troopTypeLevel);
-            Troop troop = new Troop()
-            {
-                TroopTypeId = troopStats.Id,
-                TroopType = troopStats
-            };
+            var troopStats = await _unitOfWork.TroopTypes.GetTroopTypeForUpgradeAsync(troopType, troopTypeLevel);
+            var troop = new Troop(troopStats.Id, troopStats);
             var totalCost = (troop.TroopType.GoldCost * troopAmount);
             return totalCost <= goldAmount ? (troop, totalCost) : (null, totalCost);
         }
@@ -124,33 +112,27 @@ namespace Naivart.Services
             {
                 troopTypeLevel = 1;
             }
-            var troopStats = await UnitOfWork.TroopTypes.GetTroopTypeForUpgradeAsync(troopType, troopTypeLevel);
+            var troopStats = await _unitOfWork.TroopTypes.GetTroopTypeForUpgradeAsync(troopType, troopTypeLevel);
 
-            Troop troop = new Troop()
-            {
-                TroopTypeId = troopStats.Id,
-                TroopType = troopStats
-            };
-            return troop;
+            return new Troop(troopStats.Id, troopStats);
         }
 
         public async Task<(List<LeaderboardTroopAPIModel> model, int status, string message)> GetTroopsLeaderboardAsync()
         {
             try
             {
-                var allKingdoms = await UnitOfWork.Kingdoms.GetAllKingdomsAsync();
+                var allKingdoms = await _unitOfWork.Kingdoms.GetAllKingdomsAsync();
                 if (allKingdoms.Count == 0)
                 {
                     return (null, 404, "There are no kingdoms in Leaderboard");
                 }
 
-                var TroopsLeaderboard = new List<LeaderboardTroopAPIModel>();
+                var troopsLeaderboard = new List<LeaderboardTroopAPIModel>();
                 foreach (var kingdom in allKingdoms)
                 {
-                    var model = mapper.Map<LeaderboardTroopAPIModel>(kingdom);
-                    TroopsLeaderboard.Add(model);
+                    troopsLeaderboard.Add(_mapper.Map<LeaderboardTroopAPIModel>(kingdom));
                 }
-                return (TroopsLeaderboard.OrderByDescending(p => p.Points).ToList(), 200, "OK");
+                return (troopsLeaderboard.OrderByDescending(p => p.Points).ToList(), 200, "OK");
             }
             catch
             {
@@ -162,17 +144,18 @@ namespace Naivart.Services
         {
             try
             {
-                if (!await UnitOfWork.Players.IsKingdomOwnerAsync(kingdomId, username))
+                if (!await _unitOfWork.Players.IsKingdomOwnerAsync(kingdomId, username))
                 {
                     return (401, "This kingdom doesn't belong to authenticated player");
                 }
+
                 int goldAmount = await KingdomService.GetGoldAmountAsync(kingdomId);
                 var kingdom = await KingdomService.GetByIdAsync(kingdomId);
-                var academy = kingdom.Buildings.Where(t => String.Equals(t.Type, "Academy", 
-                    StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
+                var academy = kingdom.Buildings.FirstOrDefault(t => String.Equals(t.Type, "Academy", 
+                                      StringComparison.CurrentCultureIgnoreCase));
                 //Find the proper type of troop for detect the current level
-                var troop = kingdom.Troops.Where(x => String.Equals(x.TroopType.Type, type, 
-                    StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
+                var troop = kingdom.Troops.FirstOrDefault(x => String.Equals(x.TroopType.Type, type,
+                                 StringComparison.CurrentCultureIgnoreCase));
 
                 if (academy == null) //There is no academy in Kingdom
                 {
@@ -190,11 +173,13 @@ namespace Naivart.Services
                 {
                     return (400, "Upgrade Academy first!");
                 }
-                var upgradedStats = await UnitOfWork.TroopTypes.UpgradeStatsOfTroopAsync(type, troop.TroopType.Level); //Get stats of particular troop type one level higher than now
+
+                var upgradedStats = await _unitOfWork.TroopTypes.UpgradeStatsOfTroopAsync(type, troop.TroopType.Level); //Get stats of particular troop type one level higher than now
                 if (goldAmount < upgradedStats.GoldCost) //Lack of gold 
                 {
                     return (400, "You don't have enough gold to upgrade this type of troops!");
                 }
+
                 await LevelUpAsync(kingdom, type, upgradedStats); //Everything ok - upgrade all troops of its type
                 return (200, "OK");
             }
@@ -209,13 +194,13 @@ namespace Naivart.Services
             //Reduce owner gold by upgrade gold cost
             kingdom.Resources.FirstOrDefault(t => t.Type == "gold").Amount -= upgradedStats.GoldCost;
 
-            foreach (Troop troop in kingdom.Troops.Where(x => String.Equals(x.TroopType.Type, type, 
-                StringComparison.CurrentCultureIgnoreCase)).ToList()) //Upgrade all units of its type
+            foreach (var troop in kingdom.Troops.Where(x => String.Equals(x.TroopType.Type, type,
+                                                      StringComparison.CurrentCultureIgnoreCase)).ToList()) //Upgrade all units of its type
             {
                 troop.TroopTypeId++;
             }
-            UnitOfWork.Kingdoms.UpdateState(kingdom);
-            await UnitOfWork.CompleteAsync();
+            _unitOfWork.Kingdoms.UpdateState(kingdom);
+            await _unitOfWork.CompleteAsync();
         }
     }
 }

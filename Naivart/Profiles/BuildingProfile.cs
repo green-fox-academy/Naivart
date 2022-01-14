@@ -46,7 +46,7 @@ namespace Naivart.Profiles
             CreateMap<Kingdom, LeaderboardBuildingAPIModel>()
                 .ForMember(dest => dest.Ruler, opt => opt.MapFrom(src => src.Player.Username))
                 .ForMember(dest => dest.Kingdom, opt => opt.MapFrom(src => src.Name))
-                .ForMember(dest => dest.Buildings, opt => opt.MapFrom(src => src.Buildings.Count()))
+                .ForMember(dest => dest.Buildings, opt => opt.MapFrom(src => src.Buildings.Count))
                 .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Buildings.Sum(item => item.Level)));
         }
     }

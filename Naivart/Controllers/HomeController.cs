@@ -33,40 +33,17 @@ namespace Naivart.Controllers
         public async Task<IActionResult> LoginAsync([FromBody] PlayerLogin player)
         {
             var result = await LoginService.AuthenticateAsync(player);
-            if (result.status != 200)
-            {   
-                var output = new ErrorResponse() { Error = result.message };
-                return StatusCode(result.status, output);
-            }
-            var correctLogin = new TokenWithStatusResponse()
-            { Status = "OK", Token = result.message };
-            return Ok(correctLogin);
+            return result.status != 200 ? StatusCode(result.status, new ErrorResponse(result.message))
+                                        : Ok(new TokenWithStatusResponse("OK", result.message));
         }
 
         [HttpPost("registration")]
         public async Task<IActionResult> PlayerRegistrationAsync([FromBody] RegisterRequest request)
         {
-            Player player = await PlayerService.RegisterPlayerAsync(
-                   request.Username,
-                   request.Password,
-                   request.KingdomName);
-            if (player == null)
-            {
-                var response = new ErrorResponse()
-                {
-                    Error = "Username was empty, already exists or password was shorter than 8 characters!"
-                };
-                return BadRequest(response);
-            }
-            else
-            {
-                var response = new RegisterResponse()
-                {
-                    Username = player.Username,
-                    KingdomId = player.Kingdom.Id
-                };
-                return Ok(response);
-            }
+            return await PlayerService.RegisterPlayerAsync(request) == null
+                ? BadRequest(new ErrorResponse("Username was empty, already exists or password was shorter than 8 characters!"))
+                : Ok(new RegisterResponse((await PlayerService.RegisterPlayerAsync(request)).Username, 
+                                                (await PlayerService.RegisterPlayerAsync(request)).Kingdom.Id));
         }
 
         [Authorize]
@@ -74,13 +51,8 @@ namespace Naivart.Controllers
         public async Task<IActionResult> KingdomRegistrationAsync([FromBody] KingdomLocationInput input)
         {
             var result = await KingdomService.RegisterKingdomAsync(input, HttpContext.User.Identity.Name);
-            if (result.status != 200)
-            {
-                var outputError = new ErrorResponse() { Error = result.message };
-                return StatusCode(result.status, outputError);
-            }
-            var outputOk = new StatusResponse() { Status = result.message };
-            return Ok(outputOk);
+            return result.status != 200 ? StatusCode(result.status, new ErrorResponse(result.message)) 
+                                        : Ok(new StatusResponse(result.message));
         }
     }
 }

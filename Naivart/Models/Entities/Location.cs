@@ -9,5 +9,11 @@ namespace Naivart.Models.Entities
         public Kingdom Kingdom { get; set; }
         public int CoordinateX { get; set; }
         public int CoordinateY { get; set; }
+
+        public Location(int coordinateX, int coordinateY)
+        {
+            CoordinateX = coordinateX;
+            CoordinateY = coordinateY;
+        }
     }
 }

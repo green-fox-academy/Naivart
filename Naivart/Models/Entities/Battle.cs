@@ -17,8 +17,17 @@ namespace Naivart.Models.Entities
         public long FinishedAt { get; set; }
         public int GoldStolen { get; set; }
         public int FoodStolen { get; set; }
-
         public List<AttackerTroops> AttackingTroops { get; set; }
         public List<TroopsLost> DeadTroops { get; set; }
+
+        public Battle(long attackerId, long defenderId, string battleType, string status, long startedAt, long finishedAt)
+        {
+            AttackerId = attackerId;
+            DefenderId = defenderId;
+            BattleType = battleType;
+            Status = status;
+            StartedAt = startedAt;
+            FinishedAt = finishedAt;
+        }
     }
 }
