@@ -19,13 +19,15 @@ namespace Naivart.Services
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
         private IUnitOfWork UnitOfWork { get; set; }
+        public TimeService TimeService { get; set; }
         public TroopService(IMapper mapper, AuthService authService, IUnitOfWork unitOfWork,
-                            KingdomService kingdomService)
+                            KingdomService kingdomService, TimeService timeService)
         {
             this.mapper = mapper;
             AuthService = authService;
             KingdomService = kingdomService;
             UnitOfWork = unitOfWork;
+            TimeService = timeService;
         }
 
         public List<TroopAPIModel> ListOfTroopsMapping(List<Troop> troops)
@@ -64,10 +66,14 @@ namespace Naivart.Services
                 for (int i = 0; i < troopAmount; i++) //create troops number based on troop amount
                 {
                     createdTroop.troop.KingdomId = kingdomId;
-                    createdTroop.troop.Status = "town";
+                    createdTroop.troop.Status = "recruiting";
+                    //time of creating logic
+                    createdTroop.troop.StartedAt = TimeService.GetUnixTimeNow();
+                    createdTroop.troop.FinishedAt = createdTroop.troop.StartedAt + 600;
+
                     UnitOfWork.Troops.AddAsync(createdTroop.troop);
                     await UnitOfWork.CompleteAsync();
-                    var infoTroop = mapper.Map<TroopInfo>(createdTroop);
+                    var infoTroop = mapper.Map<TroopInfo>(createdTroop.troop);
                     resultModel.Add(infoTroop);
                     createdTroop.troop = await TroopFactoryAsync(troopType, troopLevel);
                 }

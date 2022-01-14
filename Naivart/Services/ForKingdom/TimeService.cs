@@ -28,6 +28,7 @@ namespace Naivart.Services
         {
             await UpdateResourcesAsync(kingdomId);
             await UpdateBattleAsync(kingdomId);
+            await UpdateTroopsAsync(kingdomId);
         }
         public async Task UpdateAllAsync(string username)       
         {
@@ -36,6 +37,20 @@ namespace Naivart.Services
             var player = await UnitOfWork.Players.FindPlayerIncudeKingdomsByUsernameAsync(username);
             await UpdateResourcesAsync(player.KingdomId);
             await UpdateBattleAsync(player.KingdomId);
+            await UpdateTroopsAsync(player.KingdomId);
+        }
+
+        public async Task UpdateTroopsAsync(long kingdomId)
+        {
+            var troops = await UnitOfWork.Troops.GetRecruitingTroops(kingdomId);
+            foreach (var troop in troops)
+            {
+                if (troop.FinishedAt <= GetUnixTimeNow())
+                {
+                    troop.Status = "town";
+                    await UnitOfWork.CompleteAsync();
+                }
+            }
         }
 
         public async Task UpdateResourcesAsync(long kingdomId)

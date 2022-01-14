@@ -13,8 +13,8 @@ namespace Naivart.Profiles
             public TroopProfile()
             {
             CreateMap<Troop, TroopAPIModel>()
-            .ForMember(dest => dest.StartedAt, opt => opt.MapFrom(src => src.Started_at))
-            .ForMember(dest => dest.FinishedAt, opt => opt.MapFrom(src => src.Finished_at))
+            .ForMember(dest => dest.StartedAt, opt => opt.MapFrom(src => src.StartedAt))
+            .ForMember(dest => dest.FinishedAt, opt => opt.MapFrom(src => src.FinishedAt))
             .ForMember(dest => dest.Level, opt => opt.MapFrom(src => src.TroopType.Level))
             .ForMember(dest => dest.Hp, opt => opt.MapFrom(src => src.TroopType.Hp))
             .ForMember(dest => dest.Attack, opt => opt.MapFrom(src => src.TroopType.Attack))
@@ -26,7 +26,13 @@ namespace Naivart.Profiles
     {
         public TroopInfoProfile()
         {
-            CreateMap<Troop, TroopInfo>();
+            CreateMap<Troop, TroopInfo>()
+            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.TroopType.Type))
+            .ForMember(dest => dest.Level, opt => opt.MapFrom(src => src.TroopType.Level))
+            .ForMember(dest => dest.Hp, opt => opt.MapFrom(src => src.TroopType.Hp))
+            .ForMember(dest => dest.Attack, opt => opt.MapFrom(src => src.TroopType.Attack))
+            .ForMember(dest => dest.Defense, opt => opt.MapFrom(src => src.TroopType.Defense))
+            .ReverseMap();
         }
     }
 
