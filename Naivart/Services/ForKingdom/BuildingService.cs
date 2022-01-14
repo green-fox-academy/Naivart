@@ -121,6 +121,14 @@ namespace Naivart.Services
                 {
                     return (new BuildingAPIModel(), 400, "This building has already reached max level!");
                 }
+                if (building.Status == "upgrading")
+                {
+                    return (new BuildingAPIModel(), 400, "This building is already upgrading!");
+                }
+                if (building.Status == "creating")
+                {
+                    return (new BuildingAPIModel(), 400, "You must finish creating this building first!");
+                }
 
                 var upgradedBuilding = await UnitOfWork.BuildingTypes.BuildingTypeIdAsync(building.BuildingTypeId);
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= upgradedBuilding.GoldCost;

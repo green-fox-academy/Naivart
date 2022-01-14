@@ -184,6 +184,10 @@ namespace Naivart.Services
                 {
                     return (400, "You have to build Academy first!");
                 }
+                else if (await UnitOfWork.Battles.IsAttackerInBattle(kingdomId))
+                {
+                    return (400, "You can't upgrade your troops, if you attack other kingdom!");
+                }
                 else if (troop == null) //There are not any troop of this type
                 {
                     return (400, "You don't have any troop of this type in your army!");
@@ -191,6 +195,10 @@ namespace Naivart.Services
                 else if (troop.TroopType.Level >= 20) //Max. level reached
                 {
                     return (400, "Maximum level reached!");
+                }
+                else if (troop.Status == "upgrading")
+                {
+                    return (400, "Your troops are already upgrading!");
                 }
                 else if (troop.TroopType.Level >= academy.Level) //Academy upgrade required
                 {

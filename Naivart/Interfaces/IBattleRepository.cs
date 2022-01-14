@@ -14,5 +14,6 @@ namespace Naivart.Interfaces
         Task<bool> IsKingdomInBattleAsync(long battleId, long kingdomId);
         Task<Battle> GetBattleFromBattleIdAsync(long battleId);
         Task<bool> IsKingdomInBattleAsync(long kingdomId);
+        Task<bool> IsAttackerInBattle(long kingdomId);
     }
 }

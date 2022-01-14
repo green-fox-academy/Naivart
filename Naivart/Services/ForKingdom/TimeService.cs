@@ -26,8 +26,6 @@ namespace Naivart.Services
 
         public async Task UpdateAllAsync(string username)       
         {
-            //TODO: Update creating building/troops, upgrading buildings/troops
-            //TODO: then make it more clean, to not run something that is not important
             var player = await UnitOfWork.Players.FindPlayerIncudeKingdomsByUsernameAsync(username);
             await UpdateResourcesAsync(player.KingdomId);
             await UpdateBattleAsync(player.KingdomId);
