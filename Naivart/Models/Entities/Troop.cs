@@ -6,8 +6,8 @@ namespace Naivart.Models.Entities
     {
         [Key]
         public long Id { get; set; }
-        public long Started_at { get; set; }
-        public long Finished_at { get; set; }
+        public long StartedAt { get; set; }
+        public long FinishedAt { get; set; }
         public string Status { get; set; }
         public long KingdomId { get; set; }
         public Kingdom Kingdom { get; set; }

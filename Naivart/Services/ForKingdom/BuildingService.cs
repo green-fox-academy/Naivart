@@ -18,13 +18,15 @@ namespace Naivart.Services
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
         private IUnitOfWork UnitOfWork { get; set; }
+        public TimeService TimeService { get; set; }
         public BuildingService(IMapper mapper, AuthService authService,
-                               KingdomService kingdomService, IUnitOfWork unitOfWork)
+                               KingdomService kingdomService, IUnitOfWork unitOfWork, TimeService timeService)
         {
             this.mapper = mapper;
             AuthService = authService;
             KingdomService = kingdomService;
             UnitOfWork = unitOfWork;
+            TimeService = timeService;
         }
 
         public List<BuildingAPIModel> ListOfBuildingsMapping(List<Building> buildings)
@@ -59,7 +61,7 @@ namespace Naivart.Services
                     return (new BuildingResponse(), 403, $"You can have only one {buildingType.Type}!");
                 }
 
-                if (await GetTownhallLevelAsync(kingdomId) != requiredTownhallLevel) //checking required townhall level
+                if (await GetTownhallLevelAsync(kingdomId) < requiredTownhallLevel) //checking required townhall level
                 {
                     return (new BuildingResponse(), 400, $"You need to have townhall level {requiredTownhallLevel} first!");
                 }
@@ -76,14 +78,10 @@ namespace Naivart.Services
 
                 Building building = mapper.Map<Building>(buildingModel); //creating building using reverse mapping
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= buildingType.GoldCost; //charging for creating building
-                if (building.Type == "farm")
-                {
-                    kingdom.Resources.FirstOrDefault(r => r.Type == "food").Generation += 1;
-                }
-                else if (building.Type == "mine")                                                   //upgrading food/gold generation
-                {
-                    kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
-                }
+
+                building.StartedAt = TimeService.GetUnixTimeNow();
+                building.FinishedAt = building.StartedAt + 600;
+                building.Status = "creating";
                 UnitOfWork.Buildings.AddAsync(building);
                 await UnitOfWork.CompleteAsync();
 
@@ -123,22 +121,21 @@ namespace Naivart.Services
                 {
                     return (new BuildingAPIModel(), 400, "This building has already reached max level!");
                 }
+                if (building.Status == "upgrading")
+                {
+                    return (new BuildingAPIModel(), 400, "This building is already upgrading!");
+                }
+                if (building.Status == "creating")
+                {
+                    return (new BuildingAPIModel(), 400, "You must finish creating this building first!");
+                }
 
                 var upgradedBuilding = await UnitOfWork.BuildingTypes.BuildingTypeIdAsync(building.BuildingTypeId);
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= upgradedBuilding.GoldCost;
 
-                if (upgradedBuilding.Type == "farm")
-                {
-                    kingdom.Resources.FirstOrDefault(r => r.Type == "food").Generation += 1;
-                }
-                else if (upgradedBuilding.Type == "mine")
-                {
-                    kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
-                }
-
-                building.BuildingTypeId = upgradedBuilding.Id;
-                building.Level = upgradedBuilding.Level;
-                building.Hp = upgradedBuilding.Hp;
+                building.Status = "upgrading";
+                building.StartedAt = TimeService.GetUnixTimeNow();
+                building.FinishedAt = building.StartedAt + (600 * upgradedBuilding.Level);
                 await UnitOfWork.CompleteAsync();
                 return (mapper.Map<BuildingAPIModel>(building), 200, string.Empty);
             }

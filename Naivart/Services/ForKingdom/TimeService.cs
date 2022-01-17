@@ -24,12 +24,61 @@ namespace Naivart.Services
             return DateTimeOffset.Now.ToUnixTimeSeconds();
         }
 
-        public async Task UpdateAllAsync(long kingdomId)
+        public async Task UpdateAllAsync(string username)       
         {
-            await UpdateResourcesAsync(kingdomId);
-            await UpdateBattleAsync(kingdomId);
+            var player = await UnitOfWork.Players.FindPlayerIncudeKingdomsByUsernameAsync(username);
+            await UpdateResourcesAsync(player.KingdomId);
+            await UpdateBattleAsync(player.KingdomId);
+            await UpdateTroopsAsync(player.KingdomId);
+            await UpdateBuildings(player.KingdomId);
         }
-        
+        public async Task UpdateBuildings(long kingdomId)
+        {
+            var buildings = await UnitOfWork.Buildings.GetAllBuildingsThatAreNotDone(kingdomId);
+
+            foreach (var building in buildings)
+            {
+                if (building.Status == "creating" && building.FinishedAt <= GetUnixTimeNow())
+                {
+                    building.Status = "done";
+                    await UnitOfWork.CompleteAsync();
+
+                    if (building.BuildingType.Type == "farm" || building.BuildingType.Type == "mine")
+                    {
+                        await UnitOfWork.Resources.UpgradeGeneration(kingdomId, building.BuildingType.Type);
+                    }
+                }
+                else if (building.Status == "upgrading" && building.FinishedAt <= GetUnixTimeNow())
+                {
+                    building.Status = "done";
+                    await UnitOfWork.Buildings.UpgradeBuilding(building);   //upgrade building and save changes
+                    
+                    if (building.BuildingType.Type == "farm" || building.BuildingType.Type == "mine")
+                    {
+                        await UnitOfWork.Resources.UpgradeGeneration(kingdomId, building.BuildingType.Type);
+                    }
+                }
+            }
+        }
+
+        public async Task UpdateTroopsAsync(long kingdomId)
+        {
+            var troops = await UnitOfWork.Troops.GetRecruitingOrUpgradingTroops(kingdomId);
+            foreach (var troop in troops)
+            {
+                if (troop.Status == "recruiting" && troop.FinishedAt <= GetUnixTimeNow())
+                {
+                    troop.Status = "town";
+                    await UnitOfWork.CompleteAsync();
+                }
+                else if (troop.Status == "upgrading" && troop.FinishedAt <= GetUnixTimeNow())
+                {
+                    troop.Status = "town";
+                    await UnitOfWork.Troops.UpgradeTroop(troop);    //upgrade troop and save changes
+                }
+            }
+        }
+
         public async Task UpdateResourcesAsync(long kingdomId)
         {
             var resources = await UnitOfWork.Resources.GetResourcesFromIdAsync(kingdomId);
