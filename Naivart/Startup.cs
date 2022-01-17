@@ -35,7 +35,7 @@ namespace Naivart
 
             services.AddControllersWithViews();
 
-            ConfigureDb(services);
+            
 
             services.AddTransient<AuthService>();
             services.AddTransient<BuildingService>();
@@ -59,6 +59,8 @@ namespace Naivart
             services.AddTransient<ILocationRepository, LocationRepository>();
             services.AddTransient<ITroopTypeRepository, TroopTypeRepository>();
             services.AddTransient<IUnitOfWork, UnitOfWork>();
+
+            ConfigureDb(services);
 
             var appSettingSection = AppConfig.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingSection);
@@ -132,7 +134,7 @@ options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoop
 
             if (environment == "Production")
             {
-                var connectionString = AppConfig.GetConnectionString("naivartsql");
+                var connectionString = AppConfig.GetConnectionString("naivartserver");
                 var sb = new SqlConnectionStringBuilder(connectionString);
                 services.AddDbContext<ApplicationDbContext>(builder => builder.UseSqlServer(sb.ConnectionString));
             }
