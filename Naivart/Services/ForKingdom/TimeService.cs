@@ -120,6 +120,10 @@ namespace Naivart.Services
                             totalDamage += await UnitOfWork.TroopTypes.TotalDamageAsync(troops); //total damage is calculated based on attack * quantity * 6
                         }
 
+                        if (kingdomId == attacker.Id)
+                        {
+                            await UpdateTroopsAsync(defender.Id);
+                        }
                         //total defense is troops HP + defense
                         totalDefense = defender.Troops.Where(x => x.Status == "town")
                                                       .Sum(x => x.TroopType.Defense) + defender.Troops
