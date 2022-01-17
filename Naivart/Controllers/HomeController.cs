@@ -40,10 +40,10 @@ namespace Naivart.Controllers
         [HttpPost("registration")]
         public async Task<IActionResult> PlayerRegistrationAsync([FromBody] RegisterRequest request)
         {
-            return await PlayerService.RegisterPlayerAsync(request) == null
+            var model = await PlayerService.RegisterPlayerAsync(request);
+            return model == null
                 ? BadRequest(new ErrorResponse("Username was empty, already exists or password was shorter than 8 characters!"))
-                : Ok(new RegisterResponse((await PlayerService.RegisterPlayerAsync(request)).Username, 
-                                                (await PlayerService.RegisterPlayerAsync(request)).Kingdom.Id));
+                : Ok(new RegisterResponse(model.Username, model.Kingdom.Id));
         }
 
         [Authorize]

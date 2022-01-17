@@ -179,9 +179,13 @@ namespace Naivart.Services
                     (bt => bt.Type == request.Type && bt.Level == 1));
                 var kingdom = await KingdomService.GetByIdAsync(kingdomId);
 
-                var buildingModel = new BuildingModel(_mapper.Map<BuildingModel>(buildingType), kingdom.Id, buildingType.Id);
+                //var buildingModel = new BuildingModel(_mapper.Map<BuildingModel>(buildingType), kingdom.Id, buildingType.Id);
+                var buildingModel = _mapper.Map<BuildingModel>(buildingType);
+                buildingModel.BuildingTypeId = buildingType.Id;
+                buildingModel.KingdomId = kingdom.Id;
 
                 var building = _mapper.Map<Building>(buildingModel);
+                building.Status = "done";
                 _unitOfWork.Buildings.AddAsync(building);
                 await _unitOfWork.CompleteAsync();
             }

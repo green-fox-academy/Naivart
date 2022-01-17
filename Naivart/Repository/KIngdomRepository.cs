@@ -75,7 +75,8 @@ namespace Naivart.Repository
         }
         public async Task ChangeLocationIdForKingdomAsync(KingdomLocationInput input, long locationId)
         {
-            await Task.FromResult(DbContext.Kingdoms.FirstOrDefault(x => x.Id == input.KingdomId).LocationId == locationId);
+            var model = await Task.FromResult(DbContext.Kingdoms.FirstOrDefault(x => x.Id == input.KingdomId));
+            model.LocationId = locationId;
         }
         public async Task<bool> DoesKingdomExistAsync(long kingdomId)
         {
