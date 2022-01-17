@@ -25,5 +25,10 @@ namespace Naivart.Repository
             return await Task.FromResult(DbContext.TroopTypes.FirstOrDefault(x => x.Type == troops.Type &&
                                  x.Level == troops.Level).Attack * 6 * troops.Quantity);
         }
+
+        public async Task<bool> DoesTypeExist(string type)
+        {
+            return await Task.FromResult(DbContext.TroopTypes.Any(x => x.Type == type));
+        }
     }
 }

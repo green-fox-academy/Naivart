@@ -87,14 +87,18 @@ namespace Naivart.Services
             {
                 if (await _unitOfWork.Players.IsKingdomOwnerAsync(kingdomId, username))
                 {
-                    int goldAmount = await KingdomService.GetGoldAmountAsync(kingdomId);
-                    var response = await CreateTroopsAsync(goldAmount, input.Type, input.Quantity, kingdomId);
-
-                    if (response.isPossibleToCreate)
+                    if (await _unitOfWork.TroopTypes.DoesTypeExist(input.Type))
                     {
-                        return (response.info, 200, "OK");
+                        int goldAmount = await KingdomService.GetGoldAmountAsync(kingdomId);
+                        var response = await CreateTroopsAsync(goldAmount, input.Type, input.Quantity, kingdomId);
+
+                        if (response.isPossibleToCreate)
+                        {
+                            return (response.info, 200, "OK");
+                        }
+                        return (response.info, 400, "You don't have enough gold to train all these units!");
                     }
-                    return (response.info, 400, "You don't have enough gold to train all these units!");
+                    return (troopsCreated, 403, "Troop type doesn't exist!");
                 }
                 return (troopsCreated, 401, "This kingdom does not belong to authenticated player!");
             }
