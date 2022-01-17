@@ -16,5 +16,15 @@ namespace Naivart.Models.Entities
         public List<Troop> Troops { get; set; }
         public List<Building> Buildings { get; set; }
 
+        public Kingdom(string name)
+        {
+            Name = name;
+        }
+
+        public Kingdom()
+        {
+
+        }
+
     }
 }

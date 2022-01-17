@@ -51,7 +51,7 @@ namespace NaivartUnitTest
 
             //asert
             Assert.Equal(expectedStatusCode, response.StatusCode);
-            Assert.Equal(messageExpected, upgradeTroopsResponse.status);
+            Assert.Equal(messageExpected, upgradeTroopsResponse.Status);
             //Warning: the test will stop working after the troop type reach maximum(20) Level!
         }
 

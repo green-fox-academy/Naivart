@@ -25,36 +25,24 @@ namespace Naivart.Controllers
         public async Task<IActionResult> BuildingsLeaderboardAsync()
         {
             var result = await BuildingService.GetBuildingsLeaderboardAsync();
-            var response = new LeaderboardBuildingsAPIResponse()
-            {
-                Results = result.Item1
-            };
-            return result.Item2 != 200 ? StatusCode(result.Item2, new ErrorResponse() { Error = result.Item3 })
-                                       : Ok(response);
+            return result.status != 200 ? StatusCode(result.status, new ErrorResponse(result.message))
+                                        : Ok(new LeaderboardBuildingsAPIResponse(result.model));
         }
 
         [HttpGet("troops")]
         public async Task<IActionResult> TroopsLeaderboardAsync()
         {
             var result = await TroopService.GetTroopsLeaderboardAsync();
-            var response = new LeaderboardTroopsAPIResponse()
-            {
-                Results = result.Item1
-            };
-            return result.Item2 != 200 ? StatusCode(result.Item2, new ErrorResponse() { Error = result.Item3 })
-                                       : Ok(response);
+            return result.status != 200 ? StatusCode(result.status, new ErrorResponse(result.message))
+                                        : Ok(new LeaderboardTroopsAPIResponse(result.model));
         }
 
         [HttpGet("kingdoms")]
         public async Task<IActionResult> KingdomsLeaderboardAsync()
         {
             var result = await KingdomService.GetKingdomsLeaderboardAsync();
-            var response = new LeaderboardKingdomsAPIResponse()
-            {
-                Results = result.Item1
-            };
-            return result.Item2 != 200 ? StatusCode(result.Item2, new ErrorResponse() { Error = result.Item3 })
-                                       : Ok(response);
+            return result.status != 200 ? StatusCode(result.status, new ErrorResponse(result.message))
+                                        : Ok(new LeaderboardKingdomsAPIResponse(result.model));
         }
     }
 }

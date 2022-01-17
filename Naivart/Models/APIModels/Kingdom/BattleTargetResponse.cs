@@ -9,5 +9,11 @@ namespace Naivart.Models.APIModels.Kingdom
     {
         public long BattleId { get; set; }
         public long ResolutionTime { get; set; }
+
+        public BattleTargetResponse(long battleId, long resolutionTime)
+        {
+            BattleId = battleId;
+            ResolutionTime = resolutionTime;
+        }
     }
 }

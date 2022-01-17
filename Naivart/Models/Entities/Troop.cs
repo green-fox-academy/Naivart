@@ -14,5 +14,15 @@ namespace Naivart.Models.Entities
         public long TroopTypeId { get; set; }
         public TroopType TroopType { get; set; }
 
+        public Troop(long troopTypeId, TroopType troopType)
+        {
+            TroopTypeId = troopTypeId;
+            TroopType = troopType;
+        }
+
+        public Troop()
+        {
+
+        }
     }
 }

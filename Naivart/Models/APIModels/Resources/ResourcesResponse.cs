@@ -6,6 +6,12 @@ namespace Naivart.Models.APIModels
     {
         public KingdomAPIModel Kingdom { get; set; }
         public List<ResourceAPIModel> Resources { get; set; }
+
+        public ResourcesResponse(KingdomAPIModel kingdom, List<ResourceAPIModel> resources)
+        {
+            Kingdom = kingdom;
+            Resources = resources;
+        }
     }
 }
 

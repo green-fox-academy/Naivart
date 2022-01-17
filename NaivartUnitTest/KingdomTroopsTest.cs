@@ -61,11 +61,7 @@ namespace NaivartUnitTest
             var TroopAPIModel = new TroopAPIModel() { Id = 1, Level = 3, Hp = 32, Attack = 5, Defense = 6, StartedAt = 12345789, FinishedAt = 12399999 };
             TroopAPIModels.Add(TroopAPIModel);
 
-            var TroopAPIResponse = new TroopsResponse()
-            {
-                Kingdom = kingdomAPIModel,
-                Troops = TroopAPIModels
-            };
+            var TroopAPIResponse = new TroopsResponse(kingdomAPIModel, TroopAPIModels);
 
             //act
             var response = HttpClient.SendAsync(request).Result;

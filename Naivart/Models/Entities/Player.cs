@@ -11,5 +11,12 @@ namespace Naivart.Models.Entities
         public string Salt { get; set; }
         public long KingdomId { get; set; }
         public Kingdom Kingdom { get; set; }
+
+        public Player(string username, string password, string salt)
+        {
+            Username = username;
+            Password = password;
+            Salt = salt;
+        }
     }
 }
