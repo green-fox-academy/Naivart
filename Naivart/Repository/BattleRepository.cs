@@ -60,11 +60,37 @@ namespace Naivart.Repository
         }
         public async Task<Battle> GetBattleFromBattleIdAsync(long battleId)
         {
-            return await Task.FromResult(DbContext.Battles.FirstOrDefault(x => x.Id == battleId));
+            try
+            {
+                return await Task.FromResult(DbContext.Battles.FirstOrDefault(x => x.Id == battleId));
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
         }
         public async Task<bool> IsKingdomInBattleAsync(long kingdomId)
         {
-            return await Task.FromResult(DbContext.Battles.Any(x => x.AttackerId == kingdomId || x.DefenderId == kingdomId));
+            try
+            {
+                return await Task.FromResult(DbContext.Battles.Any(x => x.Status != "done" && (x.AttackerId == kingdomId || x.DefenderId == kingdomId)));
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
+        }
+
+        public async Task<bool> IsAttackerInBattle(long kingdomId)
+        {
+            try
+            {
+                return await Task.FromResult(DbContext.Battles.Any(x => x.AttackerId == kingdomId && x.Status != "done"));
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Data could not be read", e);
+            }
         }
     }
 }

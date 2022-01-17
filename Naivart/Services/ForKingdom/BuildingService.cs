@@ -15,15 +15,18 @@ namespace Naivart.Services
     public class BuildingService
     {
         private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
+        private IUnitOfWork _unitOfWork { get; set; }
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
-        private IUnitOfWork _unitOfWork { get; set; }
-        public BuildingService(IMapper mapper, AuthService authService, KingdomService kingdomService, IUnitOfWork unitOfWork)
+        public TimeService TimeService { get; set; }
+        public BuildingService(IMapper mapper, IUnitOfWork unitOfWork, AuthService authService, KingdomService kingdomService,
+                               TimeService timeService)
         {
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
             AuthService = authService;
             KingdomService = kingdomService;
-            _unitOfWork = unitOfWork;
+            TimeService = timeService;
         }
 
         public List<BuildingAPIModel> ListOfBuildingsMapping(List<Building> buildings)
@@ -72,16 +75,12 @@ namespace Naivart.Services
 
                 var building = _mapper.Map<Building>(buildingModel); //creating building using reverse mapping
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= buildingType.GoldCost; //charging for creating building
-                if (building.Type == "farm")
-                {
-                    kingdom.Resources.FirstOrDefault(r => r.Type == "food").Generation += 1;
-                }
-                else if (building.Type == "mine")                                                   //upgrading food/gold generation
-                {
-                    kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
-                }
-                _unitOfWork.Buildings.AddAsync(building);
-                await _unitOfWork.CompleteAsync();
+
+                building.StartedAt = TimeService.GetUnixTimeNow();
+                building.FinishedAt = building.StartedAt + 600;
+                building.Status = "creating";
+                UnitOfWork.Buildings.AddAsync(building);
+                await UnitOfWork.CompleteAsync();
 
                 return (_mapper.Map<BuildingResponse>(building), 200, string.Empty); //mapping in order to give required response format
             }
@@ -119,24 +118,23 @@ namespace Naivart.Services
                 {
                     return (new BuildingAPIModel(), 400, "This building has already reached max level!");
                 }
+                if (building.Status == "upgrading")
+                {
+                    return (new BuildingAPIModel(), 400, "This building is already upgrading!");
+                }
+                if (building.Status == "creating")
+                {
+                    return (new BuildingAPIModel(), 400, "You must finish creating this building first!");
+                }
 
-                var upgradedBuilding = await _unitOfWork.BuildingTypes.BuildingTypeIdAsync(building.BuildingTypeId);
+                var upgradedBuilding = await UnitOfWork.BuildingTypes.BuildingTypeIdAsync(building.BuildingTypeId);
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= upgradedBuilding.GoldCost;
 
-                if (upgradedBuilding.Type == "farm")
-                {
-                    kingdom.Resources.FirstOrDefault(r => r.Type == "food").Generation += 1;
-                }
-                else if (upgradedBuilding.Type == "mine")
-                {
-                    kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Generation += 1;
-                }
-
-                building.BuildingTypeId = upgradedBuilding.Id;
-                building.Level = upgradedBuilding.Level;
-                building.Hp = upgradedBuilding.Hp;
-                await _unitOfWork.CompleteAsync();
-                return (_mapper.Map<BuildingAPIModel>(building), 200, string.Empty);
+                building.Status = "upgrading";
+                building.StartedAt = TimeService.GetUnixTimeNow();
+                building.FinishedAt = building.StartedAt + (600 * upgradedBuilding.Level);
+                await UnitOfWork.CompleteAsync();
+                return (mapper.Map<BuildingAPIModel>(building), 200, string.Empty);
             }
             catch
             {

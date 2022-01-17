@@ -16,15 +16,18 @@ namespace Naivart.Services
     public class TroopService
     {
         private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
+        private IUnitOfWork _unitOfWork { get; set; }
         public AuthService AuthService { get; set; }
         public KingdomService KingdomService { get; set; }
-        private IUnitOfWork _unitOfWork { get; set; }
-        public TroopService(IMapper mapper, AuthService authService, KingdomService kingdomService, IUnitOfWork unitOfWork)
+        public TimeService TimeService { get; set; }
+        public TroopService(IMapper mapper, IUnitOfWork unitOfWork, AuthService authService, KingdomService kingdomService,
+                            TimeService timeService)
         {
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
             AuthService = authService;
             KingdomService = kingdomService;
-            _unitOfWork = unitOfWork;
+            TimeService = timeService;
         }
 
         public List<TroopAPIModel> ListOfTroopsMapping(List<Troop> troops)
@@ -56,7 +59,11 @@ namespace Naivart.Services
                 for (int i = 0; i < troopAmount; i++) //create troops number based on troop amount
                 {
                     createdTroop.troop.KingdomId = kingdomId;
-                    createdTroop.troop.Status = "town";
+                    createdTroop.troop.Status = "recruiting";
+                    //time of creating logic
+                    createdTroop.troop.StartedAt = TimeService.GetUnixTimeNow();
+                    createdTroop.troop.FinishedAt = createdTroop.troop.StartedAt + 600;
+
                     _unitOfWork.Troops.AddAsync(createdTroop.troop);
                     await _unitOfWork.CompleteAsync();
                     var infoTroop = _mapper.Map<TroopInfo>(createdTroop.troop);
@@ -161,6 +168,10 @@ namespace Naivart.Services
                 {
                     return (400, "You have to build Academy first!");
                 }
+                else if (await UnitOfWork.Battles.IsAttackerInBattle(kingdomId))
+                {
+                    return (400, "You can't upgrade your troops, if you attack other kingdom!");
+                }
                 else if (troop == null) //There are not any troop of this type
                 {
                     return (400, "You don't have any troop of this type in your army!");
@@ -168,6 +179,10 @@ namespace Naivart.Services
                 else if (troop.TroopType.Level >= 20) //Max. level reached
                 {
                     return (400, "Maximum level reached!");
+                }
+                else if (troop.Status == "upgrading")
+                {
+                    return (400, "Your troops are already upgrading!");
                 }
                 else if (troop.TroopType.Level >= academy.Level) //Academy upgrade required
                 {
@@ -194,10 +209,12 @@ namespace Naivart.Services
             //Reduce owner gold by upgrade gold cost
             kingdom.Resources.FirstOrDefault(t => t.Type == "gold").Amount -= upgradedStats.GoldCost;
 
-            foreach (var troop in kingdom.Troops.Where(x => String.Equals(x.TroopType.Type, type,
-                                                      StringComparison.CurrentCultureIgnoreCase)).ToList()) //Upgrade all units of its type
+            foreach (Troop troop in kingdom.Troops.Where(x => String.Equals(x.TroopType.Type, type, 
+                StringComparison.CurrentCultureIgnoreCase)).ToList()) //Edited(timeflow): changed upgrading to waiting for upgrade
             {
-                troop.TroopTypeId++;
+                troop.Status = "upgrading";
+                troop.StartedAt = TimeService.GetUnixTimeNow();
+                troop.FinishedAt = troop.StartedAt + (600 * upgradedStats.Level); //time for upgrade is level * 10mins
             }
             _unitOfWork.Kingdoms.UpdateState(kingdom);
             await _unitOfWork.CompleteAsync();
