@@ -14,6 +14,7 @@ using Naivart.Models;
 using Naivart.Repository;
 using Naivart.Services;
 using System;
+using System.Data.SqlClient;
 using System.Text;
 
 namespace Naivart
@@ -103,18 +104,16 @@ namespace Naivart
             });
         }
 
-        protected virtual void ConfigureDb(IServiceCollection services)
+        private void ConfigureDb(IServiceCollection services)
         {
-            var connectionString = AppConfig.GetConnectionString("DefaultConnection");
-            var serverVersion = new MySqlServerVersion(new Version(8, 0));
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
 
-            services.AddDbContext<ApplicationDbContext>(
-                options => options
-                .UseMySql(connectionString, serverVersion)
-                // The following three options help with debugging.
-                .LogTo(Console.WriteLine, LogLevel.Information)
-                .EnableSensitiveDataLogging()
-                .EnableDetailedErrors());
+            if (environment == "Production")
+            {
+                var connectionString = AppConfig.GetConnectionString("naivartsql");
+                var sb = new SqlConnectionStringBuilder(connectionString);
+                services.AddDbContext<ApplicationDbContext>(builder => builder.UseSqlServer(sb.ConnectionString));
+            }
         }
     }
 }
