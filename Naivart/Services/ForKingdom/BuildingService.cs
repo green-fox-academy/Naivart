@@ -60,6 +60,12 @@ namespace Naivart.Services
                     return (new BuildingResponse(), 403, $"You can have only one {buildingType.Type}!");
                 }
 
+                if ((buildingType.Type == "farm" && (kingdom.Buildings.Where(x => x.Type == "farm").Count() >=5 ))
+                     || (buildingType.Type == "mine" && (kingdom.Buildings.Where(x => x.Type == "mine").Count() >= 5))) //checking for buildings that can be 5x max 
+                {
+                    return (new BuildingResponse(), 403, $"You can have only five {buildingType.Type}!");
+                }
+
                 if (await GetTownhallLevelAsync(kingdomId) < requiredTownhallLevel) //checking required townhall level
                 {
                     return (new BuildingResponse(), 400, $"You need to have townhall level {requiredTownhallLevel} first!");
@@ -71,7 +77,9 @@ namespace Naivart.Services
                     return (new BuildingResponse(), 400, "You don't have enough gold to build that!");
                 }
 
-                var buildingModel = new BuildingModel(_mapper.Map<BuildingModel>(buildingType), kingdom.Id, buildingType.Id); //mapping model for creating building
+                var buildingModel = _mapper.Map<BuildingModel>(buildingType); //mapping model for creating building
+                buildingModel.BuildingTypeId = buildingType.Id;
+                buildingModel.KingdomId = kingdom.Id;
 
                 var building = _mapper.Map<Building>(buildingModel); //creating building using reverse mapping
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= buildingType.GoldCost; //charging for creating building
