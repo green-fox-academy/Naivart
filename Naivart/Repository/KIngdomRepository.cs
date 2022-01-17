@@ -89,5 +89,12 @@ namespace Naivart.Repository
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
+
+        public async Task PopulationUp(long kingdomId, int quantity)
+        {
+            var model = await Task.FromResult(DbContext.Kingdoms.FirstOrDefault(x => x.Id == kingdomId));
+            model.Population += quantity;
+            await DbContext.SaveChangesAsync();
+        }
     }
 }
