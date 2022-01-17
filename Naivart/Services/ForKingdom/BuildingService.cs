@@ -79,8 +79,8 @@ namespace Naivart.Services
                 building.StartedAt = TimeService.GetUnixTimeNow();
                 building.FinishedAt = building.StartedAt + 600;
                 building.Status = "creating";
-                UnitOfWork.Buildings.AddAsync(building);
-                await UnitOfWork.CompleteAsync();
+                _unitOfWork.Buildings.AddAsync(building);
+                await _unitOfWork.CompleteAsync();
 
                 return (_mapper.Map<BuildingResponse>(building), 200, string.Empty); //mapping in order to give required response format
             }
@@ -127,14 +127,14 @@ namespace Naivart.Services
                     return (new BuildingAPIModel(), 400, "You must finish creating this building first!");
                 }
 
-                var upgradedBuilding = await UnitOfWork.BuildingTypes.BuildingTypeIdAsync(building.BuildingTypeId);
+                var upgradedBuilding = await _unitOfWork.BuildingTypes.BuildingTypeIdAsync(building.BuildingTypeId);
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= upgradedBuilding.GoldCost;
 
                 building.Status = "upgrading";
                 building.StartedAt = TimeService.GetUnixTimeNow();
                 building.FinishedAt = building.StartedAt + (600 * upgradedBuilding.Level);
-                await UnitOfWork.CompleteAsync();
-                return (mapper.Map<BuildingAPIModel>(building), 200, string.Empty);
+                await _unitOfWork.CompleteAsync();
+                return (_mapper.Map<BuildingAPIModel>(building), 200, string.Empty);
             }
             catch
             {

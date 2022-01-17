@@ -168,7 +168,7 @@ namespace Naivart.Services
                 {
                     return (400, "You have to build Academy first!");
                 }
-                else if (await UnitOfWork.Battles.IsAttackerInBattle(kingdomId))
+                else if (await _unitOfWork.Battles.IsAttackerInBattle(kingdomId))
                 {
                     return (400, "You can't upgrade your troops, if you attack other kingdom!");
                 }
