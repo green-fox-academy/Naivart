@@ -1,4 +1,4 @@
 ALTER TABLE naivart.troops
-RENAME COLUMN Started_at TO StartedAt;
+CHANGE COLUMN Started_at StartedAt bigint NOT NULL;
 ALTER TABLE naivart.troops
-RENAME COLUMN Finished_at TO FinishedAt;
+CHANGE COLUMN Finished_at FinishedAt bigint NOT NULL;
