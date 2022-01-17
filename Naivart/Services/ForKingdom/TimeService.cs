@@ -26,7 +26,7 @@ namespace Naivart.Services
 
         public async Task UpdateAllAsync(string username)       
         {
-            var player = await UnitOfWork.Players.FindPlayerIncudeKingdomsByUsernameAsync(username);
+            var player = await UnitOfWork.Players.FindPlayerIncludeKingdomsByUsernameAsync(username);
             await UpdateResourcesAsync(player.KingdomId);
             await UpdateBattleAsync(player.KingdomId);
             await UpdateTroopsAsync(player.KingdomId);

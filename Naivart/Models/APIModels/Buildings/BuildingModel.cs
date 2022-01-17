@@ -14,5 +14,11 @@ namespace Naivart.Models.APIModels.Buildings
         public long FinishedAt { get; set; }
         public long KingdomId { get; set; }
         public long BuildingTypeId { get; set; }
+
+        public BuildingModel(BuildingModel model, long kingdomId, long buildingTypeId)
+        {
+            KingdomId = kingdomId;
+            BuildingTypeId = buildingTypeId;
+        }
     }
 }

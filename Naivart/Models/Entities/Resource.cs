@@ -9,5 +9,14 @@
         public long UpdatedAt { get; set; }
         public long KingdomId { get; set; }
         public Kingdom Kingdom { get; set; }
+
+        public Resource(string type, int amount, int generation, long updatedAt, long kingdomId)
+        {
+            Type = type;
+            Amount = amount;
+            Generation = generation;
+            UpdatedAt = updatedAt;
+            KingdomId = kingdomId;
+        }
     }
 }

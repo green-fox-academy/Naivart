@@ -64,7 +64,7 @@ namespace NaivartUnitTest
         {
             var expectedStatusCode = HttpStatusCode.Unauthorized;
             var tokenResult = GetToken("Adam", "Santa123");
-            var inputObj = JsonConvert.SerializeObject(new BuildingRequest() { Type = "farm" });
+            var inputObj = JsonConvert.SerializeObject(new BuildingRequest("farm"));
             StringContent requestContent = new(inputObj, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage();

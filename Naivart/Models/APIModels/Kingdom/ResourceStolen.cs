@@ -7,7 +7,13 @@ namespace Naivart.Models.APIModels.Kingdom
 {
     public class ResourceStolen
     {
-        public int Gold { get; set; }
         public int Food { get; set; }
+        public int Gold { get; set; }
+
+        public ResourceStolen(int food, int gold)
+        {
+            Food = food;
+            Gold = gold;
+        }
     }
 }
