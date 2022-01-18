@@ -225,7 +225,8 @@ namespace Naivart.Services
             try
             {
                 var attacker = await _unitOfWork.Kingdoms.FindPlayerInfoByKingdomIdAsync(attackerId);
-                if (!await _unitOfWork.Kingdoms.DoesKingdomExistAsync(targetKingdom.Target.KingdomId))
+                if (!(await _unitOfWork.Kingdoms.DoesKingdomExistAsync(targetKingdom.Target.KingdomId)) 
+                    || attacker is null)
                 {
                     return (null, 404, "Target kingdom doesn't exist");
                 }
@@ -306,7 +307,10 @@ namespace Naivart.Services
                 var attackerInfo = new AttackerInfo(stolenResources, modelAttackerTroopsLost);
                 var defenderInfo = new DefenderInfo(modelDefenderTroopsLost);
 
-                return new BattleResultResponse(_mapper.Map<BattleResultResponse>(battle), attackerInfo, defenderInfo);
+                var result = _mapper.Map<BattleResultResponse>(battle);
+                result.Attacker = attackerInfo;
+                result.Defender = defenderInfo;
+                return result;
             }
             catch (Exception e)
             {

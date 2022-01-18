@@ -20,5 +20,9 @@ namespace Naivart.Models.APIModels.Buildings
             KingdomId = kingdomId;
             BuildingTypeId = buildingTypeId;
         }
+        public BuildingModel()
+        {
+
+        }
     }
 }
