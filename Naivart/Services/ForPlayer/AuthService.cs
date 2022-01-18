@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Services
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
         private readonly AppSettings appSettings;
         private IUnitOfWork UnitOfWork { get; set; }

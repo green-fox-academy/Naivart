@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Interfaces;
+using Naivart.Interfaces.ServiceInterfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Kingdom;
 using Naivart.Models.APIModels.Leaderboards;
@@ -14,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Services
 {
-    public class KingdomService
+    public class KingdomService : IKingdomService
     {
         private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         public AuthService AuthService { get; set; }

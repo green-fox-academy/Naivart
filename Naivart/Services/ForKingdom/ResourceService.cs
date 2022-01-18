@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
 using Naivart.Database;
+using Naivart.Interfaces.ServiceInterfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using System.Collections.Generic;
 
 namespace Naivart.Services
 {
-    public class ResourceService
+    public class ResourceService : IResourceService
     {
         private readonly IMapper mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         public ResourceService(IMapper mapper)

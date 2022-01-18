@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Interfaces;
+using Naivart.Interfaces.ServiceInterfaces;
 using Naivart.Models.APIModels.Troops;
 using Naivart.Models.Entities;
 using System;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Services
 {
-    public class TimeService
+    public class TimeService : ITimeService
     {
         private IUnitOfWork UnitOfWork { get; set; }
 

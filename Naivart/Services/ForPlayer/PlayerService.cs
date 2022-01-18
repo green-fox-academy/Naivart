@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Interfaces;
+using Naivart.Interfaces.ServiceInterfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using System;
@@ -12,14 +13,14 @@ using System.Web.Helpers;
 
 namespace Naivart.Services
 {
-    public class PlayerService
+    public class PlayerService : IPlayerService
     {
         private readonly IMapper mapper;
         public BuildingService BuildingService { get; set; }
         public TimeService TimeService { get; set; }
         private IUnitOfWork UnitOfWork { get; set; }
         public PlayerService(IMapper mapper, BuildingService
-                             buildingService, IUnitOfWork unitOfWork , TimeService timeService)
+                             buildingService, IUnitOfWork unitOfWork, TimeService timeService)
         {
             this.mapper = mapper;
             BuildingService = buildingService;
@@ -67,7 +68,7 @@ namespace Naivart.Services
             var townhallRequest = new BuildingRequest() { Type = "townhall" };
             var farmRequest = new BuildingRequest() { Type = "farm" };
             var mineRequest = new BuildingRequest() { Type = "mine" };
-            var basicBuildings = new List<BuildingRequest> 
+            var basicBuildings = new List<BuildingRequest>
                 { townhallRequest, farmRequest, mineRequest };
 
             foreach (var building in basicBuildings)

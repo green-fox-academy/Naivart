@@ -14,7 +14,7 @@ using System.Web.Helpers;
 
 namespace Naivart.Services
 {
-    public class LoginService
+    public class LoginService : ILoginService
     {
         private readonly AppSettings appSettings;
         public AuthService AuthService { get; set; }
