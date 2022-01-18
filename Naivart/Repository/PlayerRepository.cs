@@ -18,7 +18,7 @@ namespace Naivart.Repository
         {
             try
             {
-                return await Task.FromResult(DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username == username);
+                return await Task.FromResult(DbContext.Players.Any(x => x.KingdomId == kingdomId && x.Username == username));
             }
             catch (Exception e)
             {

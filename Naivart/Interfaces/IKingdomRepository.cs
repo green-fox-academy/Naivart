@@ -15,5 +15,6 @@ namespace Naivart.Interfaces
         Task<bool> HasAlreadyLocationAsync(KingdomLocationInput input);
         Task ChangeLocationIdForKingdomAsync(KingdomLocationInput input, long locationId);
         Task<bool> DoesKingdomExistAsync(long kingdomId);
+        Task PopulationUp(long kingdomId, int quantity);
     }
 }

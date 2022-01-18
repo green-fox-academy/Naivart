@@ -19,5 +19,9 @@ namespace Naivart.Models.APIModels.Kingdom
             Attacker = attacker;
             Defender = defender;
         }
+        public BattleResultResponse()
+        {
+
+        }
     }
 }

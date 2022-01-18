@@ -8,5 +8,6 @@ namespace Naivart.Interfaces
         Task<TroopType> GetTroopTypeForUpgradeAsync(string troopType, long troopTypeLevel);
         Task<TroopType> UpgradeStatsOfTroopAsync(string type, long troopTypeLevel);
         Task<int> TotalDamageAsync(AttackerTroops troops);
+        Task<bool> DoesTypeExist(string type);
     }
 }

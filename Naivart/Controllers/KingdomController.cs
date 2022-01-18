@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Controllers
 {
-    [Route("/")]
+    [Route("kingdoms")]
     public class KingdomController : Controller
     {
         public BuildingService BuildingService { get; set; }
@@ -27,7 +27,7 @@ namespace Naivart.Controllers
             TroopService = troopService;
         }
 
-        [HttpGet("kingdoms")]
+        [HttpGet("")]
         public async Task<object> KingdomsInformationAsync()
         {
             var kingdoms = await KingdomService.GetAllAsync();
@@ -39,7 +39,7 @@ namespace Naivart.Controllers
         }
 
         [Authorize]
-        [HttpGet("kingdoms/{id}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> KingdomInformationAsync([FromRoute] long id)
         {
             var info = await KingdomService.GetKingdomInfoAsync(id, HttpContext.User.Identity.Name);
@@ -49,7 +49,7 @@ namespace Naivart.Controllers
         }
 
         [Authorize]
-        [HttpPut("kingdoms/{id}")]
+        [HttpPut("{id}")]
         public async Task<object> RenameKingdomAsync([FromRoute] long id, [FromBody] RenameKingdomRequest request)
         {
             if (String.IsNullOrWhiteSpace(request.KingdomName))
@@ -75,7 +75,7 @@ namespace Naivart.Controllers
         }
 
         [Authorize]
-        [HttpGet("kingdoms/{id}/buildings")]
+        [HttpGet("{id}/buildings")]
         public async Task<IActionResult> BuildingsAsync([FromRoute] long id)
         {
             if (!await KingdomService.IsUserKingdomOwnerAsync(id, HttpContext.User.Identity.Name))
@@ -91,7 +91,7 @@ namespace Naivart.Controllers
         }
 
         [Authorize]
-        [HttpPost("kingdoms/{id}/buildings")]
+        [HttpPost("{id}/buildings")]
         public async Task<IActionResult> AddBuildingAsync([FromRoute] long id, [FromBody] BuildingRequest request)
         {
             if (!await KingdomService.IsUserKingdomOwnerAsync(id, HttpContext.User.Identity.Name))
@@ -115,7 +115,7 @@ namespace Naivart.Controllers
         }
 
         [Authorize]
-        [HttpPut("kingdoms/{kingdomId}/buildings/{buildingId}")]
+        [HttpPut("{kingdomId}/buildings/{buildingId}")]
         public async Task<IActionResult> UpgradeBuildingAsync([FromRoute] long kingdomId, [FromRoute] long buildingId)
         {
             if (!await KingdomService.IsUserKingdomOwnerAsync(kingdomId, HttpContext.User.Identity.Name))
@@ -135,7 +135,7 @@ namespace Naivart.Controllers
         }
 
         [Authorize]
-        [HttpGet("kingdoms/{id}/resources")]
+        [HttpGet("{id}/resources")]
         public async Task<object> ResourcesAsync([FromRoute] long id)
         {
             if (!await KingdomService.IsUserKingdomOwnerAsync(id, HttpContext.User.Identity.Name))
@@ -150,7 +150,7 @@ namespace Naivart.Controllers
         }
 
         [Authorize]
-        [HttpGet("kingdoms/{id}/troops")]
+        [HttpGet("{id}/troops")]
         public async Task<IActionResult> TroopsAsync([FromRoute] long id)
         {
             if (!await KingdomService .IsUserKingdomOwnerAsync(id, HttpContext.User.Identity.Name))
@@ -164,7 +164,7 @@ namespace Naivart.Controllers
             return Ok(new TroopsResponse(kingdomAPIModel, troopAPIModels));
         }
 
-        [HttpPost("kingdoms/{id}/troops")]
+        [HttpPost("{id}/troops")]
         public async Task<IActionResult> CreateTroopsAsync([FromRoute] long id, [FromBody] CreateTroopRequest input)
         {
             var response = await TroopService.TroopCreateRequestAsync(input, id, HttpContext.User.Identity.Name);
@@ -173,7 +173,7 @@ namespace Naivart.Controllers
         }
 
         [Authorize]
-        [HttpPut("kingdoms/{id}/troops")]
+        [HttpPut("{id}/troops")]
         public async Task<IActionResult> UpgradeTroopsAsync([FromRoute] long id, [FromBody] UpgradeTroopsRequest input)
         {
             var result = await TroopService.UpgradeTroopsAsync(id, HttpContext.User.Identity.Name, input.Type);
@@ -182,7 +182,7 @@ namespace Naivart.Controllers
         }
 
         [Authorize]
-        [HttpPost("kingdoms/{id}/battles")]
+        [HttpPost("{id}/battles")]
         public async Task<IActionResult> BattlesAsync([FromRoute] long id, [FromBody] BattleTargetRequest input)
         {
             var response = await KingdomService.BattleAsync(input, id, HttpContext.User.Identity.Name);
@@ -191,7 +191,7 @@ namespace Naivart.Controllers
         }
         
         [Authorize]
-        [HttpGet("kingdoms/{kingdomId}/battles/{id}")]
+        [HttpGet("{kingdomId}/battles/{id}")]
         public async Task<IActionResult> BattleResultAsync([FromRoute] long kingdomId, long id)
         {
             var response = await KingdomService.BattleInfoAsync(id, kingdomId, HttpContext.User.Identity.Name);
