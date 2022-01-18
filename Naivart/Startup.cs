@@ -59,7 +59,6 @@ namespace Naivart
             services.AddTransient<ILocationRepository, LocationRepository>();
             services.AddTransient<ITroopTypeRepository, TroopTypeRepository>();
             services.AddTransient<IUnitOfWork, UnitOfWork>();
-            services.AddHttpContextAccessor();
 
             var appSettingSection = AppConfig.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingSection);
