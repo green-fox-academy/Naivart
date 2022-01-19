@@ -7,19 +7,20 @@ using Naivart.Services;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Naivart.Interfaces.ServiceInterfaces;
 
 namespace Naivart.Controllers
 {
     [Route("/")]
     public class KingdomController : Controller
     {
-        public BuildingService BuildingService { get; set; }
-        public KingdomService KingdomService { get; set; }
-        public ResourceService ResourceService { get; set; }
-        public TroopService TroopService { get; set; }
+        public IBuildingService BuildingService { get; set; }
+        public IKingdomService KingdomService { get; set; }
+        public IResourceService ResourceService { get; set; }
+        public ITroopService TroopService { get; set; }
 
-        public KingdomController(BuildingService buildingService, KingdomService kingdomService,
-                                 ResourceService resourceService, TroopService troopService)
+        public KingdomController(IBuildingService buildingService, IKingdomService kingdomService,
+                                 IResourceService resourceService, ITroopService troopService)
         {
             BuildingService = buildingService;
             KingdomService = kingdomService;

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Interfaces.ServiceInterfaces
 {
-    interface ITimeService
+    public interface ITimeService
     {
         long GetUnixTimeNow();
         Task UpdateAllAsync(string username);

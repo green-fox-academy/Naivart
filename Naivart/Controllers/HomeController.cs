@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Naivart.Interfaces.ServiceInterfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using Naivart.Services;
@@ -10,12 +11,12 @@ namespace Naivart.Controllers
     [Route("/")]
     public class HomeController : Controller
     {
-        public KingdomService KingdomService { get; set; }
-        public LoginService LoginService { get; set; }
-        public PlayerService PlayerService { get; set; }
+        public IKingdomService KingdomService { get; set; }
+        public ILoginService LoginService { get; set; }
+        public IPlayerService PlayerService { get; set; }
 
-        public HomeController(KingdomService kingdomService, LoginService loginService,
-                              PlayerService playerService)
+        public HomeController(IKingdomService kingdomService, ILoginService loginService,
+                              IPlayerService playerService)
         {
             KingdomService = kingdomService;
             LoginService = loginService;

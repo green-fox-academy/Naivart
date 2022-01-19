@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Naivart.Interfaces.ServiceInterfaces
 {
-    interface IResourceService
+    public interface IResourceService
     {
         List<ResourceAPIModel> ListOfResourcesMapping(List<Resource> resources);
     }

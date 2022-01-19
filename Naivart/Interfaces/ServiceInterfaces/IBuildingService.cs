@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Interfaces.ServiceInterfaces
 {
-    interface IBuildingService
+    public interface IBuildingService
     {
         List<BuildingAPIModel> ListOfBuildingsMapping(List<Building> buildings);
         Task<(BuildingResponse model, int status, string message)> AddBuildingAsync(BuildingRequest request, long kingdomId);

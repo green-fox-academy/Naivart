@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Interfaces.ServiceInterfaces
 {
-    interface IKingdomService
+    public interface IKingdomService
     {
         Task<List<Kingdom>> GetAllAsync();
         Task<Kingdom> GetByIdAsync(long id);

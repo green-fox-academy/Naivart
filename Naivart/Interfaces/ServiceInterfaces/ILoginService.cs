@@ -1,9 +1,9 @@
 ﻿using Naivart.Models.APIModels;
 using System.Threading.Tasks;
 
-namespace Naivart.Interfaces
+namespace Naivart.Interfaces.ServiceInterfaces
 {
-    interface ILoginService
+    public interface ILoginService
     {
         Task<(int status, string message)> AuthenticateAsync(PlayerLogin player);
         Task<bool> IsLoginPasswordCorrectAsync(string name, string password);
