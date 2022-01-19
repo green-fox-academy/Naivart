@@ -14,7 +14,7 @@ using Xunit;
 
 namespace NaivartTestMoq
 {
-    public class KingdomServiceTests : ServiceTest
+    public class KingdomServiceTests 
     {
         private readonly KingdomService testKingdomService;
         private KingdomController kingdomController;
@@ -44,5 +44,6 @@ namespace NaivartTestMoq
             Assert.IsType<OkObjectResult>(actual);
             Assert.Equal(StatusCodes.Status200OK, (actual as ObjectResult).StatusCode);
         }
+      
     }
 }
