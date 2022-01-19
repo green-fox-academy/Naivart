@@ -60,8 +60,8 @@ namespace Naivart.Services
                     return (new BuildingResponse(), 403, $"You can have only one {buildingType.Type}!");
                 }
 
-                if ((buildingType.Type == "farm" && (kingdom.Buildings.Where(x => x.Type == "farm").Count() >=5 ))
-                     || (buildingType.Type == "mine" && (kingdom.Buildings.Where(x => x.Type == "mine").Count() >= 5))) //checking for buildings that can be 5x max 
+                if ((buildingType.Type == "farm" && (kingdom.Buildings.Count(x => x.Type == "farm") >=5 ))
+                     || (buildingType.Type == "mine" && (kingdom.Buildings.Count(x => x.Type == "mine") >= 5))) //checking for buildings that can be 5x max 
                 {
                     return (new BuildingResponse(), 403, $"You can have only five {buildingType.Type}!");
                 }
@@ -187,7 +187,6 @@ namespace Naivart.Services
                     (bt => bt.Type == request.Type && bt.Level == 1));
                 var kingdom = await KingdomService.GetByIdAsync(kingdomId);
 
-                //var buildingModel = new BuildingModel(_mapper.Map<BuildingModel>(buildingType), kingdom.Id, buildingType.Id);
                 var buildingModel = _mapper.Map<BuildingModel>(buildingType);
                 buildingModel.BuildingTypeId = buildingType.Id;
                 buildingModel.KingdomId = kingdom.Id;

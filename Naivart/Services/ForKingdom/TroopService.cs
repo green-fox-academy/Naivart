@@ -94,7 +94,7 @@ namespace Naivart.Services
 
                         if (response.isPossibleToCreate)
                         {
-                            _unitOfWork.Kingdoms.PopulationUp(kingdomId, input.Quantity);
+                            await _unitOfWork.Kingdoms.PopulationUp(kingdomId, input.Quantity);
                             return (response.info, 200, "OK");
                         }
                         return (response.info, 400, "You don't have enough gold to train all these units!");
