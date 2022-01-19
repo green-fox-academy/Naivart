@@ -41,9 +41,10 @@ namespace NaivartTestMoq
             var context = new ApplicationDbContext(options);
 
             var unitOfWork = new UnitOfWork(context);
-            context.Database.OpenConnection();
-            context.Database.EnsureCreated();
+            context.Database.OpenConnectionAsync();
+            context.Database.EnsureCreatedAsync();
             return unitOfWork;
         }
+
     }
 }

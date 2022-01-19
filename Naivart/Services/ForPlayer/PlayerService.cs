@@ -16,10 +16,10 @@ namespace Naivart.Services
     public class PlayerService : IPlayerService
     {
         private readonly IMapper _mapper;
-        public BuildingService BuildingService { get; set; }
-        public TimeService TimeService { get; set; }
+        public IBuildingService BuildingService { get; set; }
+        public ITimeService TimeService { get; set; }
         private IUnitOfWork _unitOfWork { get; set; }
-        public PlayerService(IMapper mapper, BuildingService buildingService, TimeService timeService, IUnitOfWork unitOfWork)
+        public PlayerService(IMapper mapper, IBuildingService buildingService, ITimeService timeService, IUnitOfWork unitOfWork)
         {
             _mapper = mapper;
             BuildingService = buildingService;

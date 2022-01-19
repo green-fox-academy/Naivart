@@ -18,9 +18,9 @@ namespace Naivart.Services
     public class LoginService : ILoginService
     {
         private readonly AppSettings _appSettings;
-        public AuthService AuthService { get; set; }
+        public IAuthService AuthService { get; set; }
         private IUnitOfWork _unitOfWork { get; set; }
-        public LoginService(IOptions<AppSettings> appSettings, AuthService authService, IUnitOfWork unitOfWork)
+        public LoginService(IOptions<AppSettings> appSettings, IAuthService authService, IUnitOfWork unitOfWork)
         {
             _appSettings = appSettings.Value;
             AuthService = authService;
