@@ -71,8 +71,8 @@ namespace Naivart.Services
                     return (new BuildingResponse(), 400, $"You need to have townhall level {requiredTownhallLevel} first!");
                 }
 
-                if (!await _unitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService .GetGoldAmountAsync(kingdomId), //checking resources in the kingdom
-                    buildingType.Id))
+                if (!await _unitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService.GetGoldAmountAsync(kingdomId), //checking resources in the kingdom
+                    buildingType.Type, buildingType.Level))
                 {
                     return (new BuildingResponse(), 400, "You don't have enough gold to build that!");
                 }
@@ -112,7 +112,7 @@ namespace Naivart.Services
                 var building = kingdom.Buildings.FirstOrDefault(b => b.Id == buildingId);
 
                 if (!await _unitOfWork.BuildingTypes.IsEnoughGoldForAsync(await KingdomService.GetGoldAmountAsync(kingdomId),
-                    building.BuildingTypeId))
+                    building.Type, building.Level + 1))
                 {
                     return (new BuildingAPIModel(), 400, "You don't have enough gold to upgrade that!");
                 }
@@ -135,7 +135,8 @@ namespace Naivart.Services
                     return (new BuildingAPIModel(), 400, "You must finish creating this building first!");
                 }
 
-                var upgradedBuilding = await _unitOfWork.BuildingTypes.BuildingTypeIdAsync(building.BuildingTypeId);
+                var upgradedBuilding = await _unitOfWork.BuildingTypes.GetBuildingTypeAsync(building.Type,
+                                                  building.Level + 1);
                 kingdom.Resources.FirstOrDefault(r => r.Type == "gold").Amount -= upgradedBuilding.GoldCost;
 
                 building.Status = "upgrading";
@@ -187,7 +188,6 @@ namespace Naivart.Services
                     (bt => bt.Type == request.Type && bt.Level == 1));
                 var kingdom = await KingdomService.GetByIdAsync(kingdomId);
 
-                //var buildingModel = new BuildingModel(_mapper.Map<BuildingModel>(buildingType), kingdom.Id, buildingType.Id);
                 var buildingModel = _mapper.Map<BuildingModel>(buildingType);
                 buildingModel.BuildingTypeId = buildingType.Id;
                 buildingModel.KingdomId = kingdom.Id;
