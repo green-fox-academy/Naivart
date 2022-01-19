@@ -18,14 +18,14 @@ namespace Naivart.Repository
         {
             try
             {
-                return await Task.FromResult(DbContext.Players.FirstOrDefault(x => x.KingdomId == kingdomId).Username == username);
+                return await Task.FromResult(DbContext.Players.Any(x => x.KingdomId == kingdomId && x.Username == username));
             }
             catch (Exception e)
             {
                 throw new InvalidOperationException("Data could not be read", e);
             }
         }
-        public async Task<Player> PlayerInsludeKingdomFindByUsernameAndPasswordAsync(string username,string hashedPassword)
+        public async Task<Player> PlayerIncludeKingdomFindByUsernameAndPasswordAsync(string username,string hashedPassword)
         {
             return await Task.FromResult(DbContext.Players.Include(x => x.Kingdom).FirstOrDefault
                 (x => x.Username == username && x.Password == hashedPassword));
@@ -51,7 +51,7 @@ namespace Naivart.Repository
         {
             return await Task.FromResult(DbContext.Players.FirstOrDefault(x => x.Username == username));
         }
-        public async Task<Player> FindPlayerIncudeKingdomsByUsernameAsync(string name)
+        public async Task<Player> FindPlayerIncludeKingdomsByUsernameAsync(string name)
         {
             return await Task.FromResult(DbContext.Players.Include(x => x.Kingdom).Where(x => x.Username == name).FirstOrDefault());
         }

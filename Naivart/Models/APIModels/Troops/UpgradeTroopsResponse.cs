@@ -7,6 +7,11 @@ namespace Naivart.Models.APIModels.Troops
 {
     public class UpgradeTroopsResponse
     {
-        public string status { get; set; }
+        public string Status { get; set; }
+
+        public UpgradeTroopsResponse(string status)
+        {
+            Status = status;
+        }
     }
 }

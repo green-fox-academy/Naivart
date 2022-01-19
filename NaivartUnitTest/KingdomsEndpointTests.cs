@@ -44,11 +44,6 @@ namespace NaivartUnitTest
                 Location = locationAPIModel
             };
 
-            var kingdomAPIResponse = new KingdomsResponse()
-            {
-                Kingdoms = new List<KingdomAPIModel>() { kingdomAPIModel }
-            };
-
             //act
             var response = HttpClient.SendAsync(request).Result;
             var responseData = response.Content.ReadAsStringAsync().Result;
@@ -69,10 +64,7 @@ namespace NaivartUnitTest
             request.RequestUri = new Uri("https://localhost:44311/kingdoms");
             request.Method = HttpMethod.Get;
 
-            var kingdomAPIResponse = new KingdomsResponse()
-            {
-                Kingdoms = new List<KingdomAPIModel>()
-            };
+            var kingdomAPIResponse = new KingdomsResponse(new List<KingdomAPIModel>());
 
             //act
             var response = HttpClient.SendAsync(request).Result;

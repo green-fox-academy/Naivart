@@ -11,8 +11,15 @@ namespace Naivart.Models.Entities
         public string Type { get; set; }
         public int Quantity { get; set; }
         public int Level { get; set; }
-
         public long BattleId { get; set; }
         public Battle Battle { get; set; }
+
+        public AttackerTroops(string type, int quantity, int level, long battleId)
+        {
+            Type = type;
+            Quantity = quantity;
+            Level = level;
+            BattleId = battleId;
+        }
     }
 }

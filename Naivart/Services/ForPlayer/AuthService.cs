@@ -15,19 +15,19 @@ namespace Naivart.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly AppSettings appSettings;
-        private IUnitOfWork UnitOfWork { get; set; }
+        private readonly AppSettings _appSettings;
+        private IUnitOfWork _unitOfWork { get; set; }
 
         public AuthService(IOptions<AppSettings> appSettings, IUnitOfWork unitOfWork)
         {
-            this.appSettings = appSettings.Value;
-            UnitOfWork = unitOfWork;
+            _appSettings = appSettings.Value;
+            _unitOfWork = unitOfWork;
         }
 
         public string GetToken(string username)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var tokenKey = Encoding.ASCII.GetBytes(appSettings.Key);
+            var tokenKey = Encoding.ASCII.GetBytes(_appSettings.Key);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
@@ -51,7 +51,7 @@ namespace Naivart.Services
             {
                 return null;
             }
-            var symmetricKey = Encoding.ASCII.GetBytes(appSettings.Key);
+            var symmetricKey = Encoding.ASCII.GetBytes(_appSettings.Key);
 
             var validationParameters = new TokenValidationParameters()
             {

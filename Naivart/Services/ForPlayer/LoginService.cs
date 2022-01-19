@@ -17,14 +17,14 @@ namespace Naivart.Services
 {
     public class LoginService : ILoginService
     {
-        private readonly AppSettings appSettings;
+        private readonly AppSettings _appSettings;
         public AuthService AuthService { get; set; }
-        private IUnitOfWork UnitOfWork { get; set; }
+        private IUnitOfWork _unitOfWork { get; set; }
         public LoginService(IOptions<AppSettings> appSettings, AuthService authService, IUnitOfWork unitOfWork)
         {
-            this.appSettings = appSettings.Value;
+            _appSettings = appSettings.Value;
             AuthService = authService;
-            UnitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork;
         }
         public async Task<(int status, string message)> AuthenticateAsync(PlayerLogin player)
         {
@@ -51,14 +51,13 @@ namespace Naivart.Services
         {
             try
             {
-                var player = await UnitOfWork.Players.FindByUsernameAsync(name);
-                if (player is null)
+                if (await _unitOfWork.Players.FindByUsernameAsync(name) is null)
                 {
                     return false;
                 }
-                password = password + player.Salt;  //connect input password with salt
+                password += (await _unitOfWork.Players.FindByUsernameAsync(name)).Salt;  //connect input password with salt
                 //check if input pasword is same as hashed password in database, return bool
-                return Crypto.VerifyHashedPassword(player.Password, password);     
+                return Crypto.VerifyHashedPassword((await _unitOfWork.Players.FindByUsernameAsync(name)).Password, password);     
             }
             catch (Exception e)
             {
@@ -69,9 +68,8 @@ namespace Naivart.Services
         {
             string token = player.Token;
             try
-            {               
-                var identity = AuthService.GetNameFromToken(token);
-                return await FindPlayerByNameAsync(identity);
+            {
+                return await FindPlayerByNameAsync(AuthService.GetNameFromToken(token));
             }
             catch
             {
@@ -82,10 +80,8 @@ namespace Naivart.Services
         {
             try
             {
-                var player = await UnitOfWork.Players.FindPlayerIncudeKingdomsByUsernameAsync(name);
-                PlayerWithKingdom playerWithKingdom = new PlayerWithKingdom 
-                { KingdomId = player.KingdomId, KingdomName = player.Kingdom.Name, Ruler = player.Username };
-                return playerWithKingdom;
+                var player = await _unitOfWork.Players.FindPlayerIncludeKingdomsByUsernameAsync(name);
+                return new PlayerWithKingdom(player.KingdomId, player.Kingdom.Name, player.Username);
             }
             catch
             {
@@ -104,7 +100,7 @@ namespace Naivart.Services
                 {
                     return null;
                 }
-                var symmetricKey = Encoding.ASCII.GetBytes(appSettings.Key);
+                var symmetricKey = Encoding.ASCII.GetBytes(_appSettings.Key);
 
                 var validationParameters = new TokenValidationParameters()
                 {
@@ -117,7 +113,7 @@ namespace Naivart.Services
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
                 var identity = principal.Identity.Name;
 
-                return await UnitOfWork.Players.FindPlayerByNameReturnPlayerInfoAsync(identity);
+                return await _unitOfWork.Players.FindPlayerByNameReturnPlayerInfoAsync(identity);
             }
             catch
             {

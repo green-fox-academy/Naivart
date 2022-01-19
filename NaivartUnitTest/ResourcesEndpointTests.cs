@@ -79,11 +79,7 @@ namespace NaivartUnitTest
                 resourceAPIModels.Add(resourceAPIModel);
             }
 
-            var resourceAPIResponse = new ResourcesResponse()
-            {
-                Kingdom = kingdomAPIModel,
-                Resources = resourceAPIModels
-            };
+            var resourceAPIResponse = new ResourcesResponse(kingdomAPIModel, resourceAPIModels);
 
             //act
             var response = HttpClient.SendAsync(request).Result;

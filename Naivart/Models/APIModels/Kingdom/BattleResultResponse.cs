@@ -13,5 +13,15 @@ namespace Naivart.Models.APIModels.Kingdom
         public string Result { get; set; }
         public AttackerInfo Attacker { get; set; }
         public DefenderInfo Defender { get; set; }
+
+        public BattleResultResponse(BattleResultResponse response, AttackerInfo attacker, DefenderInfo defender)
+        {
+            Attacker = attacker;
+            Defender = defender;
+        }
+        public BattleResultResponse()
+        {
+
+        }
     }
 }
