@@ -183,7 +183,6 @@ namespace Naivart.Services
                             await SaveAndRemoveTroopsLostDefenderAsync(defender.Troops, battle.Id);
 
                             //saving dead troops list of ATTACKER and remove from kingdom
-                            double points = difference;
                             double ap = totalDamage;
                             double dif = ap - difference;
                             double attResult;
@@ -237,7 +236,6 @@ namespace Naivart.Services
                             await SaveAndRemoveTroopsLostAttackerAsync(battle.AttackingTroops, battle.Id, attacker);
 
                             //saving dead troops list of DEFENDER and remove from kingdom
-                            double points = difference;
                             double dp = totalDefense;
                             double dif = dp - difference;
                             double attResult;
@@ -334,20 +332,20 @@ namespace Naivart.Services
         public List<TroopBattleInfo> GetTroopQuantity(List<Troop> input)
         {
             var troopQuantity = new List<TroopBattleInfo>();
-            foreach (var troop in input)
+            foreach (var type in input.Select(x => x.TroopType))
             {
-                if (troopQuantity.Any(x => x.Type == troop.TroopType.Type && x.Level == troop.TroopType.Level))
+                if (troopQuantity.Any(x => x.Type == type.Type && x.Level == type.Level))
                 {
-                    troopQuantity.FirstOrDefault(x => x.Type == troop.TroopType.Type && x.Level == troop.TroopType.Level)
+                    troopQuantity.FirstOrDefault(x => x.Type == type.Type && x.Level == type.Level)
                                     .Quantity++;
                 }
                 else
                 {
                     troopQuantity.Add(new TroopBattleInfo()
                     {
-                        Type = troop.TroopType.Type,
+                        Type = type.Type,
                         Quantity = 1,
-                        Level = troop.TroopType.Level
+                        Level = type.Level
                     });
                 }
             }
@@ -384,11 +382,11 @@ namespace Naivart.Services
         public async Task SaveAndRemoveTroopsLostDefenderAsync(List<Troop> input, long battleId)
         {
             var deadTroops = new List<TroopsLost>();
-            foreach (var troop in input)
+            foreach (var troop in input.Select(troop => troop.TroopType.Type))
             {
-                if (deadTroops.Any(x => x.Type == troop.TroopType.Type))
+                if (deadTroops.Any(x => x.Type == troop))
                 {
-                    deadTroops.FirstOrDefault(x => x.Type == troop.TroopType.Type).Quantity++;
+                    deadTroops.FirstOrDefault(x => x.Type == troop).Quantity++;
                 }
                 else
                 {
@@ -396,7 +394,7 @@ namespace Naivart.Services
                     {
                         BattleId = battleId,
                         IsAttacker = false,
-                        Type = troop.TroopType.Type,
+                        Type = troop,
                         Quantity = 1
                     });
                 }
