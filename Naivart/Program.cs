@@ -6,11 +6,10 @@ using System;
 
 namespace Naivart
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
-            //CreateHostBuilder(args).Build().Run();
             Log.Logger = new LoggerConfiguration()
                 //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 //.MinimumLevel.Information()
