@@ -9,7 +9,6 @@ namespace Naivart.Models.Entities
         public string Type { get; set; }
         public string Status { get; set; }
         public int Level { get; set; }
-        public int Hp { get; set; }
         public long StartedAt { get; set; }
         public long FinishedAt { get; set; }
         public long KingdomId { get; set; }
