@@ -1,16 +1,10 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Naivart.Controllers;
-using Naivart.Interfaces;
 using Naivart.Interfaces.ServiceInterfaces;
-using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
 using Naivart.Repository;
 using Naivart.Services;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -32,8 +26,7 @@ namespace NaivartTestMoq
         private UnitOfWork unitOfWork;
 
         public KingdomServiceTests()
-        {
-            // kingdomController = new KingdomController(buildingServiceMoq.Object, kingdomServiceMoq.Object, resourceServiceMoq.Object, troopServiceMoq.Object);
+        {      
             unitOfWork = GetContextWithoutData();
             testKingdomService = new KingdomService(_mapper, authServiceMoq.Object, loginServiceMoq.Object, timeServiceMoq.Object, unitOfWork);
         }
@@ -52,6 +45,23 @@ namespace NaivartTestMoq
 
             // Assert
             Assert.Equal(expected, actual);
+        }
+        [Fact]
+        public async Task GetByIdAsync_ShouldReturnKingdomById()
+        {
+            // Arrange
+            unitOfWork.Kingdoms.AddAsync(new Kingdom() { Id = 1, Name = "Igala" });
+            await unitOfWork.CompleteAsync();
+            long expected = 1;
+            string expected2 = "Igala";
+
+            // Act
+            var result = await testKingdomService.GetByIdAsync(1);
+            string actual = result.Name;
+
+            // Assert
+            Assert.Equal(expected, result.Id);
+            Assert.Equal(expected2, actual);
         }
     }
 }
