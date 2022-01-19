@@ -15,6 +15,7 @@ using Naivart.Models;
 using Naivart.Repository;
 using Naivart.Services;
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Naivart
@@ -69,6 +70,7 @@ namespace Naivart
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
             }).AddJwtBearer(x =>
             {
                 x.RequireHttpsMetadata = false;
@@ -93,6 +95,25 @@ namespace Naivart
                     Title = "Naivart",
                     Description = ".NET 5 API App"
                 });
+
+                OpenApiSecurityScheme securityDefinition = new OpenApiSecurityScheme()
+                {
+                    BearerFormat = "JWT",
+                    Name = "naivart-token",
+                    Description = "Set the current token",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer"
+                };
+                c.AddSecurityDefinition("Bearer", securityDefinition);
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement{
+                       {
+                            new OpenApiSecurityScheme{
+                                Reference = new OpenApiReference{
+                                    Id = "Bearer", //The name of the previously defined security scheme.
+                                    Type = ReferenceType.SecurityScheme}},new List<string>()
+                       }});
             });
         }
 
