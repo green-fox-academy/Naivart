@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Naivart.Interfaces.ServiceInterfaces;
 using Naivart.Services;
 using System;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Naivart.Middlewares
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext httpContext, TimeService timeService)
+        public async Task InvokeAsync(HttpContext httpContext, ITimeService timeService)
         {
             string username = httpContext.User.Identity.Name;
             if (!String.IsNullOrEmpty(username))
