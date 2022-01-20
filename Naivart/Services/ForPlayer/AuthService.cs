@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Naivart.Database;
 using Naivart.Interfaces;
+using Naivart.Interfaces.ServiceInterfaces;
 using Naivart.Models;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Naivart.Services
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
         private readonly AppSettings _appSettings;
         private IUnitOfWork _unitOfWork { get; set; }

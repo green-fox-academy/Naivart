@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Naivart.Database;
 using Naivart.Interfaces;
+using Naivart.Interfaces.ServiceInterfaces;
 using Naivart.Middlewares;
 using Naivart.Models;
 using Naivart.Repository;
@@ -37,14 +38,14 @@ namespace Naivart
 
             ConfigureDb(services);
 
-            services.AddTransient<AuthService>();
-            services.AddTransient<BuildingService>();
-            services.AddTransient<KingdomService>();
-            services.AddTransient<LoginService>();
-            services.AddTransient<PlayerService>();
-            services.AddTransient<ResourceService>();
-            services.AddTransient<TimeService>();
-            services.AddTransient<TroopService>();
+            services.AddTransient<IAuthService,AuthService>();
+            services.AddTransient<IBuildingService, BuildingService>();
+            services.AddTransient<IKingdomService,KingdomService>();
+            services.AddTransient<ILoginService,LoginService>();
+            services.AddTransient<IPlayerService,PlayerService>();
+            services.AddTransient<IResourceService,ResourceService>();
+            services.AddTransient<ITimeService,TimeService>();
+            services.AddTransient<ITroopService,TroopService>();
 
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<IBuildingRepository, BuildingRepository>();

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Naivart.Database;
 using Naivart.Interfaces;
+using Naivart.Interfaces.ServiceInterfaces;
 using Naivart.Models;
 using Naivart.Models.APIModels;
 using System;
@@ -14,12 +15,12 @@ using System.Web.Helpers;
 
 namespace Naivart.Services
 {
-    public class LoginService
+    public class LoginService : ILoginService
     {
         private readonly AppSettings _appSettings;
-        public AuthService AuthService { get; set; }
+        public IAuthService AuthService { get; set; }
         private IUnitOfWork _unitOfWork { get; set; }
-        public LoginService(IOptions<AppSettings> appSettings, AuthService authService, IUnitOfWork unitOfWork)
+        public LoginService(IOptions<AppSettings> appSettings, IAuthService authService, IUnitOfWork unitOfWork)
         {
             _appSettings = appSettings.Value;
             AuthService = authService;
