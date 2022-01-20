@@ -1,0 +1,106 @@
+      CREATE TABLE Locations (
+          Id bigint IDENTITY(1,1) PRIMARY KEY,
+          CoordinateX int NOT NULL,
+          CoordinateY int NOT NULL,
+      );
+
+      CREATE TABLE Kingdoms (
+          Id bigint IDENTITY(1,1) PRIMARY KEY,
+          Name VARCHAR(255)  NULL,
+          Population int NOT NULL,
+          LocationId bigint NULL,
+          CONSTRAINT FK_Kingdoms_Locations_LocationId FOREIGN KEY (LocationId) REFERENCES Locations (Id)
+      );
+
+      CREATE TABLE Players (
+          Id bigint IDENTITY(1,1) PRIMARY KEY,
+          Username VARCHAR(255)  NULL,
+          Password VARCHAR(255)  NULL,
+	  Salt VARCHAR(255)  NULL,
+          KingdomId bigint NOT NULL,
+          CONSTRAINT FK_Players_Kingdoms_KingdomId FOREIGN KEY (KingdomId) REFERENCES Kingdoms (Id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE BuildingTypes (
+          Id bigint IDENTITY(1,1) PRIMARY KEY,
+          Type VARCHAR(255)  NULL,
+          Level int NOT NULL, 
+          GoldCost int NOT NULL,
+          RequiredTownhallLevel int NOT NULL,
+      );
+
+      CREATE TABLE Buildings (
+          Id bigint IDENTITY(1,1) PRIMARY KEY,
+          Type VARCHAR(255)  NULL,
+          Level int NOT NULL,
+          StartedAt bigint NOT NULL,
+          FinishedAt bigint NOT NULL,
+	  Status VARCHAR(255) NULL,
+          KingdomId bigint NOT NULL,
+	  BuildingTypeId bigint NOT NULL,
+          CONSTRAINT FK_Buildings_Kingdoms_KingdomId FOREIGN KEY (KingdomId) REFERENCES Kingdoms (Id) ON DELETE CASCADE,
+	  CONSTRAINT FK_Buildings_Kingdoms_BuildingTypeId FOREIGN KEY (BuildingTypeId ) REFERENCES BuildingTypes (Id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE Resources (
+          Id bigint IDENTITY(1,1) PRIMARY KEY,
+          Type VARCHAR(255)  NULL,
+          Amount int NOT NULL,
+          Generation int NOT NULL,
+          UpdatedAt bigint NOT NULL,
+          KingdomId bigint NOT NULL,
+          CONSTRAINT FK_Resources_Kingdoms_KingdomId FOREIGN KEY (KingdomId) REFERENCES Kingdoms (Id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE TroopTypes (
+          Id bigint IDENTITY(1,1) PRIMARY KEY,
+          Type VARCHAR(255)  NULL,
+	  Level int NOT NULL,
+          Hp int NOT NULL,
+          Attack int NOT NULL,
+          Defense int NOT NULL,
+          GoldCost int NOT NULL,
+          DailyFoodCost int NOT NULL
+      );
+
+      CREATE TABLE Troops (
+          Id bigint IDENTITY(1,1) PRIMARY KEY,
+          Started_at bigint NOT NULL,
+          Finished_at bigint NOT NULL,
+          Status VARCHAR(255) NULL,
+          KingdomId bigint NOT NULL,
+          TroopTypeId bigint NOT NULL,
+          CONSTRAINT FK_Troops_Kingdoms_KingdomId FOREIGN KEY (KingdomId) REFERENCES Kingdoms (Id) ON DELETE CASCADE,
+          CONSTRAINT FK_Troops_TroopTypes_TroopTypeId FOREIGN KEY (TroopTypeId) REFERENCES TroopTypes (Id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE Battles (
+          Id bigint IDENTITY(1,1) PRIMARY KEY,
+          AttackerId bigint NOT NULL,
+          DefenderId bigint NOT NULL,
+          BattleType VARCHAR(255)  NULL,
+          Result VARCHAR(255)  NULL,
+          Status VARCHAR(255)  NULL,
+          StartedAt bigint NOT NULL,
+          FinishedAt bigint NOT NULL,
+          GoldStolen int NOT NULL,
+          FoodStolen int NOT NULL
+      ) ;
+
+      CREATE TABLE AttackerTroops (
+          Id bigint IDENTITY(1,1) PRIMARY KEY,
+          Type VARCHAR(255)  NULL,
+          Quantity int NOT NULL,
+          Level int NOT NULL,
+          BattleId bigint NOT NULL,
+          CONSTRAINT FK_AttackerTroops_Battles_BattleId FOREIGN KEY (BattleId) REFERENCES Battles (Id) ON DELETE CASCADE
+      ) ;
+
+      CREATE TABLE TroopsLost (
+          Id bigint IDENTITY(1,1) PRIMARY KEY,
+          IsAttacker bit NOT NULL,
+          Type VARCHAR(255)  NULL,
+          Quantity int NOT NULL,
+          BattleId bigint NOT NULL,
+          CONSTRAINT FK_TroopsLost_Battles_BattleId FOREIGN KEY (BattleId) REFERENCES Battles (Id) ON DELETE CASCADE
+      ) ;
