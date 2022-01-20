@@ -1,13 +1,13 @@
 ﻿using AutoMapper;
 using Moq;
-using Naivart.Controllers;
 using Naivart.Interfaces.ServiceInterfaces;
+using Naivart.Models.APIModels;
 using Naivart.Models.Entities;
+using Naivart.Profiles;
 using Naivart.Repository;
 using Naivart.Services;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace NaivartTestMoq
@@ -20,11 +20,15 @@ namespace NaivartTestMoq
         private Mock<ITimeService> timeServiceMoq = new Mock<ITimeService>();
         private readonly Mock<IMapper> _mapper = new Mock<IMapper>();
         private UnitOfWork unitOfWork;
+        
 
         public BuildingServiceTests()
         {
+            var myProfile = new BuildingProfile();
+            var configuration = new MapperConfiguration(cfg => cfg.AddProfile(myProfile));
+            IMapper _mapper = new Mapper(configuration);
             unitOfWork = GetContextWithoutData();
-            testBuildingService = new BuildingService(_mapper.Object, unitOfWork,authServiceMoq.Object, kingdomServiceMoq.Object,timeServiceMoq.Object) ;
+            testBuildingService = new BuildingService(_mapper, unitOfWork,authServiceMoq.Object, kingdomServiceMoq.Object,timeServiceMoq.Object) ;
         }
         [Fact]
         public void ListOfBuildingsMapping()
