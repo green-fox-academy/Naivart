@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Naivart.Interfaces.ServiceInterfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Services;
@@ -9,12 +10,12 @@ namespace Naivart.Controllers
     [Route("leaderboards")]
     public class LeaderboardsController : Controller
     {
-        public BuildingService BuildingService { get; set; }
-        public KingdomService KingdomService { get; set; }
-        public TroopService TroopService { get; set; }
-        public LeaderboardsController(BuildingService buildingService,
-                                      KingdomService kingdomService,
-                                      TroopService troopService)
+        public IBuildingService BuildingService { get; set; }
+        public IKingdomService KingdomService { get; set; }
+        public ITroopService TroopService { get; set; }
+        public LeaderboardsController(IBuildingService buildingService,
+                                      IKingdomService kingdomService,
+                                      ITroopService troopService)
         {
             BuildingService = buildingService;
             KingdomService = kingdomService;

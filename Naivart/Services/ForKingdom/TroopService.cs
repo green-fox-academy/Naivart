@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Naivart.Database;
 using Naivart.Interfaces;
+using Naivart.Interfaces.ServiceInterfaces;
 using Naivart.Models.APIModels;
 using Naivart.Models.APIModels.Leaderboards;
 using Naivart.Models.APIModels.Troops;
@@ -13,15 +14,15 @@ using System.Threading.Tasks;
 
 namespace Naivart.Services
 {
-    public class TroopService
+    public class TroopService : ITroopService
     {
         private readonly IMapper _mapper; //install AutoMapper.Extensions.Microsoft.DependencyInjection NuGet Package (ver. 8.1.1)
         private IUnitOfWork _unitOfWork { get; set; }
-        public AuthService AuthService { get; set; }
-        public KingdomService KingdomService { get; set; }
-        public TimeService TimeService { get; set; }
-        public TroopService(IMapper mapper, IUnitOfWork unitOfWork, AuthService authService, KingdomService kingdomService,
-                            TimeService timeService)
+        public IAuthService AuthService { get; set; }
+        public IKingdomService KingdomService { get; set; }
+        public ITimeService TimeService { get; set; }
+        public TroopService(IMapper mapper, IUnitOfWork unitOfWork, IAuthService authService, IKingdomService kingdomService,
+                            ITimeService timeService)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
@@ -94,7 +95,7 @@ namespace Naivart.Services
 
                         if (response.isPossibleToCreate)
                         {
-                            _unitOfWork.Kingdoms.PopulationUp(kingdomId, input.Quantity);
+                            await _unitOfWork.Kingdoms.PopulationUp(kingdomId, input.Quantity);
                             return (response.info, 200, "OK");
                         }
                         return (response.info, 400, "You don't have enough gold to train all these units!");

@@ -10,11 +10,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Naivart.Database;
 using Naivart.Interfaces;
+using Naivart.Interfaces.ServiceInterfaces;
 using Naivart.Middlewares;
 using Naivart.Models;
 using Naivart.Repository;
 using Naivart.Services;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Text;
 
@@ -35,16 +37,16 @@ namespace Naivart
 
             services.AddControllersWithViews();
 
-            
+            ConfigureDb(services);
 
-            services.AddTransient<AuthService>();
-            services.AddTransient<BuildingService>();
-            services.AddTransient<KingdomService>();
-            services.AddTransient<LoginService>();
-            services.AddTransient<PlayerService>();
-            services.AddTransient<ResourceService>();
-            services.AddTransient<TimeService>();
-            services.AddTransient<TroopService>();
+            services.AddTransient<IAuthService,AuthService>();
+            services.AddTransient<IBuildingService, BuildingService>();
+            services.AddTransient<IKingdomService,KingdomService>();
+            services.AddTransient<ILoginService,LoginService>();
+            services.AddTransient<IPlayerService,PlayerService>();
+            services.AddTransient<IResourceService,ResourceService>();
+            services.AddTransient<ITimeService,TimeService>();
+            services.AddTransient<ITroopService,TroopService>();
 
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<IBuildingRepository, BuildingRepository>();
@@ -60,8 +62,6 @@ namespace Naivart
             services.AddTransient<ITroopTypeRepository, TroopTypeRepository>();
             services.AddTransient<IUnitOfWork, UnitOfWork>();
 
-            ConfigureDb(services);
-
             var appSettingSection = AppConfig.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingSection);
 
@@ -72,6 +72,7 @@ namespace Naivart
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
             }).AddJwtBearer(x =>
             {
                 x.RequireHttpsMetadata = false;
@@ -96,6 +97,25 @@ namespace Naivart
                     Title = "Naivart",
                     Description = ".NET 5 API App"
                 });
+
+                OpenApiSecurityScheme securityDefinition = new OpenApiSecurityScheme()
+                {
+                    BearerFormat = "JWT",
+                    Name = "naivart-token",
+                    Description = "Set the current token",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer"
+                };
+                c.AddSecurityDefinition("Bearer", securityDefinition);
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement{
+                       {
+                            new OpenApiSecurityScheme{
+                                Reference = new OpenApiReference{
+                                    Id = "Bearer", //The name of the previously defined security scheme.
+                                    Type = ReferenceType.SecurityScheme}},new List<string>()
+                       }});
             });
         }
 

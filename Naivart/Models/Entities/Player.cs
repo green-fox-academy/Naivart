@@ -18,5 +18,9 @@ namespace Naivart.Models.Entities
             Password = password;
             Salt = salt;
         }
+        public Player()
+        {
+
+        }
     }
 }
