@@ -6,7 +6,7 @@ namespace Naivart.Interfaces
 {
     public interface IBuildingTypeRepository : IRepository<BuildingType>
     {
-        Task<BuildingType> BuildingTypeIdAsync(long buildingTypeId);
-        Task<bool> IsEnoughGoldForAsync(int goldAmount, long buildingTypeId);
+        Task<BuildingType> GetBuildingTypeAsync(string type, int level);
+        Task<bool> IsEnoughGoldForAsync(int goldAmount, string type, int level);
     }
 }

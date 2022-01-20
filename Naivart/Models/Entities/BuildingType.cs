@@ -9,7 +9,6 @@ namespace Naivart.Models.Entities
         public long Id { get; set; }
         public string Type { get; set; }
         public int Level { get; set; }
-        public int Hp { get; set; }
         public int GoldCost { get; set; }
         public int RequiredTownhallLevel { get; set; }
         public List<Building> Buildings { get; set; }
