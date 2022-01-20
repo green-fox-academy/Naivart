@@ -14,12 +14,7 @@ namespace NaivartTestMoq
     public class KingdomServiceTests : ServiceTest
     {
         private readonly KingdomService testKingdomService;
-        private KingdomController kingdomController;
-        private Mock<IKingdomService> kingdomServiceMoq = new Mock<IKingdomService>();
         private Mock<IAuthService> authServiceMoq = new Mock<IAuthService>();
-        private Mock<IResourceService> resourceServiceMoq = new Mock<IResourceService>();
-        private Mock<IBuildingService> buildingServiceMoq = new Mock<IBuildingService>();
-        private Mock<ITroopService> troopServiceMoq = new Mock<ITroopService>();
         private Mock<ILoginService> loginServiceMoq = new Mock<ILoginService>();
         private Mock<ITimeService> timeServiceMoq = new Mock<ITimeService>();
         private readonly IMapper _mapper;
