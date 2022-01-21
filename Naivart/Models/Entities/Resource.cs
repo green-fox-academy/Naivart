@@ -18,5 +18,9 @@
             UpdatedAt = updatedAt;
             KingdomId = kingdomId;
         }
+        public Resource()
+        {
+
+        }
     }
 }
