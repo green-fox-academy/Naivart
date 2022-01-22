@@ -2,7 +2,8 @@
 <span align="center"> <h2> Build And Rule The Amazaing World Of Naivart! </h2> </span>
 </br>
 </br>
-#### .NET 5 API App # Deployed on [Azure](https://naivartapp.azurewebsites.net)
+
+### .NET 5 API App # Deployed on [Azure](https://naivartapp.azurewebsites.net)
 
 ## About the project
 The goal of the project is to create an online API multiplayer game where players competing for supremacy and build their kingdoms. To build your empire you will need a lot of resources - gold for your buldings and food for your army that will protect you from enemies or help you to conquer the other kingdoms. Let the domination begins!
