@@ -17,7 +17,7 @@ The goal of the project is to create an online API multiplayer game where player
 - Jan Malý [GitHub](https://github.com/ikanaki)
 
 ## How the game works
-- After the player is registered, select the the place of the kingdom :european_castle:
+- After the player is registered, select the place of the kingdom :european_castle:
 - Every kingdom begans with little amount of resources(gold :moneybag: and food :poultry_leg:)
 - Build farm :seedling: and mine :mountain: to have enough resources for another features
 - Protect the kingdom and build your first troops in Barracks :houses:
