@@ -20,7 +20,7 @@ The goal of the project is to create an online API multiplayer game where player
 - After the player is registered, select the place of the kingdom :european_castle:
 - Every kingdom begans with little amount of resources(gold :moneybag: and food :poultry_leg:)
 - Build farm :seedling: and mine :mountain: to have enough resources for another features
-- Protect the kingdom and build your first troops in Barracks :houses:
+- Protect the kingdom and create your first troops in Barracks :houses:
 - To upgrade your troops or unlock another buildings, such as Academy or Ramparts, make sure your Townhall level is upgraded enough
 
 ## Used technology
