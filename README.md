@@ -11,10 +11,10 @@ The goal of the project is to create an online API multiplayer game where player
 ## Project leader
 - Fronéma Lark [GitHub] (https://github.com/Fronema)
 ## Team members
-- Miroslav Jiránek [GitHub] (https://github.com/mirekjiranek)
-- Adam Sattler [GitHub] (https://github.com/AdamSattler)
-- Pavel Blažek [GitHub] (https://github.com/PavelBla)
-- Jan Malý [GitHub] (https://github.com/ikanaki)
+- Miroslav Jiránek [GitHub](https://github.com/mirekjiranek)
+- Adam Sattler [GitHub](https://github.com/AdamSattler)
+- Pavel Blažek [GitHub](https://github.com/PavelBla)
+- Jan Malý [GitHub](https://github.com/ikanaki)
 
 ## How the game works
 - After the player is registered, select the the place of the kingdom :european_castle:
