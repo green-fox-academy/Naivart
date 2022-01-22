@@ -9,12 +9,12 @@
 The goal of the project is to create an online API multiplayer game where players competing for supremacy and build their kingdoms. To build your empire you will need a lot of resources - gold for your buldings and food for your army that will protect you from enemies or help you to conquer the other kingdoms. Let the domination begins!
 
 ## Project leader
-Fronéma Lark [GitHub] (https://github.com/Fronema)
+- Fronéma Lark [GitHub] (https://github.com/Fronema)
 ## Team members
-Miroslav Jiránek [GitHub] (https://github.com/mirekjiranek)
-Adam Sattler [GitHub] (https://github.com/AdamSattler)
-Pavel Blažek [GitHub] (https://github.com/PavelBla)
-Jan Malý [GitHub] (https://github.com/ikanaki)
+- Miroslav Jiránek [GitHub] (https://github.com/mirekjiranek)
+- Adam Sattler [GitHub] (https://github.com/AdamSattler)
+- Pavel Blažek [GitHub] (https://github.com/PavelBla)
+- Jan Malý [GitHub] (https://github.com/ikanaki)
 
 ## How the game works
 - After the player is registered, select the the place of the kingdom :european_castle:
