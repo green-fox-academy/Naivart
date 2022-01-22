@@ -1,5 +1,6 @@
 <div align="center"> <h1> Naivart </h1> </div>
 <span align="center"> <h2> Build And Rule The Amazaing World Of Naivart! </h2> </span>
+<div align="center"> ![Naivart Logo](https://github.com/green-fox-academy/Naivart/blob/README/for_readme-removebg-preview.png) </div>
 </br>
 </br>
 
