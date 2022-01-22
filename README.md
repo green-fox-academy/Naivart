@@ -1,5 +1,4 @@
-
-<span align="center"> <h1> Naivart </h1> </span>
+<div align="center"> <h1> Naivart </h1> </div>
 <span align="center"> <h2> Build And Rule The Amazaing World Of Naivart! </h2> </span>
 </br>
 </br>
@@ -9,7 +8,7 @@
 The goal of the project is to create an online API multiplayer game where players competing for supremacy and build their kingdoms. To build your empire you will need a lot of resources - gold for your buldings and food for your army that will protect you from enemies or help you to conquer the other kingdoms. Let the domination begins!
 
 ## Project leader
-- Fronéma Lark [GitHub] (https://github.com/Fronema)
+- Fronéma Lark [GitHub](https://github.com/Fronema)
 ## Team members
 - Miroslav Jiránek [GitHub](https://github.com/mirekjiranek)
 - Adam Sattler [GitHub](https://github.com/AdamSattler)
