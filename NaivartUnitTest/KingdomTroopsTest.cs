@@ -33,48 +33,6 @@ namespace NaivartUnitTest
         }
 
         [Fact]
-        public void Endpoint_Troops_ShouldReturnOk()
-        {
-            //arrange
-            HttpStatusCode expectedStatusCode = HttpStatusCode.OK;
-            var request = new HttpRequestMessage();
-            request.RequestUri = new Uri("https://localhost:44388/kingdoms/1/troops");
-            request.Headers.Add("Authorization", $"Bearer {GetToken()}");
-            request.Method = HttpMethod.Get;
-
-            var locationAPIModel = new LocationAPIModel()
-            {
-                CoordinateX = 15,
-                CoordinateY = 30
-            };
-
-            var kingdomAPIModel = new KingdomAPIModel()
-            {
-                Kingdom_Id = 1,
-                KingdomName = "Igala",
-                Ruler = "Adam",
-                Population = 1,
-                Location = locationAPIModel
-            };
-
-            var TroopAPIModels = new List<TroopAPIModel>();
-            var TroopAPIModel = new TroopAPIModel() { Id = 1, Level = 3, Hp = 32, Attack = 5, Defense = 6, StartedAt = 12345789, FinishedAt = 12399999 };
-            TroopAPIModels.Add(TroopAPIModel);
-
-            var TroopAPIResponse = new TroopsResponse(kingdomAPIModel, TroopAPIModels);
-
-            //act
-            var response = HttpClient.SendAsync(request).Result;
-            var responseData = response.Content.ReadAsStringAsync().Result;
-            var responseDataObj = JsonConvert.DeserializeObject<TroopsResponse>(responseData);
-
-            //assert
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.Equal(expectedStatusCode, response.StatusCode);
-            TroopAPIResponse.Should().BeEquivalentTo(responseDataObj);
-        }
-
-        [Fact]
         public void Endpoint_Troops_ShouldReturn_Unauthorized()
         {
             //arrange
