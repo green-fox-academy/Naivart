@@ -32,67 +32,6 @@ namespace NaivartUnitTest
         }
 
         [Fact]
-        public void ResourcesEndpoint_PositiveCaseShouldPass()
-        {
-            //arrange
-            HttpStatusCode expectedStatusCode = HttpStatusCode.OK;
-
-            var request = new HttpRequestMessage();
-            request.RequestUri = new Uri("https://localhost:44311/kingdoms/1/resources");
-            request.Headers.Add("Authorization", $"Bearer {GetToken()}");
-            request.Method = HttpMethod.Get;
-
-            var locationAPIModel = new LocationAPIModel()
-            {
-                CoordinateX = 15,
-                CoordinateY = 30
-            };
-
-            var kingdomAPIModel = new KingdomAPIModel()
-            {
-                Kingdom_Id = 1,
-                KingdomName = "Igala",
-                Ruler = "Adam",
-                Population = 1,
-                Location = locationAPIModel
-            };
-
-            var resourceAPIModels = new List<ResourceAPIModel>();
-            for (int i = 0; i < 2; i++)
-            {
-                var resourceAPIModel = new ResourceAPIModel()
-                {
-                    Amount = 10,
-                    Generation = 1,
-                    UpdatedAt = 123456
-                };
-
-                if (i == 0)
-                {
-                    resourceAPIModel.Type = "food";
-                }
-                else
-                {
-                    resourceAPIModel.Type = "gold";
-                }
-
-                resourceAPIModels.Add(resourceAPIModel);
-            }
-
-            var resourceAPIResponse = new ResourcesResponse(kingdomAPIModel, resourceAPIModels);
-
-            //act
-            var response = HttpClient.SendAsync(request).Result;
-            var responseData = response.Content.ReadAsStringAsync().Result;
-            var responseDataObj = JsonConvert.DeserializeObject<ResourcesResponse>(responseData);
-
-            //assert
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.Equal(expectedStatusCode, response.StatusCode);
-            resourceAPIResponse.Should().BeEquivalentTo(responseDataObj); //install Fluent Assertions NuGet Package ver. 6.2.0
-        }
-
-        [Fact]
         public void ResourcesEndpoint_NegativeCaseShouldPass()
         {
             //arrange
