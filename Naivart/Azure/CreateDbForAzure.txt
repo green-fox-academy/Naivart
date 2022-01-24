@@ -65,8 +65,8 @@
 
       CREATE TABLE Troops (
           Id bigint IDENTITY(1,1) PRIMARY KEY,
-          Started_at bigint NOT NULL,
-          Finished_at bigint NOT NULL,
+          StartedAt bigint NOT NULL,
+          FinishedAt bigint NOT NULL,
           Status VARCHAR(255) NULL,
           KingdomId bigint NOT NULL,
           TroopTypeId bigint NOT NULL,
