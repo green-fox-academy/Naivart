@@ -54,26 +54,5 @@ namespace NaivartUnitTest
             Assert.Equal(expectedStatusCode, response.StatusCode);
             kingdomAPIModel.Should().BeEquivalentTo(responseDataObj.Kingdoms[0]); //install Fluent Assertions NuGet Package ver. 6.2.0
         }
-
-        [Fact]
-        public void KingdomsEndpoint_EdgeCaseWithZeroKingdomsShouldFailForNow() //need to set up functional database and service mocking
-        {
-            //arrange
-            HttpStatusCode expectedStatusCode = HttpStatusCode.NotFound;
-            var request = new HttpRequestMessage();
-            request.RequestUri = new Uri("https://localhost:44311/kingdoms");
-            request.Method = HttpMethod.Get;
-
-            var kingdomAPIResponse = new KingdomsResponse(new List<KingdomAPIModel>());
-
-            //act
-            var response = HttpClient.SendAsync(request).Result;
-            var responseData = response.Content.ReadAsStringAsync().Result;
-            var responseDataObj = JsonConvert.DeserializeObject<KingdomsResponse>(responseData);
-
-            //assert
-            Assert.Equal(expectedStatusCode, response.StatusCode);
-            kingdomAPIResponse.Should().BeEquivalentTo(responseDataObj);
-        }
     }
 }
